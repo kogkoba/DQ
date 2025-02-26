@@ -1,303 +1,175 @@
 <!DOCTYPE html>
 <html lang="ja">
-  ５
-
 <head>
-  <script src="https://apis.google.com/js/api.js"></script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ドラクエ風クイズゲーム</title>
 
-    
-  <button id="login-btn" onclick="handleAuthClick()">Google でログイン</button>
-  <button id="logout-btn" onclick="handleSignoutClick()" style="display:none;">ログアウト</button>
+    <!-- Google API ライブラリ -->
+    <script src="https://apis.google.com/js/api.js"></script>
 
-  
-  <meta name="google-site-verification" content="IIBqGUSVum4XxPypQftGeiI1YkJV28di55EAz9ZvPE8"/>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>ドラクエ風クイズゲーム</title>
-
-  <!-- Google Search Console 所有権確認用 -->
-  <meta name="google-site-verification" content="AIzaSyBszPu-BQ2_Aq9C3lhAiW--kyenM5vQsjs">
-
-  <!-- 外部CSSを読み込む場合 -->
-  <link rel="stylesheet" href="style.css">
-
-  <!-- ※外部CSSがない場合は、以下のようにstyleタグ内に記述してもよい -->
-  <style>
+    <!-- CSS 直接記述（外部CSSが404なので） -->
     <style>
-    body {
-      text-align: center;
-      font-family: Arial, sans-serif;
-      background-color: #f4f4f4;
-      padding: 20px;
-    }
-    h1 {
-      color: #333;
-    }
-    #question-container {
-      background: white;
-      padding: 20px;
-      border-radius: 10px;
-      box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
-      max-width: 400px;
-      margin: auto;
-      margin-top: 20px;
-    }
-    #question-image {
-      max-width: 100%;
-      height: auto;
-      border-radius: 5px;
-      margin-bottom: 10px;
-    }
-    .choice {
-      display: block;
-      width: 100%;
-      margin: 5px 0;
-      padding: 10px;
-      background: #007bff;
-      color: white;
-      border: none;
-      border-radius: 5px;
-      cursor: pointer;
-      font-size: 16px;
-    }
-    .choice:hover {
-      background: #0056b3;
-    }
-</style>
-
+        body {
+            text-align: center;
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            padding: 20px;
+        }
+        h1 {
+            color: #333;
+        }
+        #question-container {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
+            max-width: 400px;
+            margin: auto;
+            margin-top: 20px;
+        }
+        #question-image {
+            max-width: 100%;
+            height: auto;
+            border-radius: 5px;
+            margin-bottom: 10px;
+        }
+        .choice {
+            display: block;
+            width: 100%;
+            margin: 5px 0;
+            padding: 10px;
+            background: #007bff;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        .choice:hover {
+            background: #0056b3;
+        }
+        #login-btn, #logout-btn {
+            margin-bottom: 10px;
+        }
+    </style>
 </head>
 <body>
-  <h1>ドラクエ風クイズゲーム</h1>
+    <button id="login-btn" onclick="handleAuthClick()">Google でログイン</button>
+    <button id="logout-btn" onclick="handleSignoutClick()" style="display:none;">ログアウト</button>
 
-  <div id="question-container">
-    <h2 id="question"></h2>
-    <img id="question-image" width="200" alt="Question Image"><br>
-    <div id="choices"></div>
-  </div>
+    <h1>ドラクエ風クイズゲーム</h1>
 
-  <!-- 外部JSファイルを利用する場合は下記の行を有効に -->
-  <!-- <script src="game.js"></script> -->
+    <div id="question-container">
+        <h2 id="question"></h2>
+        <img id="question-image" width="200" alt="Question Image"><br>
+        <div id="choices"></div>
+    </div>
 
-  <!-- ここではすべてのJSコードをインラインで記述 -->
-  <script>
-//ここから追加　クラウドエラーが出るか
-const SHEET_ID = "1GyKDfVQCNrBlkxjsrQDv_ouIio9yjO3mVQy6Ds5uQzg"; // シートID
-const API_KEY = "AIzaSyBszPu-BQ2_Aq9C3lhAiW--kyenM5vQsjs"; // Google APIキー
-const SHEET_NAME = "DQquestion"; // シート名
-const CLIENT_ID = "403866618480-7dhf5rl00k6shl8jmm16s6tvm8ef0odj.apps.googleusercontent.com";
-const API_KEY = "AIzaSyBszPu-BQ2_Aq9C3lhAiW--kyenM5vQsjs"; // Google Cloud APIキー
-const DISCOVERY_DOCS = ["https://sheets.googleapis.com/$discovery/rest?version=v4"];
-const SCOPES = "https://www.googleapis.com/auth/spreadsheets";
+    <script>
+        // Google API & Sheets の設定
+        const SHEET_ID = "1GyKDfVQCNrBlkxjsrQDv_ouIio9yjO3mVQy6Ds5uQzg"; // Google Sheets ID
+        const CLIENT_ID = "403866618480-7dhf5rl00k6shl8jmm16s6tvm8ef0odj.apps.googleusercontent.com"; // OAuth ID
+        const API_KEY = "AIzaSyBszPu-BQ2_Aq9C3lhAiW--kyenM5vQsjs"; // Google APIキー
+        const SHEET_NAME = "DQquestion"; // シート名
+        const DISCOVERY_DOCS = ["https://sheets.googleapis.com/$discovery/rest?version=v4"];
+        const SCOPES = "https://www.googleapis.com/auth/spreadsheets";
 
-async function updateMistakeCount(row) {
-    const updateUrl = `https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values/${SHEET_NAME}!J${row}:J${row}?valueInputOption=USER_ENTERED&key=${API_KEY}`;
-
-    const currentMistakes = 5; // 例えば "5" を入れてテストする（本番では取得した値 +1）
-    
-    let body = {
-        "range": `${SHEET_NAME}!J${row}:J${row}`,
-        "values": [[currentMistakes + 1]]
-    };
-
-    try {
-        const response = await fetch(updateUrl, {
-            method: "PUT",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify(body)
-        });
-
-        if (!response.ok) {
-            throw new Error(`エラー: ${response.status} - ${response.statusText}`);
+        function initClient() {
+            gapi.client.init({
+                apiKey: API_KEY,
+                clientId: CLIENT_ID,
+                discoveryDocs: DISCOVERY_DOCS,
+                scope: SCOPES
+            }).then(() => {
+                console.log("Google API 初期化完了");
+                updateSigninStatus(gapi.auth2.getAuthInstance().isSignedIn.get());
+            }).catch(error => {
+                console.error("Google API 初期化エラー", error);
+            });
         }
 
-        console.log("間違えた回数が更新されました！", await response.json());
-    } catch (error) {
-        console.error("間違えた回数の更新に失敗しました", error);
-    }
-}
-
-    function fetchQuizData() {
-    gapi.client.sheets.spreadsheets.values.get({
-        spreadsheetId: "1GyKDfVQCNrBlkxjsrQDv_ouIio9yjO3mVQy6Ds5uQzg",
-        range: "DQquestion!A1:J1000"
-    }).then(response => {
-        console.log("Google Sheets データ取得成功", response.result.values);
-    }).catch(error => {
-        console.error("Google Sheets 取得エラー", error);
-    });
-}
-
-// 認証後にデータを取得する
-function onSignInSuccess() {
-    fetchQuizData();
-}
-
-// 認証を初期化する
-function initClient() {
-    gapi.client.init({
-        apiKey: API_KEY,
-        clientId: CLIENT_ID,
-        discoveryDocs: DISCOVERY_DOCS,
-        scope: SCOPES
-    }).then(() => {
-        console.log("Google API 初期化完了");
-        updateSigninStatus(gapi.auth2.getAuthInstance().isSignedIn.get());
-    }).catch(error => {
-        console.error("Google API 初期化エラー", error);
-    });
-}
-
-    // ログイン・ログアウト状態の変更を監視
-function updateSigninStatus(isSignedIn) {
-    if (isSignedIn) {
-        console.log("ログイン成功！");
-        document.getElementById("login-btn").style.display = "none";
-        document.getElementById("logout-btn").style.display = "block";
-    } else {
-        document.getElementById("login-btn").style.display = "block";
-        document.getElementById("logout-btn").style.display = "none";
-    }
-}
-
-// Google にログイン
-function handleAuthClick() {
-    gapi.auth2.getAuthInstance().signIn();
-}
-
-// Google からログアウト
-function handleSignoutClick() {
-    gapi.auth2.getAuthInstance().signOut();
-}
-
-// Google API をロード
-function handleClientLoad() {
-    gapi.load("client:auth2", initClient);
-}
-
-// Google API をロード
-window.onload = function () {
-    handleClientLoad();
-};
-
-// ID=1 の問題の「間違えた回数」を +1 する
-updateMistakeCount(2); // 2行目（ID=1のデータの行）
-// ここまで追加
-
-    
-    // Google Sheets からクイズデータを取得
-    async function fetchQuizData() {
-      try {
-        const url = `https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values/${SHEET_NAME}?key=${API_KEY}`;
-        const response = await fetch(url);
-        if (!response.ok) throw new Error("Google Sheets からデータを取得できませんでした");
-
-        const data = await response.json();
-        let quizList = [];
-        let headers = data.values[0]; // ヘッダー行
-        let rows = data.values.slice(1); // データ部分
-
-        rows.forEach(row => {
-          let quiz = {};
-          headers.forEach((header, index) => {
-            quiz[header] = row[index] || ""; // 空セルの場合は空文字
-          });
-          quizList.push(quiz);
-        });
-
-        return quizList;
-      } catch (error) {
-        console.error(error);
-        alert("クイズデータを取得できませんでした。APIキーやシート設定を確認してください。");
-        return [];
-      }
-    }
-
-    // クイズの出題（間違えた回数が多い問題ほど出やすくする）
-    async function getRandomQuiz() {
-      let quizzes = await fetchQuizData();
-      if (quizzes.length === 0) return null;
-
-      let weightedQuizzes = [];
-      quizzes.forEach(quiz => {
-        // 間違えた回数が数値でなければ 0 として扱う
-        let mistakes = parseInt(quiz["間違えた回数"]) || 0;
-        let weight = mistakes + 1;
-        for (let i = 0; i < weight; i++) {
-          weightedQuizzes.push(quiz);
+        function updateSigninStatus(isSignedIn) {
+            if (isSignedIn) {
+                console.log("ログイン成功！");
+                document.getElementById("login-btn").style.display = "none";
+                document.getElementById("logout-btn").style.display = "block";
+                fetchQuizData(); // 認証後にデータ取得
+            } else {
+                document.getElementById("login-btn").style.display = "block";
+                document.getElementById("logout-btn").style.display = "none";
+            }
         }
-      });
 
-      return weightedQuizzes[Math.floor(Math.random() * weightedQuizzes.length)];
-    }
+        function handleAuthClick() {
+            gapi.auth2.getAuthInstance().signIn();
+        }
 
-    // クイズを表示
-    async function startQuiz() {
-      let quiz = await getRandomQuiz();
-      if (!quiz) return;
+        function handleSignoutClick() {
+            gapi.auth2.getAuthInstance().signOut();
+        }
 
-      document.getElementById("question").textContent = quiz["問題文"];
-      document.getElementById("question-image").src = quiz["画像URL"];
+        function handleClientLoad() {
+            gapi.load("client:auth2", initClient);
+        }
 
-      let choicesDiv = document.getElementById("choices");
-      choicesDiv.innerHTML = "";
+        function fetchQuizData() {
+            gapi.client.sheets.spreadsheets.values.get({
+                spreadsheetId: SHEET_ID,
+                range: SHEET_NAME + "!A1:J1000"
+            }).then(response => {
+                console.log("Google Sheets データ取得成功", response.result.values);
+                startQuiz(response.result.values);
+            }).catch(error => {
+                console.error("Google Sheets 取得エラー", error);
+            });
+        }
 
-      // 選択肢は1～4とする
-      for (let i = 1; i <= 4; i++) {
-        let choice = quiz[`選択肢${i}`];
-        let btn = document.createElement("button");
-        btn.textContent = choice;
-        btn.className = "choice";
-        btn.onclick = () => checkAnswer(quiz, i);
-        choicesDiv.appendChild(btn);
-      }
-    }
+        function startQuiz(data) {
+            let quizList = data.slice(1).map(row => ({
+                "問題文": row[1],
+                "画像URL": row[2],
+                "選択肢1": row[3],
+                "選択肢2": row[4],
+                "選択肢3": row[5],
+                "選択肢4": row[6],
+                "正解": row[7],
+                "解説": row[9]
+            }));
 
-    // 解答チェック
-    async function checkAnswer(quiz, selected) {
-      let resultMessage = "";
+            let quiz = quizList[Math.floor(Math.random() * quizList.length)];
+            document.getElementById("question").textContent = quiz["問題文"];
+            document.getElementById("question-image").src = quiz["画像URL"];
 
-      if (parseInt(quiz["正解"]) === selected) {
-        resultMessage = "✅ 正解！モンスターを倒した！";
-      } else {
-        resultMessage = `❌ 不正解！\n正解は「${quiz[`選択肢${quiz["正解"]}`]}」です。`;
-        // クイズオブジェクト全体を渡して間違えた回数を更新
-        await updateMistakeCount(quiz);
-      }
+            let choicesDiv = document.getElementById("choices");
+            choicesDiv.innerHTML = "";
 
-      resultMessage += `\n\n🔎 解説: ${quiz["解説"]}`;
-      alert(resultMessage);
+            for (let i = 1; i <= 4; i++) {
+                let choice = quiz[`選択肢${i}`];
+                let btn = document.createElement("button");
+                btn.textContent = choice;
+                btn.className = "choice";
+                btn.onclick = () => checkAnswer(quiz, i);
+                choicesDiv.appendChild(btn);
+            }
+        }
 
-      startQuiz(); // 次の問題を出題
-    }
+        function checkAnswer(quiz, selected) {
+            let resultMessage = "";
 
-    // 間違えた回数を Google Sheets に記録
-    async function updateMistakeCount(quiz) {
-      // シート上の行番号はヘッダー行を考慮してID+1とする（例：IDが1なら行番号2）
-      const row = parseInt(quiz["ID"]) + 1;
-      const currentMistakes = parseInt(quiz["間違えた回数"]) || 0;
-      const updateUrl = `https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values/${SHEET_NAME}!J${row}:J${row}?valueInputOption=USER_ENTERED&key=${API_KEY}`;
+            if (parseInt(quiz["正解"]) === selected) {
+                resultMessage = "✅ 正解！モンスターを倒した！";
+            } else {
+                resultMessage = `❌ 不正解！\n正解は「${quiz[`選択肢${quiz["正解"]}`]}」です。\n\n🔎 解説: ${quiz["解説"]}`;
+            }
 
-      let body = {
-        "range": `${SHEET_NAME}!J${row}:J${row}`,
-        "values": [[currentMistakes + 1]]
-      };
+            alert(resultMessage);
+            fetchQuizData();
+        }
 
-      try {
-        const response = await fetch(updateUrl, {
-          method: "PUT",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(body)
-        });
-
-        if (!response.ok) throw new Error("間違えた回数の更新に失敗しました");
-        console.log("Updated mistake count", await response.json());
-      } catch (error) {
-        console.error(error);
-      }
-    }
-
-    // ゲーム開始
-    startQuiz();
-  </script>
+        window.onload = function () {
+            handleClientLoad();
+        };
+    </script>
 </body>
 </html>
