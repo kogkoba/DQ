@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <html lang="ja">
-  ３
+  ４
 
 <head>
   <meta name="google-site-verification" content="IIBqGUSVum4XxPypQftGeiI1YkJV28di55EAz9ZvPE8"/>
@@ -16,6 +16,7 @@
 
   <!-- ※外部CSSがない場合は、以下のようにstyleタグ内に記述してもよい -->
   <style>
+    <style>
     body {
       text-align: center;
       font-family: Arial, sans-serif;
@@ -55,7 +56,8 @@
     .choice:hover {
       background: #0056b3;
     }
-  </style>
+</style>
+
 </head>
 <body>
   <h1>ドラクエ風クイズゲーム</h1>
@@ -73,7 +75,7 @@
   <script>
 //ここから追加　クラウドエラーが出るか
 const SHEET_ID = "1GyKDfVQCNrBlkxjsrQDv_ouIio9yjO3mVQy6Ds5uQzg"; // シートID
-const API_KEY = "YOUR_GOOGLE_SHEETS_API_KEY"; // Google APIキー
+const API_KEY = "AIzaSyBszPu-BQ2_Aq9C3lhAiW--kyenM5vQsjs"; // Google APIキー
 const SHEET_NAME = "クイズ"; // シート名
 
 async function updateMistakeCount(row) {
@@ -108,11 +110,6 @@ updateMistakeCount(2); // 2行目（ID=1のデータの行）
 // ここまで追加
 
     
-    // Google Sheets の設定
-    const SHEET_ID = "1GyKDfVQCNrBlkxjsrQDv_ouIio9yjO3mVQy6Ds5uQzg"; // Google Sheets の ID
-    const API_KEY = "YOUR_GOOGLE_SHEETS_API_KEY"; // Google Cloud から取得した APIキー
-    const SHEET_NAME = "クイズ"; // シート名
-
     // Google Sheets からクイズデータを取得
     async function fetchQuizData() {
       try {
