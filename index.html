@@ -1,5 +1,4 @@
 <!DOCTYPE html>
-１
 <html lang="ja">
 <head>
     <meta charset="UTF-8">
@@ -9,8 +8,6 @@
     <!-- Google API ライブラリ -->
     <script src="https://apis.google.com/js/api.js" async defer></script>
 
-
-    <!-- CSS 直接記述（外部CSSが404なので） -->
     <style>
         body {
             text-align: center;
@@ -75,7 +72,7 @@
         const API_KEY = "AIzaSyBszPu-BQ2_Aq9C3lhAiW--kyenM5vQsjs"; // Google APIキー
         const SHEET_NAME = "DQquestion"; // シート名
         const DISCOVERY_DOCS = ["https://sheets.googleapis.com/$discovery/rest?version=v4"];
-        const SCOPES = "https://www.googleapis.com/auth/spreadsheets";
+        const SCOPES = "https://www.googleapis.com/auth/spreadsheets.readonly";
 
         function initClient() {
             gapi.client.init({
