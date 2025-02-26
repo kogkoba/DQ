@@ -76,7 +76,7 @@
 //ここから追加　クラウドエラーが出るか
 const SHEET_ID = "1GyKDfVQCNrBlkxjsrQDv_ouIio9yjO3mVQy6Ds5uQzg"; // シートID
 const API_KEY = "AIzaSyBszPu-BQ2_Aq9C3lhAiW--kyenM5vQsjs"; // Google APIキー
-const SHEET_NAME = "クイズ"; // シート名
+const SHEET_NAME = "DQquestion"; // シート名
 
 async function updateMistakeCount(row) {
     const updateUrl = `https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values/${SHEET_NAME}!J${row}:J${row}?valueInputOption=USER_ENTERED&key=${API_KEY}`;
