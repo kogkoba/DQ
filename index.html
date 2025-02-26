@@ -1,195 +1,192 @@
 <!DOCTYPE html>
 <html lang="ja">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ドラクエ風クイズゲーム</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ドラクエ風クイズゲーム</title>
 
-    <!-- Google Search Console 所有権確認用 -->
-    <meta name="google-site-verification" content="YOUR_GOOGLE_VERIFICATION_CODE">
+  <!-- Google Search Console 所有権確認用 -->
+  <meta name="google-site-verification" content="YOUR_GOOGLE_VERIFICATION_CODE">
 
-    <link rel="stylesheet" href="style.css"> <!-- 外部CSSを読み込む -->
+  <!-- 外部CSSを読み込む場合 -->
+  <link rel="stylesheet" href="style.css">
 
-<body>
-    <h1>ドラクエ風クイズゲーム</h1>
-
-    <div id="question-container">
-        <h2 id="question"></h2>
-        <img id="question-image" width="200"><br>
-        <div id="choices"></div>
-    </div>
-
-    <script src="game.js"></script>
-    
+  <!-- ※外部CSSがない場合は、以下のようにstyleタグ内に記述してもよい -->
+  <style>
     body {
-    text-align: center;
-    font-family: Arial, sans-serif;
-    background-color: #f4f4f4;
-    padding: 20px;
-}
+      text-align: center;
+      font-family: Arial, sans-serif;
+      background-color: #f4f4f4;
+      padding: 20px;
+    }
+    h1 {
+      color: #333;
+    }
+    #question-container {
+      background: white;
+      padding: 20px;
+      border-radius: 10px;
+      box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
+      max-width: 400px;
+      margin: auto;
+      margin-top: 20px;
+    }
+    #question-image {
+      max-width: 100%;
+      height: auto;
+      border-radius: 5px;
+      margin-bottom: 10px;
+    }
+    .choice {
+      display: block;
+      width: 100%;
+      margin: 5px 0;
+      padding: 10px;
+      background: #007bff;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      font-size: 16px;
+    }
+    .choice:hover {
+      background: #0056b3;
+    }
+  </style>
+</head>
+<body>
+  <h1>ドラクエ風クイズゲーム</h1>
 
-h1 {
-    color: #333;
-}
+  <div id="question-container">
+    <h2 id="question"></h2>
+    <img id="question-image" width="200" alt="Question Image"><br>
+    <div id="choices"></div>
+  </div>
 
-#question-container {
-    background: white;
-    padding: 20px;
-    border-radius: 10px;
-    box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
-    max-width: 400px;
-    margin: auto;
-    margin-top: 20px;
-}
+  <!-- 外部JSファイルを利用する場合は下記の行を有効に -->
+  <!-- <script src="game.js"></script> -->
 
-#question-image {
-    max-width: 100%;
-    height: auto;
-    border-radius: 5px;
-    margin-bottom: 10px;
-}
+  <!-- ここではすべてのJSコードをインラインで記述 -->
+  <script>
+    // Google Sheets の設定
+    const SHEET_ID = "1GyKDfVQCNrBlkxjsrQDv_ouIio9yjO3mVQy6Ds5uQzg"; // Google Sheets の ID
+    const API_KEY = "YOUR_GOOGLE_SHEETS_API_KEY"; // Google Cloud から取得した APIキー
+    const SHEET_NAME = "クイズ"; // シート名
 
-.choice {
-    display: block;
-    width: 100%;
-    margin: 5px 0;
-    padding: 10px;
-    background: #007bff;
-    color: white;
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
-    font-size: 16px;
-}
-
-.choice:hover {
-    background: #const SHEET_ID = "1GyKDfVQCNrBlkxjsrQDv_ouIio9yjO3mVQy6Ds5uQzg"; // Google Sheets の ID
-const API_KEY = "YOUR_GOOGLE_SHEETS_API_KEY"; // Google Cloud から取得した APIキー
-const SHEET_NAME = "クイズ"; // シート名
-
-// Google Sheets からクイズデータを取得
-async function fetchQuizData() {
-    try {
+    // Google Sheets からクイズデータを取得
+    async function fetchQuizData() {
+      try {
         const url = `https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values/${SHEET_NAME}?key=${API_KEY}`;
         const response = await fetch(url);
         if (!response.ok) throw new Error("Google Sheets からデータを取得できませんでした");
 
         const data = await response.json();
         let quizList = [];
-        let headers = data.values[0]; // ヘッダー
+        let headers = data.values[0]; // ヘッダー行
         let rows = data.values.slice(1); // データ部分
 
         rows.forEach(row => {
-            let quiz = {};
-            headers.forEach((header, index) => {
-                quiz[header] = row[index] || ""; // 空のセルを考慮
-            });
-            quizList.push(quiz);
+          let quiz = {};
+          headers.forEach((header, index) => {
+            quiz[header] = row[index] || ""; // 空セルの場合は空文字
+          });
+          quizList.push(quiz);
         });
 
         return quizList;
-    } catch (error) {
+      } catch (error) {
         console.error(error);
         alert("クイズデータを取得できませんでした。APIキーやシート設定を確認してください。");
         return [];
+      }
     }
-}
 
-// クイズの出題 (間違えが多い問題ほど出やすくする)
-async function getRandomQuiz() {
-    let quizzes = await fetchQuizData();
-    if (quizzes.length === 0) return null;
+    // クイズの出題（間違えた回数が多い問題ほど出やすくする）
+    async function getRandomQuiz() {
+      let quizzes = await fetchQuizData();
+      if (quizzes.length === 0) return null;
 
-    let weightedQuizzes = [];
-    quizzes.forEach(quiz => {
-        let weight = parseInt(quiz["間違えた回数"]) + 1;
+      let weightedQuizzes = [];
+      quizzes.forEach(quiz => {
+        // 間違えた回数が数値でなければ 0 として扱う
+        let mistakes = parseInt(quiz["間違えた回数"]) || 0;
+        let weight = mistakes + 1;
         for (let i = 0; i < weight; i++) {
-            weightedQuizzes.push(quiz);
+          weightedQuizzes.push(quiz);
         }
-    });
+      });
 
-    return weightedQuizzes[Math.floor(Math.random() * weightedQuizzes.length)];
-}
+      return weightedQuizzes[Math.floor(Math.random() * weightedQuizzes.length)];
+    }
 
-// クイズを表示
-async function startQuiz() {
-    let quiz = await getRandomQuiz();
-    if (!quiz) return;
+    // クイズを表示
+    async function startQuiz() {
+      let quiz = await getRandomQuiz();
+      if (!quiz) return;
 
-    document.getElementById("question").textContent = quiz["問題文"];
-    document.getElementById("question-image").src = quiz["画像URL"];
+      document.getElementById("question").textContent = quiz["問題文"];
+      document.getElementById("question-image").src = quiz["画像URL"];
 
-    let choicesDiv = document.getElementById("choices");
-    choicesDiv.innerHTML = "";
+      let choicesDiv = document.getElementById("choices");
+      choicesDiv.innerHTML = "";
 
-    for (let i = 1; i <= 4; i++) {
+      // 選択肢は1～4とする
+      for (let i = 1; i <= 4; i++) {
         let choice = quiz[`選択肢${i}`];
         let btn = document.createElement("button");
         btn.textContent = choice;
         btn.className = "choice";
         btn.onclick = () => checkAnswer(quiz, i);
         choicesDiv.appendChild(btn);
+      }
     }
-}
 
-// 解答チェック
-async function checkAnswer(quiz, selected) {
-    let resultMessage = "";
+    // 解答チェック
+    async function checkAnswer(quiz, selected) {
+      let resultMessage = "";
 
-    if (parseInt(quiz["正解"]) === selected) {
+      if (parseInt(quiz["正解"]) === selected) {
         resultMessage = "✅ 正解！モンスターを倒した！";
-    } else {
+      } else {
         resultMessage = `❌ 不正解！\n正解は「${quiz[`選択肢${quiz["正解"]}`]}」です。`;
-        await updateMistakeCount(quiz["ID"]);
+        // クイズオブジェクト全体を渡して間違えた回数を更新
+        await updateMistakeCount(quiz);
+      }
+
+      resultMessage += `\n\n🔎 解説: ${quiz["解説"]}`;
+      alert(resultMessage);
+
+      startQuiz(); // 次の問題を出題
     }
 
-    resultMessage += `\n\n🔎 解説: ${quiz["解説"]}`;
-    alert(resultMessage);
+    // 間違えた回数を Google Sheets に記録
+    async function updateMistakeCount(quiz) {
+      // シート上の行番号はヘッダー行を考慮してID+1とする（例：IDが1なら行番号2）
+      const row = parseInt(quiz["ID"]) + 1;
+      const currentMistakes = parseInt(quiz["間違えた回数"]) || 0;
+      const updateUrl = `https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values/${SHEET_NAME}!J${row}:J${row}?valueInputOption=USER_ENTERED&key=${API_KEY}`;
 
-    startQuiz(); // 次の問題を出題
-}
+      let body = {
+        "range": `${SHEET_NAME}!J${row}:J${row}`,
+        "values": [[currentMistakes + 1]]
+      };
 
-// 間違えた回数を Google Sheets に記録
-async function updateMistakeCount(quizId) {
-    const updateUrl = `https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values/${SHEET_NAME}!J${parseInt(quizId) + 1}:J${parseInt(quizId) + 1}?valueInputOption=USER_ENTERED&key=${API_KEY}`;
-
-    let body = {
-        "range": `${SHEET_NAME}!J${parseInt(quizId) + 1}:J${parseInt(quizId) + 1}`,
-        "values": [[parseInt(quizId["間違えた回数"]) + 1]]
-    };
-
-    try {
+      try {
         const response = await fetch(updateUrl, {
-            method: "PUT",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify(body)
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(body)
         });
 
         if (!response.ok) throw new Error("間違えた回数の更新に失敗しました");
         console.log("Updated mistake count", await response.json());
-    } catch (error) {
+      } catch (error) {
         console.error(error);
+      }
     }
-}
 
-// ゲーム開始
-startQuiz();
-
-
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
+    // ゲーム開始
+    startQuiz();
+  </script>
 </body>
 </html>
