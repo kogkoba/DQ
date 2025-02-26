@@ -1,10 +1,14 @@
 <!DOCTYPE html>
 <html lang="ja">
 <head>
+  １
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>ドラクエ風クイズゲーム</title>
+
+  <!-- Google API ライブラリ -->
   <script src="https://apis.google.com/js/api.js" async defer></script>
+
   <style>
     body {
       text-align: center;
@@ -16,7 +20,7 @@
       color: #333;
     }
     #question-container {
-      background: white;
+      background: #fff;
       padding: 20px;
       border-radius: 10px;
       box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
@@ -44,62 +48,72 @@
     .choice:hover {
       background: #0056b3;
     }
-    #login-btn,
-    #logout-btn {
+    /* ログイン/ログアウトボタンのスタイル */
+    #login-btn, #logout-btn {
       margin-bottom: 10px;
+      padding: 8px 16px;
+      font-size: 16px;
+      cursor: pointer;
+      border: none;
+      border-radius: 4px;
+    }
+    #login-btn {
+      background-color: #4285f4;
+      color: white;
+    }
+    #logout-btn {
+      background-color: #db4437;
+      color: white;
     }
   </style>
 </head>
 <body>
-  <button id="login-btn" onclick="handleAuthClick()">Google でログイン</button>
-  <button id="logout-btn" onclick="handleSignoutClick()" style="display:none;">ログアウト</button>
+  <!-- ログイン/ログアウトボタン -->
+  <button id="login-btn" style="display:none;" onclick="handleAuthClick()">Google でログイン</button>
+  <button id="logout-btn" style="display:none;" onclick="handleSignoutClick()">ログアウト</button>
 
   <h1>ドラクエ風クイズゲーム</h1>
 
-  <div id="question-container">
+  <div id="question-container" style="display:none;">
     <h2 id="question"></h2>
     <img id="question-image" width="200" alt="Question Image" /><br />
     <div id="choices"></div>
   </div>
 
   <script>
-    (function () {
-      // 定数の定義
-      const SHEET_ID = "1GyKDfVQCNrBlkxjsrQDv_ouIio9yjO3mVQy6Ds5uQzg";
-      const CLIENT_ID =
-        "403866618480-7dhf5rl00k6shl8jmm16s6tvm8ef0odj.apps.googleusercontent.com";
-      const API_KEY = "AIzaSyBszPu-BQ2_Aq9C3lhAiW--kyenM5vQsjs";
+    (function() {
+      // ★★★ 必要に応じて以下の各定数を設定 ★★★
+      const SHEET_ID   = "1GyKDfVQCNrBlkxjsrQDv_ouIio9yjO3mVQy6Ds5uQzg";
+      const CLIENT_ID  = "403866618480-7dhf5rl00k6shl8jmm16s6tvm8ef0odj.apps.googleusercontent.com";
+      const API_KEY    = "AIzaSyBszPu-BQ2_Aq9C3lhAiW--kyenM5vQsjs";
       const SHEET_NAME = "DQquestion";
       const DISCOVERY_DOCS = [
-        "https://sheets.googleapis.com/$discovery/rest?version=v4",
+        "https://sheets.googleapis.com/$discovery/rest?version=v4"
       ];
-      const SCOPES =
-        "https://www.googleapis.com/auth/spreadsheets.readonly https://www.googleapis.com/auth/userinfo.profile https://www.googleapis.com/auth/userinfo.email";
+      const SCOPES = "https://www.googleapis.com/auth/spreadsheets.readonly https://www.googleapis.com/auth/userinfo.profile https://www.googleapis.com/auth/userinfo.email";
 
       // DOM要素のキャッシュ
-      const loginBtn = document.getElementById("login-btn");
-      const logoutBtn = document.getElementById("logout-btn");
-      const questionEl = document.getElementById("question");
-      const questionImageEl = document.getElementById("question-image");
-      const choicesDiv = document.getElementById("choices");
+      const loginBtn         = document.getElementById("login-btn");
+      const logoutBtn        = document.getElementById("logout-btn");
+      const questionContainer = document.getElementById("question-container");
+      const questionEl       = document.getElementById("question");
+      const questionImageEl  = document.getElementById("question-image");
+      const choicesDiv       = document.getElementById("choices");
 
       // Google API クライアントの初期化
       function initClient() {
-        gapi.client
-          .init({
-            apiKey: API_KEY,
-            clientId: CLIENT_ID,
-            discoveryDocs: DISCOVERY_DOCS,
-            scope: SCOPES,
-          })
-          .then(() => {
-            const authInstance = gapi.auth2.getAuthInstance();
-            authInstance.isSignedIn.listen(updateSigninStatus);
-            updateSigninStatus(authInstance.isSignedIn.get());
-          })
-          .catch((error) => {
-            console.error("Google API 初期化エラー", error);
-          });
+        gapi.client.init({
+          apiKey: API_KEY,
+          clientId: CLIENT_ID,
+          discoveryDocs: DISCOVERY_DOCS,
+          scope: SCOPES
+        }).then(() => {
+          const authInstance = gapi.auth2.getAuthInstance();
+          authInstance.isSignedIn.listen(updateSigninStatus);
+          updateSigninStatus(authInstance.isSignedIn.get());
+        }).catch(error => {
+          console.error("Google API 初期化エラー", error);
+        });
       }
 
       // サインイン状態に応じたUI更新
@@ -107,19 +121,21 @@
         if (isSignedIn) {
           loginBtn.style.display = "none";
           logoutBtn.style.display = "block";
+          questionContainer.style.display = "block";
           fetchQuizData();
         } else {
           loginBtn.style.display = "block";
           logoutBtn.style.display = "none";
+          questionContainer.style.display = "none";
         }
       }
 
       // ログイン/ログアウト用のグローバル関数
-      window.handleAuthClick = function () {
+      window.handleAuthClick = function() {
         gapi.auth2.getAuthInstance().signIn();
       };
 
-      window.handleSignoutClick = function () {
+      window.handleSignoutClick = function() {
         gapi.auth2.getAuthInstance().signOut();
       };
 
@@ -128,29 +144,26 @@
         gapi.load("client:auth2", initClient);
       }
 
-      // Google Sheetsからクイズデータを取得
+      // Google Sheets からクイズデータを取得
       function fetchQuizData() {
-        gapi.client.sheets.spreadsheets.values
-          .get({
-            spreadsheetId: SHEET_ID,
-            range: `${SHEET_NAME}!A1:J1000`,
-          })
-          .then((response) => {
-            const values = response.result.values;
-            if (!values || values.length < 2) {
-              console.error("データが不足しています");
-              return;
-            }
-            startQuiz(values);
-          })
-          .catch((error) => {
-            console.error("Google Sheets 取得エラー", error);
-          });
+        gapi.client.sheets.spreadsheets.values.get({
+          spreadsheetId: SHEET_ID,
+          range: `${SHEET_NAME}!A1:J1000`
+        }).then(response => {
+          const values = response.result.values;
+          if (!values || values.length < 2) {
+            console.error("クイズデータが不足しています");
+            return;
+          }
+          startQuiz(values);
+        }).catch(error => {
+          console.error("Google Sheets 取得エラー", error);
+        });
       }
 
-      // ランダムなクイズを開始し、問題文と選択肢をレンダリング
+      // ランダムなクイズを選び、問題文と選択肢をレンダリング
       function startQuiz(data) {
-        const quizList = data.slice(1).map((row) => ({
+        const quizList = data.slice(1).map(row => ({
           "問題文": row[1],
           "画像URL": row[2],
           "選択肢1": row[3],
@@ -158,16 +171,14 @@
           "選択肢3": row[5],
           "選択肢4": row[6],
           "正解": row[7],
-          "解説": row[9],
+          "解説": row[9]
         }));
-        const quiz =
-          quizList[Math.floor(Math.random() * quizList.length)];
 
+        const quiz = quizList[Math.floor(Math.random() * quizList.length)];
         questionEl.textContent = quiz["問題文"];
         questionImageEl.src = quiz["画像URL"] || "";
-
-        // 選択肢の表示をクリアして再生成
         choicesDiv.innerHTML = "";
+
         for (let i = 1; i <= 4; i++) {
           const choiceText = quiz[`選択肢${i}`];
           const btn = document.createElement("button");
@@ -180,18 +191,18 @@
 
       // 回答チェックと結果表示
       function checkAnswer(quiz, selected) {
-        let message = "";
+        let resultMessage = "";
         if (parseInt(quiz["正解"], 10) === selected) {
-          message = "✅ 正解！モンスターを倒した！";
+          resultMessage = "✅ 正解！モンスターを倒した！";
         } else {
-          message = `❌ 不正解！\n正解は「${quiz[`選択肢${quiz["正解"]}`]}」です。\n\n🔎 解説: ${quiz["解説"]}`;
+          resultMessage = `❌ 不正解！\n正解は「${quiz["選択肢" + quiz["正解"]]}」です。\n\n🔎 解説: ${quiz["解説"]}`;
         }
-        alert(message);
+        alert(resultMessage);
         // 次のクイズを取得
         fetchQuizData();
       }
 
-      // ロード完了後にGoogle APIクライアントをロード
+      // ページ読み込み完了後に Google API クライアントをロード
       window.addEventListener("load", handleClientLoad);
     })();
   </script>
