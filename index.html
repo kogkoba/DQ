@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <html lang="ja">
-  ２
+  ３
 
 <head>
   <meta name="google-site-verification" content="IIBqGUSVum4XxPypQftGeiI1YkJV28di55EAz9ZvPE8"/>
@@ -71,6 +71,43 @@
 
   <!-- ここではすべてのJSコードをインラインで記述 -->
   <script>
+//ここから追加　クラウドエラーが出るか
+const SHEET_ID = "1GyKDfVQCNrBlkxjsrQDv_ouIio9yjO3mVQy6Ds5uQzg"; // シートID
+const API_KEY = "YOUR_GOOGLE_SHEETS_API_KEY"; // Google APIキー
+const SHEET_NAME = "クイズ"; // シート名
+
+async function updateMistakeCount(row) {
+    const updateUrl = `https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values/${SHEET_NAME}!J${row}:J${row}?valueInputOption=USER_ENTERED&key=${API_KEY}`;
+
+    const currentMistakes = 5; // 例えば "5" を入れてテストする（本番では取得した値 +1）
+    
+    let body = {
+        "range": `${SHEET_NAME}!J${row}:J${row}`,
+        "values": [[currentMistakes + 1]]
+    };
+
+    try {
+        const response = await fetch(updateUrl, {
+            method: "PUT",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(body)
+        });
+
+        if (!response.ok) {
+            throw new Error(`エラー: ${response.status} - ${response.statusText}`);
+        }
+
+        console.log("間違えた回数が更新されました！", await response.json());
+    } catch (error) {
+        console.error("間違えた回数の更新に失敗しました", error);
+    }
+}
+
+// ID=1 の問題の「間違えた回数」を +1 する
+updateMistakeCount(2); // 2行目（ID=1のデータの行）
+// ここまで追加
+
+    
     // Google Sheets の設定
     const SHEET_ID = "1GyKDfVQCNrBlkxjsrQDv_ouIio9yjO3mVQy6Ds5uQzg"; // Google Sheets の ID
     const API_KEY = "YOUR_GOOGLE_SHEETS_API_KEY"; // Google Cloud から取得した APIキー
