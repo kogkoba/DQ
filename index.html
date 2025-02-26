@@ -72,8 +72,8 @@
         const API_KEY = "AIzaSyBszPu-BQ2_Aq9C3lhAiW--kyenM5vQsjs"; // Google APIキー
         const SHEET_NAME = "DQquestion"; // シート名
         const DISCOVERY_DOCS = ["https://sheets.googleapis.com/$discovery/rest?version=v4"];
-        const SCOPES = "https://www.googleapis.com/auth/spreadsheets.readonly";
-
+        const SCOPES = "https://www.googleapis.com/auth/spreadsheets.readonly https://www.googleapis.com/auth/userinfo.profile https://www.googleapis.com/auth/userinfo.email";
+        
         function initClient() {
             gapi.client.init({
                 clientId: CLIENT_ID,
