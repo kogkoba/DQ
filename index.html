@@ -1,12 +1,14 @@
 <!DOCTYPE html>
 <html lang="ja">
-  ４
+  ５
 
 <head>
   <script src="https://apis.google.com/js/api.js"></script>
 
     
-  
+  <button id="login-btn" onclick="handleAuthClick()">Google でログイン</button>
+  <button id="logout-btn" onclick="handleSignoutClick()" style="display:none;">ログアウト</button>
+
   
   <meta name="google-site-verification" content="IIBqGUSVum4XxPypQftGeiI1YkJV28di55EAz9ZvPE8"/>
   <meta charset="UTF-8">
@@ -113,6 +115,23 @@ async function updateMistakeCount(row) {
         console.error("間違えた回数の更新に失敗しました", error);
     }
 }
+
+    function fetchQuizData() {
+    gapi.client.sheets.spreadsheets.values.get({
+        spreadsheetId: "1GyKDfVQCNrBlkxjsrQDv_ouIio9yjO3mVQy6Ds5uQzg",
+        range: "DQquestion!A1:J1000"
+    }).then(response => {
+        console.log("Google Sheets データ取得成功", response.result.values);
+    }).catch(error => {
+        console.error("Google Sheets 取得エラー", error);
+    });
+}
+
+// 認証後にデータを取得する
+function onSignInSuccess() {
+    fetchQuizData();
+}
+
 // 認証を初期化する
 function initClient() {
     gapi.client.init({
