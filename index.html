@@ -1,250 +1,473 @@
 <!DOCTYPE html>
-<html>
+<html lang="ja">
 <head>
-  <meta charset="UTF-8"/>
-  <title>Google Identity Services + Sheets API Sample</title>
+  <meta charset="UTF-8">
+  <title>ドラクエ風クイズゲームサンプル</title>
 
-  <!-- Google Identity Services 用のライブラリ -->
+  <!-- Google Identity Services 用のJS -->
   <script async defer src="https://accounts.google.com/gsi/client"></script>
-  <!-- GAPI（Google Sheets API用） -->
+  <!-- GAPI (Google Sheets API用) -->
   <script async defer src="https://apis.google.com/js/api.js"></script>
 
   <style>
-    /* ボタンのスタイル */
-    #authorize_button {
-      font-size: 16px;
-      padding: 8px 16px;
-      margin: 20px;
-      cursor: pointer;
+    body {
+      margin: 0;
+      padding: 0;
+      font-family: sans-serif;
+      background-color: #f0f8ff;
     }
-    /* クイズコンテナのスタイル */
-    #quiz-container {
-      margin-top: 20px;
-      padding: 20px;
-      border: 1px solid #ccc;
-      border-radius: 10px;
-      width: 80%;
-      max-width: 500px;
+    h1 {
       text-align: center;
-      margin-left: auto;
-      margin-right: auto;
-    }
-    #question-image {
-      max-width: 100%;
-      height: auto;
       margin-top: 10px;
     }
-    .choice {
-      display: block;
-      width: 100%;
-      margin: 5px 0;
-      padding: 10px;
-      background: #007bff;
-      color: white;
-      border: none;
-      border-radius: 5px;
-      cursor: pointer;
-      font-size: 16px;
+
+    /* フィールド画面 */
+    #field-screen {
+      display: block; /* 最初はフィールドを表示 */
+      width: 100vw;
+      height: 80vh;
+      background: url('https://placehold.jp/1200x600.png?text=Field+Background') no-repeat center/cover;
+      position: relative;
+      overflow: hidden;
     }
-    .choice:hover {
+    #player {
+      width: 40px;
+      height: 40px;
+      background: url('https://placehold.jp/40x40.png?text=Hero') no-repeat center/cover;
+      position: absolute;
+      left: 50%;
+      top: 50%;
+      transform: translate(-50%, -50%);
+      cursor: move;
+    }
+
+    /* 戦闘画面 */
+    #battle-screen {
+      display: none; /* 戦闘時に表示 */
+      text-align: center;
+      padding: 10px;
+      background: #dff;
+      height: 80vh;
+      overflow-y: auto;
+    }
+    #dq-frame {
+      width: 90%;
+      max-width: 600px;
+      margin: 10px auto;
+      border: 2px solid #333;
+      padding: 10px;
+      background: #fff;
+      border-radius: 8px;
+    }
+    #top-text-box {
+      border: 1px solid #666;
+      min-height: 60px;
+      padding: 8px;
+      margin-bottom: 10px;
+      background: #eee;
+    }
+    .enemy-container {
+      display: flex;
+      justify-content: center;
+      gap: 10px;
+      margin-bottom: 10px;
+    }
+    .enemy {
+      width: 60px;
+      height: 60px;
+      background: url('https://placehold.jp/60x60.png?text=Enemy') no-repeat center/cover;
+    }
+    #quiz-image {
+      max-width: 80%;
+      height: auto;
+      margin: 10px 0;
+    }
+    .choice-button {
+      display: block;
+      width: 80%;
+      max-width: 300px;
+      margin: 5px auto;
+      padding: 10px;
+      font-size: 16px;
+      cursor: pointer;
+      background: #007bff;
+      color: #fff;
+      border: none;
+      border-radius: 4px;
+    }
+    .choice-button:hover {
       background: #0056b3;
+    }
+
+    #zaoriku-button {
+      display: none;
+      margin-top: 10px;
+      padding: 8px 16px;
+      background: #f00;
+      color: #fff;
+      border: none;
+      cursor: pointer;
+      border-radius: 4px;
+    }
+
+    /* ログインボタン */
+    #login-btn {
+      display: none;
+      margin: 10px;
+      padding: 8px 16px;
+      font-size: 16px;
+      background: #4285f4;
+      color: #fff;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
     }
   </style>
 </head>
 <body>
-  <h1>Google Identity Services + Sheets API Sample</h1>
-  <!-- ログインボタン（初期状態は非表示） -->
-  <button id="authorize_button" style="display:none;">Googleでログイン</button>
+  <h1>ドラクエ風クイズゲームサンプル</h1>
+  <!-- Googleログインボタン -->
+  <button id="login-btn">Googleでログイン</button>
 
-  <!-- クイズ表示エリア（初期状態は非表示） -->
-  <div id="quiz-container" style="display: none;">
-    <h2 id="question"></h2>
-    <img id="question-image" alt="Question Image"><br>
-    <div id="choices"></div>
+  <!-- フィールド画面 -->
+  <div id="field-screen">
+    <div id="player"></div>
   </div>
 
-  <script>
-    /***************************************************************
-     * 1) Google API 設定
-     ***************************************************************/
-    const CLIENT_ID   = "403866618480-7dhf5rl00k6shl8jmm16s6tvm8ef0odj.apps.googleusercontent.com"; 
-    const API_KEY     = "AIzaSyBszPu-BQ2_Aq9C3lhAiW--kyenM5vQsjs";
-    const SHEET_ID    = "1GyKDfVQCNrBlkxjsrQDv_ouIio9yjO3mVQy6Ds5uQzg";  
-    const SHEET_NAME  = "sheet1";  
-    const SCOPES      = "https://www.googleapis.com/auth/spreadsheets.readonly";
+  <!-- 戦闘画面 -->
+  <div id="battle-screen">
+    <div id="dq-frame">
+      <div id="top-text-box">ここにテキストが表示されます</div>
+      <!-- 敵4体を並べる -->
+      <div class="enemy-container" id="enemy-row">
+        <div class="enemy" id="enemy1"></div>
+        <div class="enemy" id="enemy2"></div>
+        <div class="enemy" id="enemy3"></div>
+        <div class="enemy" id="enemy4"></div>
+      </div>
 
-    let tokenClient   = null;
-    let gapiInited    = false; 
-    let gisInited     = false;
-    let quizList      = [];
+      <!-- クイズ画像 -->
+      <img id="quiz-image" src="" alt="クイズ画像" />
 
-    /***************************************************************
-     * 2) GAPI (Google Sheets API) 読み込み完了後の処理
-     ***************************************************************/
-    function gapiLoaded() {
-      console.log("gapiLoaded() called");
-      // GAPIクライアントを初期化する関数を呼ぶ
-      gapi.load('client', initializeGapiClient);
+      <!-- 選択肢ボタン -->
+      <div id="choice-area"></div>
+
+      <!-- ザオリクボタン（ミスでHP0時） -->
+      <button id="zaoriku-button">ザオリク？</button>
+    </div>
+  </div>
+
+<script>
+/*****************************************************************
+ * 1) Google Sheets + Google Identity Services の設定
+ *****************************************************************/
+const CLIENT_ID   = "403866618480-7dhf5rl00k6shl8jmm16s6tvm8ef0odj.apps.googleusercontent.com";
+const API_KEY     = "AIzaSyBszPu-BQ2_Aq9C3lhAiW--kyenM5vQsjs";
+const SHEET_ID    = "1GyKDfVQCNrBlkxjsrQDv_ouIio9yjO3mVQy6Ds5uQzg";
+const SHEET_NAME  = "sheet1";  // A:ID / B:問題文 / C:画像URL / D:選択肢1 / E:選択肢2 / F:選択肢3 / G:選択肢4 / H:正解 / I:間違え回数 / J:解説
+const SCOPES      = "https://www.googleapis.com/auth/spreadsheets.readonly";
+
+// 認証関連
+let tokenClient;
+let gapiInited = false;
+let gisInited  = false;
+
+// クイズリスト（シートから取得）
+let quizData = [];
+
+/*****************************************************************
+ * 2) フィールド画面の簡易実装
+ *****************************************************************/
+// フィールドでのプレイヤー位置管理
+let player = document.getElementById("player");
+let fieldScreen = document.getElementById("field-screen");
+
+// ドラッグで移動する簡易サンプル
+let isDragging = false;
+let offsetX = 0;
+let offsetY = 0;
+
+player.addEventListener("mousedown", (e) => {
+  isDragging = true;
+  offsetX = e.offsetX;
+  offsetY = e.offsetY;
+});
+fieldScreen.addEventListener("mousemove", (e) => {
+  if (isDragging) {
+    player.style.left = (e.pageX - offsetX) + "px";
+    player.style.top  = (e.pageY - offsetY) + "px";
+    // ランダムエンカウント判定（適当な確率で戦闘開始）
+    if (Math.random() < 0.01) {
+      startBattle();
     }
+  }
+});
+fieldScreen.addEventListener("mouseup", () => {
+  isDragging = false;
+});
 
-    /***************************************************************
-     * 3) Google Sheets API の初期化
-     ***************************************************************/
-    async function initializeGapiClient() {
-      console.log("initializeGapiClient() called");
-      await gapi.client.init({
-        apiKey: API_KEY,
-        discoveryDocs: ["https://sheets.googleapis.com/$discovery/rest?version=v4"]
-      });
-      gapiInited = true;
-      maybeEnableButton();
+/*****************************************************************
+ * 3) 戦闘画面の要素を取得
+ *****************************************************************/
+let battleScreen  = document.getElementById("battle-screen");
+let topTextBox    = document.getElementById("top-text-box");
+let enemyRow      = document.getElementById("enemy-row");
+let quizImage     = document.getElementById("quiz-image");
+let choiceArea    = document.getElementById("choice-area");
+let zaorikuButton = document.getElementById("zaoriku-button");
+
+// HP・レベルなどの管理（LocalStorage）
+let playerHP   = localStorage.getItem("playerHP")   || 100;
+let playerLV   = localStorage.getItem("playerLV")   || 1;
+let correctCnt = localStorage.getItem("correctCnt") || 0; // 累計正解数
+
+playerHP   = parseInt(playerHP, 10);
+playerLV   = parseInt(playerLV, 10);
+correctCnt = parseInt(correctCnt, 10);
+
+/*****************************************************************
+ * 4) 戦闘開始
+ *****************************************************************/
+function startBattle() {
+  // フィールド画面を非表示、戦闘画面を表示
+  fieldScreen.style.display = "none";
+  battleScreen.style.display = "block";
+
+  // 初期化
+  topTextBox.textContent = "モンスターがあらわれた！";
+  // 敵4体を復活
+  for (let i = 1; i <= 4; i++) {
+    let en = document.getElementById("enemy" + i);
+    en.style.background = "url('https://placehold.jp/60x60.png?text=Enemy') no-repeat center/cover";
+    en.dataset.isDead = "false";
+  }
+  // 4体とも生きている状態
+  showQuiz(); // 最初の問題を出す
+}
+
+/*****************************************************************
+ * 5) クイズ表示
+ *****************************************************************/
+let currentEnemyIndex = 1; // 1体ずつ倒す想定
+
+function showQuiz() {
+  // もし4体倒していたら戦闘終了
+  if (currentEnemyIndex > 4) {
+    // 戦闘勝利
+    topTextBox.textContent = "敵をすべて倒した！";
+    endBattle();
+    return;
+  }
+
+  // もしHPが0以下なら敗北
+  if (playerHP <= 0) {
+    topTextBox.textContent = "プレイヤーは倒れた...";
+    // ザオリクボタン表示
+    zaorikuButton.style.display = "inline-block";
+    choiceArea.innerHTML = "";
+    return;
+  }
+
+  // ランダムに1問取得
+  if (quizData.length === 0) {
+    topTextBox.textContent = "問題データがありません。シートを確認してください。";
+    return;
+  }
+  let q = quizData[Math.floor(Math.random() * quizData.length)];
+
+  // 上部テキストを問題文に変更
+  topTextBox.textContent = q["問題文"];
+
+  // 画像を表示
+  quizImage.src = q["画像URL"] || "";
+
+  // 選択肢ボタン生成
+  choiceArea.innerHTML = "";
+  for (let i = 1; i <= 4; i++) {
+    let btn = document.createElement("button");
+    btn.className = "choice-button";
+    btn.textContent = q[`choice${i}`]; // 後でmap時に変換する
+    btn.onclick = () => answerQuiz(q, i);
+    choiceArea.appendChild(btn);
+  }
+}
+
+// 回答チェック
+function answerQuiz(q, selected) {
+  let correct = parseInt(q.correct, 10); // 1～4
+  if (selected === correct) {
+    // 正解
+    topTextBox.textContent = `正解！ 敵${currentEnemyIndex}は倒れた。`;
+    // 敵を倒す
+    let en = document.getElementById("enemy" + currentEnemyIndex);
+    if (en) {
+      en.style.background = "url('https://placehold.jp/60x60.png?text=Dead') no-repeat center/cover";
+      en.dataset.isDead = "true";
     }
-
-    /***************************************************************
-     * 4) Google Identity Services (Token Client) が読み込み完了した時の処理
-     ***************************************************************/
-    function gisLoaded() {
-      console.log("gisLoaded() called");
-      tokenClient = google.accounts.oauth2.initTokenClient({
-        client_id: CLIENT_ID,
-        scope: SCOPES,
-        callback: (tokenResponse) => {
-          if (tokenResponse.error) {
-            console.error("❌ Token Error:", tokenResponse);
-            alert("トークン取得に失敗しました。");
-            return;
-          }
-          console.log("✅ Access Token:", tokenResponse.access_token);
-          gapi.client.setToken({ access_token: tokenResponse.access_token });
-          fetchQuizData(); // トークン取得後にスプレッドシートからデータ取得
-        }
-      });
-      gisInited = true;
-      maybeEnableButton();
+    // 正解数を加算
+    correctCnt++;
+    localStorage.setItem("correctCnt", correctCnt);
+    // 16回正解ごとにレベルアップ
+    if (correctCnt % 16 === 0) {
+      playerLV++;
+      localStorage.setItem("playerLV", playerLV);
+      alert(`レベルアップ！現在レベル: ${playerLV}`);
     }
+    // 次の敵
+    currentEnemyIndex++;
+  } else {
+    // 不正解
+    shakeScreen();
+    playerHP -= 25;
+    localStorage.setItem("playerHP", playerHP);
+    topTextBox.textContent = `ミス！ プレイヤーに25のダメージ (HP:${playerHP})`;
+  }
+  // 1秒後に次の問題
+  setTimeout(() => {
+    showQuiz();
+  }, 1000);
+}
 
-    /***************************************************************
-     * 5) GAPI と GIS の両方が準備できたら、ログインボタンを表示
-     ***************************************************************/
-    function maybeEnableButton() {
-      if (gapiInited && gisInited) {
-        document.getElementById("authorize_button").style.display = "inline-block";
-      }
-    }
+// 画面をシェイクする演出
+function shakeScreen() {
+  battleScreen.style.animation = "shake 0.5s";
+  setTimeout(() => {
+    battleScreen.style.animation = "";
+  }, 500);
+}
 
-    /***************************************************************
-     * 6) ログインボタン押下時の処理
-     ***************************************************************/
-    function handleAuthClick() {
-      if (!tokenClient) {
-        console.error("❌ tokenClient が未初期化です");
-        alert("Google API の初期化が完了していません。少し待ってから再度試してください。");
-        return;
-      }
-      tokenClient.requestAccessToken({ prompt: '' });
-    }
+// CSSアニメーション
+const style = document.createElement("style");
+style.innerHTML = `
+@keyframes shake {
+  0%   { transform: translate(0, 0); }
+  20%  { transform: translate(-10px, 0); }
+  40%  { transform: translate(10px, 0); }
+  60%  { transform: translate(-10px, 0); }
+  80%  { transform: translate(10px, 0); }
+  100% { transform: translate(0, 0); }
+}
+`;
+document.head.appendChild(style);
 
-    /***************************************************************
-     * 7) Google Sheets API でデータを取得
-     ***************************************************************/
-    async function fetchQuizData() {
-      console.log("fetchQuizData() called");
-      try {
-        const response = await gapi.client.sheets.spreadsheets.values.get({
-          spreadsheetId: SHEET_ID,
-          range: `${SHEET_NAME}!A1:J1000`
-        });
+/*****************************************************************
+ * 6) 戦闘終了 → フィールドへ戻る
+ *****************************************************************/
+function endBattle() {
+  // HPを初期化してもいいが、ここでは残しておく
+  setTimeout(() => {
+    battleScreen.style.display = "none";
+    fieldScreen.style.display   = "block";
+    // 次の戦闘に備えて初期化
+    currentEnemyIndex = 1;
+  }, 1500);
+}
 
-        console.log("Sheets data:", response.result.values);
-        alert("Sheetsデータを取得しました。コンソールを確認してください。");
+/*****************************************************************
+ * 7) ザオリクボタン (HP0時に表示)
+ *****************************************************************/
+zaorikuButton.onclick = function() {
+  // HPを回復してフィールドへ戻る例
+  playerHP = 100;
+  localStorage.setItem("playerHP", playerHP);
+  // 「間違い率の高い問題順に出題」は本格的には
+  // I列(間違えた回数) を参照してソートして再クイズ
+  // ここではサンプルで "3問正解すればフィールドへ" の流れを簡易化
+  alert("ザオリク！ HP全回復しました。フィールドへ戻ります。");
+  zaorikuButton.style.display = "none";
+  endBattle();
+};
 
-        // 1行目はヘッダ想定なので slice(1) で2行目以降を使う
-        // 各列のデータをオブジェクトにまとめる
-        quizList = response.result.values.slice(1).map(row => ({
-          "問題文":  row[0],
-          "画像URL": row[1],
-          "選択肢1": row[2],
-          "選択肢2": row[3],
-          "選択肢3": row[4],
-          "選択肢4": row[5],
-          "正解":    row[6]
-        }));
-
-        // クイズを開始
-        startQuiz();
-
-      } catch (error) {
-        console.error("Sheets API Error:", error);
-        alert("❌ Sheets API のデータ取得に失敗しました！");
-      }
-    }
-
-    /***************************************************************
-     * 8) クイズを表示
-     ***************************************************************/
-    function startQuiz() {
-      if (quizList.length === 0) {
-        alert("クイズデータがありません。");
-        return;
-      }
-
-      // ランダムに問題を選択
-      let quiz = quizList[Math.floor(Math.random() * quizList.length)];
-
-      // 問題文を表示
-      document.getElementById("question").textContent = quiz["問題文"] || "問題文が空です";
-
-      // 画像を表示
-      let imgUrl = quiz["画像URL"] || "";
-      document.getElementById("question-image").src = imgUrl;
-
-      // 選択肢をボタンとして表示
-      let choicesDiv = document.getElementById("choices");
-      choicesDiv.innerHTML = "";
-      for (let i = 1; i <= 4; i++) {
-        let choiceText = quiz[`選択肢${i}`] || `選択肢${i}が空です`;
-        let btn = document.createElement("button");
-        btn.textContent = choiceText;
-        btn.className = "choice";
-        btn.onclick = () => checkAnswer(quiz, i);
-        choicesDiv.appendChild(btn);
-      }
-
-      // クイズ表示エリアを表示
-      document.getElementById("quiz-container").style.display = "block";
-    }
-
-    /***************************************************************
-     * 9) 正解チェック
-     ***************************************************************/
-    function checkAnswer(quiz, selected) {
-      // quiz["正解"] は "1" "2" "3" "4" の文字列と想定
-      let correct = parseInt(quiz["正解"], 10);
-      let resultMessage = (correct === selected)
-        ? "✅ 正解！"
-        : "❌ 不正解！ (正解は " + quiz[`選択肢${correct}`] + " )";
-      alert(resultMessage);
-
-      // 次の問題を表示
-      startQuiz();
-    }
-
-    /***************************************************************
-     * 10) ページ読み込み後の初期処理
-     ***************************************************************/
-    window.addEventListener('load', () => {
-      // ログインボタンにクリックイベントを付与
-      document.getElementById("authorize_button").onclick = handleAuthClick;
+/*****************************************************************
+ * 8) Google Sheets API からクイズデータを取得
+ *****************************************************************/
+async function loadQuizDataFromSheets() {
+  try {
+    const response = await gapi.client.sheets.spreadsheets.values.get({
+      spreadsheetId: SHEET_ID,
+      range: `${SHEET_NAME}!A1:J1000`
     });
-  </script>
+    const values = response.result.values;
+    if (!values || values.length < 2) {
+      console.error("シートにデータがありません");
+      return;
+    }
+    // 1行目は見出し: A:ID / B:問題文 / C:画像URL / D:選択肢1 / E:選択肢2 / F:選択肢3 / G:選択肢4 / H:正解 / I:間違えた回数 / J:解説
+    quizData = values.slice(1).map(row => ({
+      id:       row[0] || "",
+      question: row[1] || "",
+      imageUrl: row[2] || "",
+      choice1:  row[3] || "",
+      choice2:  row[4] || "",
+      choice3:  row[5] || "",
+      choice4:  row[6] || "",
+      correct:  row[7] || "1", // 正解番号 (1~4)
+      missed:   row[8] || "0", // 間違えた回数
+      info:     row[9] || ""   // 解説
+    }));
+    console.log("取得したクイズデータ:", quizData);
+  } catch (error) {
+    console.error("Sheets API Error:", error);
+  }
+}
 
-  <!--
-    11) スクリプト読み込み:
-        1) gapi.js → onload="gapiLoaded()"
-        2) gsi/client → onload="gisLoaded()"
-  -->
-  <script async defer src="https://apis.google.com/js/api.js" onload="gapiLoaded()"></script>
-  <script async defer src="https://accounts.google.com/gsi/client" onload="gisLoaded()"></script>
+/*****************************************************************
+ * 9) Google Identity Services (GIS) & GAPI の初期化
+ *****************************************************************/
+function gapiLoaded() {
+  console.log("gapiLoaded() called");
+  gapi.load("client", async () => {
+    await gapi.client.init({
+      apiKey: API_KEY,
+      discoveryDocs: ["https://sheets.googleapis.com/$discovery/rest?version=v4"]
+    });
+    gapiInited = true;
+    maybeEnableButton();
+  });
+}
+
+function gisLoaded() {
+  console.log("gisLoaded() called");
+  tokenClient = google.accounts.oauth2.initTokenClient({
+    client_id: CLIENT_ID,
+    scope: SCOPES,
+    callback: async (resp) => {
+      if (resp.error) {
+        console.error("Token Error:", resp);
+        return;
+      }
+      console.log("Access Token:", resp.access_token);
+      gapi.client.setToken({ access_token: resp.access_token });
+      // Sheetsからデータ読み込み
+      await loadQuizDataFromSheets();
+    }
+  });
+  gisInited = true;
+  maybeEnableButton();
+}
+
+function maybeEnableButton() {
+  const loginBtn = document.getElementById("login-btn");
+  if (gapiInited && gisInited) {
+    loginBtn.style.display = "inline-block";
+    loginBtn.onclick = () => {
+      tokenClient.requestAccessToken({ prompt: '' });
+    };
+  }
+}
+
+/*****************************************************************
+ * 10) スクリプト読み込み完了後
+ *****************************************************************/
+window.addEventListener("load", () => {
+  // 特に何もしない。ログインボタンは maybeEnableButton() が制御
+});
+</script>
+
+<!-- GAPI 読み込み: onload="gapiLoaded()" -->
+<script async defer src="https://apis.google.com/js/api.js" onload="gapiLoaded()"></script>
+<!-- Google Identity Services 読み込み: onload="gisLoaded()" -->
+<script async defer src="https://accounts.google.com/gsi/client" onload="gisLoaded()"></script>
 
 </body>
 </html>
