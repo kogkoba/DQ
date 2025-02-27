@@ -73,7 +73,21 @@
           }
           console.log("Access Token:", tokenResponse.access_token);
           gapi.client.setToken({ access_token: tokenResponse.access_token });
-          fetchQuizData();
+          fetchQuizData(async function fetchQuizData() {
+  console.log("fetchQuizData() called");
+  try {
+    const response = await gapi.client.sheets.spreadsheets.values.get({
+      spreadsheetId: SHEET_ID,
+      range: "Sheet1!A1:J1000"  // ✅ シート名を正しいものに変更
+    });
+
+    console.log("Sheets data:", response.result.values);
+    alert("Sheetsデータを取得しました。コンソールを確認してください。");
+  } catch (error) {
+    console.error("Sheets API Error:", error);
+  }
+}
+);
         }
       });
       gisInited = true;
