@@ -102,8 +102,8 @@
   console.log("fetchQuizData() called");
   try {
     const response = await gapi.client.sheets.spreadsheets.values.get({
-      spreadsheetId: SHEET_ID,
-      range: `${SHEET_NAME}!A1:J1000`  // ✅ シート名を適用
+      spreadsheetId:1GyKDfVQCNrBlkxjsrQDv_ouIio9yjO3mVQy6Ds5uQzg
+      range: `${sheet1}!A1:J1000`  // ✅ シート名を適用
     });
 
     console.log("Sheets data:", response.result.values);
