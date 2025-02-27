@@ -1,6 +1,5 @@
 <!DOCTYPE html>
 <html>
-  sheet1
 <head>
   <meta charset="UTF-8"/>
   <title>Google Identity Services + Sheets API Sample</title>
@@ -25,12 +24,12 @@
 
   <script>
     /***************************************************************
-     * 1) 以下の値をあなたのプロジェクトに合わせて変更
+     * 1) Google API 設定（あなたのプロジェクト情報を使用）
      ***************************************************************/
     const CLIENT_ID   = "403866618480-7dhf5rl00k6shl8jmm16s6tvm8ef0odj.apps.googleusercontent.com"; 
     const API_KEY     = "AIzaSyBszPu-BQ2_Aq9C3lhAiW--kyenM5vQsjs";
     const SHEET_ID    = "1GyKDfVQCNrBlkxjsrQDv_ouIio9yjO3mVQy6Ds5uQzg";  
-    const SHEET_NAME  = "sheet1";  // **シート名が正しいか確認**
+    const SHEET_NAME  = "sheet1";  // ✅ シート名を正しく指定
     const SCOPES      = "https://www.googleapis.com/auth/spreadsheets.readonly";
 
     /***************************************************************
@@ -51,7 +50,7 @@
     async function initializeGapiClient() {
       console.log("initializeGapiClient() called");
       await gapi.client.init({
-        apiKey: AIzaSyBszPu-BQ2_Aq9C3lhAiW--kyenM5vQsjs,
+        apiKey: API_KEY,
         discoveryDocs: ["https://sheets.googleapis.com/$discovery/rest?version=v4"]
       });
       gapiInited = true;
@@ -64,7 +63,7 @@
     function gisLoaded() {
       console.log("gisLoaded() called");
       tokenClient = google.accounts.oauth2.initTokenClient({
-        client_id: 403866618480-7dhf5rl00k6shl8jmm16s6tvm8ef0odj.apps.googleusercontent.com,
+        client_id: CLIENT_ID,
         scope: SCOPES,
         callback: (tokenResponse) => {
           if (tokenResponse.error) {
@@ -73,21 +72,7 @@
           }
           console.log("Access Token:", tokenResponse.access_token);
           gapi.client.setToken({ access_token: tokenResponse.access_token });
-          fetchQuizData(async function fetchQuizData() {
-  console.log("fetchQuizData() called");
-  try {
-    const response = await gapi.client.sheets.spreadsheets.values.get({
-      spreadsheetId: SHEET_ID,
-      range: "Sheet1!A1:J1000"  // ✅ シート名を正しいものに変更
-    });
-
-    console.log("Sheets data:", response.result.values);
-    alert("Sheetsデータを取得しました。コンソールを確認してください。");
-  } catch (error) {
-    console.error("Sheets API Error:", error);
-  }
-}
-);
+          fetchQuizData();
         }
       });
       gisInited = true;
@@ -114,20 +99,19 @@
      * 7) Google Sheets API でデータを取得
      ***************************************************************/
     async function fetchQuizData() {
-  console.log("fetchQuizData() called");
-  try {
-    const response = await gapi.client.sheets.spreadsheets.values.get({
-      spreadsheetId: 1GyKDfVQCNrBlkxjsrQDv_ouIio9yjO3mVQy6Ds5uQzg,
-      range: "sheet1"  // ✅ シート名を正しいものに変更
-    });
+      console.log("fetchQuizData() called");
+      try {
+        const response = await gapi.client.sheets.spreadsheets.values.get({
+          spreadsheetId: SHEET_ID,
+          range: `${SHEET_NAME}!A1:J1000`  // ✅ シート名を適用
+        });
 
-    console.log("Sheets data:", response.result.values);
-    alert("Sheetsデータを取得しました。コンソールを確認してください。");
-  } catch (error) {
-    console.error("Sheets API Error:", error);
-  }
-}
-
+        console.log("Sheets data:", response.result.values);
+        alert("Sheetsデータを取得しました。コンソールを確認してください。");
+      } catch (error) {
+        console.error("Sheets API Error:", error);
+      }
+    }
 
     /***************************************************************
      * 8) ページ読み込み後にボタンを設定
