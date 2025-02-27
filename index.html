@@ -1,6 +1,5 @@
 <!DOCTYPE html>
 <html>
-  １
 <head>
   <meta charset="UTF-8"/>
   <title>Google Identity Services + Sheets API Sample</title>
@@ -11,12 +10,14 @@
   <script async defer src="https://apis.google.com/js/api.js"></script>
 
   <style>
+    /* ボタンのスタイル */
     #authorize_button {
       font-size: 16px;
       padding: 8px 16px;
       margin: 20px;
       cursor: pointer;
     }
+    /* クイズコンテナのスタイル */
     #quiz-container {
       margin-top: 20px;
       padding: 20px;
@@ -25,6 +26,8 @@
       width: 80%;
       max-width: 500px;
       text-align: center;
+      margin-left: auto;
+      margin-right: auto;
     }
     #question-image {
       max-width: 100%;
@@ -50,9 +53,10 @@
 </head>
 <body>
   <h1>Google Identity Services + Sheets API Sample</h1>
+  <!-- ログインボタン（初期状態は非表示） -->
   <button id="authorize_button" style="display:none;">Googleでログイン</button>
 
-  <!-- クイズ表示エリア -->
+  <!-- クイズ表示エリア（初期状態は非表示） -->
   <div id="quiz-container" style="display: none;">
     <h2 id="question"></h2>
     <img id="question-image" alt="Question Image"><br>
@@ -69,19 +73,23 @@
     const SHEET_NAME  = "sheet1";  
     const SCOPES      = "https://www.googleapis.com/auth/spreadsheets.readonly";
 
-    let tokenClient;
-    let gapiInited  = false; 
-    let gisInited   = false;
-    let quizList = [];
+    let tokenClient   = null;
+    let gapiInited    = false; 
+    let gisInited     = false;
+    let quizList      = [];
 
     /***************************************************************
-     * 2) GAPI (Google Sheets API) の初期化
+     * 2) GAPI (Google Sheets API) 読み込み完了後の処理
      ***************************************************************/
     function gapiLoaded() {
       console.log("gapiLoaded() called");
+      // GAPIクライアントを初期化する関数を呼ぶ
       gapi.load('client', initializeGapiClient);
     }
 
+    /***************************************************************
+     * 3) Google Sheets API の初期化
+     ***************************************************************/
     async function initializeGapiClient() {
       console.log("initializeGapiClient() called");
       await gapi.client.init({
@@ -93,7 +101,7 @@
     }
 
     /***************************************************************
-     * 3) Google Identity Services (Token Client) の初期化
+     * 4) Google Identity Services (Token Client) が読み込み完了した時の処理
      ***************************************************************/
     function gisLoaded() {
       console.log("gisLoaded() called");
@@ -103,20 +111,20 @@
         callback: (tokenResponse) => {
           if (tokenResponse.error) {
             console.error("❌ Token Error:", tokenResponse);
+            alert("トークン取得に失敗しました。");
             return;
           }
           console.log("✅ Access Token:", tokenResponse.access_token);
           gapi.client.setToken({ access_token: tokenResponse.access_token });
-          fetchQuizData();
+          fetchQuizData(); // トークン取得後にスプレッドシートからデータ取得
         }
       });
-
-  gisInited = true;
-  maybeEnableButton();
-}
+      gisInited = true;
+      maybeEnableButton();
+    }
 
     /***************************************************************
-     * 4) ログインボタンを表示するかどうか判断
+     * 5) GAPI と GIS の両方が準備できたら、ログインボタンを表示
      ***************************************************************/
     function maybeEnableButton() {
       if (gapiInited && gisInited) {
@@ -125,19 +133,19 @@
     }
 
     /***************************************************************
-     * 5) ログインボタン押下時の処理
+     * 6) ログインボタン押下時の処理
      ***************************************************************/
     function handleAuthClick() {
       if (!tokenClient) {
         console.error("❌ tokenClient が未初期化です");
-        alert("Google API の初期化が完了するまで少し待ってから再度試してください。");
+        alert("Google API の初期化が完了していません。少し待ってから再度試してください。");
         return;
       }
       tokenClient.requestAccessToken({ prompt: '' });
     }
 
     /***************************************************************
-     * 6) Google Sheets API でデータを取得
+     * 7) Google Sheets API でデータを取得
      ***************************************************************/
     async function fetchQuizData() {
       console.log("fetchQuizData() called");
@@ -150,15 +158,16 @@
         console.log("Sheets data:", response.result.values);
         alert("Sheetsデータを取得しました。コンソールを確認してください。");
 
-        // クイズデータを配列に格納
+        // 1行目はヘッダ想定なので slice(1) で2行目以降を使う
+        // 各列のデータをオブジェクトにまとめる
         quizList = response.result.values.slice(1).map(row => ({
-          "問題文": row[0],
+          "問題文":  row[0],
           "画像URL": row[1],
           "選択肢1": row[2],
           "選択肢2": row[3],
           "選択肢3": row[4],
           "選択肢4": row[5],
-          "正解": row[6]
+          "正解":    row[6]
         }));
 
         // クイズを開始
@@ -171,45 +180,71 @@
     }
 
     /***************************************************************
-     * 7) クイズを表示
+     * 8) クイズを表示
      ***************************************************************/
     function startQuiz() {
       if (quizList.length === 0) {
-        alert("クイズデータがありません");
+        alert("クイズデータがありません。");
         return;
       }
 
       // ランダムに問題を選択
       let quiz = quizList[Math.floor(Math.random() * quizList.length)];
-      document.getElementById("question").textContent = quiz["問題文"];
-      document.getElementById("question-image").src = quiz["画像URL"];
 
+      // 問題文を表示
+      document.getElementById("question").textContent = quiz["問題文"] || "問題文が空です";
+
+      // 画像を表示
+      let imgUrl = quiz["画像URL"] || "";
+      document.getElementById("question-image").src = imgUrl;
+
+      // 選択肢をボタンとして表示
       let choicesDiv = document.getElementById("choices");
       choicesDiv.innerHTML = "";
-
       for (let i = 1; i <= 4; i++) {
-        let choice = quiz[`選択肢${i}`];
+        let choiceText = quiz[`選択肢${i}`] || `選択肢${i}が空です`;
         let btn = document.createElement("button");
-        btn.textContent = choice;
+        btn.textContent = choiceText;
         btn.className = "choice";
         btn.onclick = () => checkAnswer(quiz, i);
         choicesDiv.appendChild(btn);
       }
 
+      // クイズ表示エリアを表示
       document.getElementById("quiz-container").style.display = "block";
     }
 
+    /***************************************************************
+     * 9) 正解チェック
+     ***************************************************************/
     function checkAnswer(quiz, selected) {
-      let resultMessage = quiz["正解"] == selected ? "✅ 正解！" : "❌ 不正解！";
+      // quiz["正解"] は "1" "2" "3" "4" の文字列と想定
+      let correct = parseInt(quiz["正解"], 10);
+      let resultMessage = (correct === selected)
+        ? "✅ 正解！"
+        : "❌ 不正解！ (正解は " + quiz[`選択肢${correct}`] + " )";
       alert(resultMessage);
+
+      // 次の問題を表示
       startQuiz();
     }
 
+    /***************************************************************
+     * 10) ページ読み込み後の初期処理
+     ***************************************************************/
     window.addEventListener('load', () => {
+      // ログインボタンにクリックイベントを付与
       document.getElementById("authorize_button").onclick = handleAuthClick;
     });
-
   </script>
+
+  <!--
+    11) スクリプト読み込み:
+        1) gapi.js → onload="gapiLoaded()"
+        2) gsi/client → onload="gisLoaded()"
+  -->
+  <script async defer src="https://apis.google.com/js/api.js" onload="gapiLoaded()"></script>
+  <script async defer src="https://accounts.google.com/gsi/client" onload="gisLoaded()"></script>
 
 </body>
 </html>
