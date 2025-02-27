@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html>
+  １
 <head>
   <meta charset="UTF-8"/>
   <title>Google Identity Services + Sheets API Sample</title>
@@ -101,17 +102,18 @@
         scope: SCOPES,
         callback: (tokenResponse) => {
           if (tokenResponse.error) {
-            console.error("Token Error:", tokenResponse);
+            console.error("❌ Token Error:", tokenResponse);
             return;
           }
-          console.log("Access Token:", tokenResponse.access_token);
+          console.log("✅ Access Token:", tokenResponse.access_token);
           gapi.client.setToken({ access_token: tokenResponse.access_token });
           fetchQuizData();
         }
       });
-      gisInited = true;
-      maybeEnableButton();
-    }
+
+  gisInited = true;
+  maybeEnableButton();
+}
 
     /***************************************************************
      * 4) ログインボタンを表示するかどうか判断
@@ -126,6 +128,11 @@
      * 5) ログインボタン押下時の処理
      ***************************************************************/
     function handleAuthClick() {
+      if (!tokenClient) {
+        console.error("❌ tokenClient が未初期化です");
+        alert("Google API の初期化が完了するまで少し待ってから再度試してください。");
+        return;
+      }
       tokenClient.requestAccessToken({ prompt: '' });
     }
 
@@ -199,7 +206,6 @@
     }
 
     window.addEventListener('load', () => {
-      document.getElementById("authorize_button").style.display = "inline-block";
       document.getElementById("authorize_button").onclick = handleAuthClick;
     });
 
