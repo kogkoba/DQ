@@ -1,13 +1,12 @@
 <!DOCTYPE html>
 <html>
-  ３
 <head>
   <meta charset="UTF-8"/>
   <title>Google Identity Services + Sheets API Sample</title>
 
-  <!-- 新しいGoogle Identity Services用のJSライブラリ -->
+  <!-- Google Identity Services 用のライブラリ -->
   <script src="https://accounts.google.com/gsi/client" async defer></script>
-  <!-- GAPI（主に Sheets API 呼び出し用） -->
+  <!-- GAPI（Google Sheets API用） -->
   <script src="https://apis.google.com/js/api.js"></script>
 
   <style>
@@ -27,31 +26,29 @@
     /***************************************************************
      * 1) 以下の値をあなたのプロジェクトに合わせて変更
      ***************************************************************/
-    const CLIENT_ID = "403866618480-7dhf5rl00k6shl8jmm16s6tvm8ef0odj.apps.googleusercontent.com";
+    const CLIENT_ID   = "403866618480-7dhf5rl00k6shl8jmm16s6tvm8ef0odj.apps.googleusercontent.com"; 
     const API_KEY     = "AIzaSyBszPu-BQ2_Aq9C3lhAiW--kyenM5vQsjs";
-    const SHEET_ID    = "1GyKDfVQCNrBlkxjsrQDv_ouIio9yjO3mVQy6Ds5uQzg";  // 例: "1GyKDfVQCNrBl...."
-    const SHEET_NAME  = "DQquestion";     // シート名
+    const SHEET_ID    = "1GyKDfVQCNrBlkxjsrQDv_ouIio9yjO3mVQy6Ds5uQzg";  
+    const SHEET_NAME  = "DQquestion";     
     const SCOPES      = "https://www.googleapis.com/auth/spreadsheets.readonly";
 
     /***************************************************************
      * 2) 変数の宣言
      ***************************************************************/
-    let tokenClient;       // Tokenクライアント
+    let tokenClient;
     let gapiInited  = false; 
     let gisInited   = false;
 
     /***************************************************************
-     * 3) GAPI (Sheets API呼び出し) の初期化
+     * 3) GAPI (Google Sheets API 呼び出し) の初期化
      ***************************************************************/
     function gapiLoaded() {
       console.log("gapiLoaded() called");
-      // GAPIクライアントを読み込む
       gapi.load('client', initializeGapiClient);
     }
 
     async function initializeGapiClient() {
       console.log("initializeGapiClient() called");
-      // APIキーを使ってクライアントを初期化
       await gapi.client.init({
         apiKey: API_KEY
       });
@@ -64,20 +61,16 @@
      ***************************************************************/
     function gisLoaded() {
       console.log("gisLoaded() called");
-      // Token Client を初期化
       tokenClient = google.accounts.oauth2.initTokenClient({
         client_id: CLIENT_ID,
         scope: SCOPES,
-        // コールバックは後で設定
         callback: (tokenResponse) => {
           if (tokenResponse.error) {
             console.error("Token Error:", tokenResponse);
             return;
           }
           console.log("Access Token:", tokenResponse.access_token);
-          // アクセストークンをGAPIクライアントに設定
           gapi.client.setToken({ access_token: tokenResponse.access_token });
-          // Sheetsデータ取得などの処理を呼び出す
           fetchQuizData();
         }
       });
@@ -98,12 +91,11 @@
      * 6) ログインボタン押下時の処理
      ***************************************************************/
     function handleAuthClick() {
-      // 毎回認証画面を表示したい場合: { prompt: 'consent' } を渡す
       tokenClient.requestAccessToken({ prompt: '' });
     }
 
     /***************************************************************
-     * 7) Sheets API でデータを取得 (クイズデータを読み込む)
+     * 7) Google Sheets API でデータを取得
      ***************************************************************/
     async function fetchQuizData() {
       console.log("fetchQuizData() called");
@@ -114,25 +106,23 @@
         });
         console.log("Sheets data:", response.result.values);
         alert("Sheetsデータを取得しました。コンソールを確認してください。");
-        // TODO: ここでクイズロジックを実装し、画面表示を行う
       } catch (error) {
         console.error("Sheets API Error:", error);
       }
     }
 
     /***************************************************************
-     * 8) ページ読み込み完了後にライブラリを初期化
+     * 8) ページ読み込み後にボタンを設定
      ***************************************************************/
     window.addEventListener('load', () => {
+      document.getElementById("authorize_button").style.display = "inline-block";
       document.getElementById("authorize_button").onclick = handleAuthClick;
-      // gapi.js がロードされたら gapiLoaded() が呼ばれるよう、onloadを設定
-      // accounts.google.com/gsi/client がロードされたら gisLoaded() が呼ばれるよう、onloadを設定
     });
   </script>
 
   <!--
     9) 以下のscriptタグで "gapiLoaded()" と "gisLoaded()" を呼ぶ
-       onload 属性によって、ライブラリ読み込み完了時に関数が呼ばれる仕組み
+       onload 属性でライブラリ読み込み完了時に関数が呼ばれる
   -->
   <script async defer src="https://apis.google.com/js/api.js" onload="gapiLoaded()"></script>
   <script async defer src="https://accounts.google.com/gsi/client" onload="gisLoaded()"></script>
