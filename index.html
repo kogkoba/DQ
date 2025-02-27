@@ -385,7 +385,7 @@ async function loadQuizDataFromSheets() {
   try {
     const response = await gapi.client.sheets.spreadsheets.values.get({
       spreadsheetId: SHEET_ID,
-      range: `${SHEET_NAME}!A1:J1000`
+      range: `${SHEET_NAME}!A1:J1139`
     });
     const values = response.result.values;
     if (!values || values.length < 2) {
