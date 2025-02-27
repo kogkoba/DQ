@@ -124,15 +124,29 @@ function displayQuiz(data) {
   }
 
   // 最初の問題を取得（例: 1行目を取得）
-  let firstQuestion = data[1]; // 2行目（index 1）
+function displayQuiz(data) {
+  if (!data || data.length === 0) {
+    alert("クイズデータがありません。");
+    return;
+  }
 
+  // 最初の問題を取得（例: 2行目のデータ）
+  let firstQuestion = data[1]; // 1行目は見出しなので2行目を取得
   let questionText = firstQuestion[0]; // 問題文（A列）
-  let choices = firstQuestion.slice(1, 5); // 選択肢（B〜E列）
-  let correctAnswerIndex = parseInt(firstQuestion[5]) - 1; // 正解（F列）
+  let imageUrl = firstQuestion[1]; // 画像URL（B列）
+  let choices = firstQuestion.slice(2, 6); // 選択肢（C〜F列）
+  let correctAnswerIndex = parseInt(firstQuestion[6]) - 1; // 正解（G列）
 
   // HTML に問題を表示
   document.body.innerHTML += `<h2>${questionText}</h2>`;
-  
+
+  // Google Drive の画像URLを埋め込む
+  let img = document.createElement("img");
+  img.src = imageUrl.replace("open?id=", "uc?export=view&id=");
+  img.style.width = "300px"; // サイズ調整
+  img.style.display = "block"; // 中央寄せ
+  document.body.appendChild(img);
+
   // 選択肢をボタンとして表示
   choices.forEach((choice, index) => {
     let btn = document.createElement("button");
