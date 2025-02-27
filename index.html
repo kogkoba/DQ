@@ -16,15 +16,51 @@
       margin: 20px;
       cursor: pointer;
     }
+    #quiz-container {
+      margin-top: 20px;
+      padding: 20px;
+      border: 1px solid #ccc;
+      border-radius: 10px;
+      width: 80%;
+      max-width: 500px;
+      text-align: center;
+    }
+    #question-image {
+      max-width: 100%;
+      height: auto;
+      margin-top: 10px;
+    }
+    .choice {
+      display: block;
+      width: 100%;
+      margin: 5px 0;
+      padding: 10px;
+      background: #007bff;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      font-size: 16px;
+    }
+    .choice:hover {
+      background: #0056b3;
+    }
   </style>
 </head>
 <body>
   <h1>Google Identity Services + Sheets API Sample</h1>
   <button id="authorize_button" style="display:none;">Googleでログイン</button>
 
+  <!-- クイズ表示エリア -->
+  <div id="quiz-container" style="display: none;">
+    <h2 id="question"></h2>
+    <img id="question-image" alt="Question Image"><br>
+    <div id="choices"></div>
+  </div>
+
   <script>
     /***************************************************************
-     * 1) Google API 設定（あなたのプロジェクト情報を使用）
+     * 1) Google API 設定
      ***************************************************************/
     const CLIENT_ID   = "403866618480-7dhf5rl00k6shl8jmm16s6tvm8ef0odj.apps.googleusercontent.com"; 
     const API_KEY     = "AIzaSyBszPu-BQ2_Aq9C3lhAiW--kyenM5vQsjs";
@@ -35,9 +71,10 @@
     let tokenClient;
     let gapiInited  = false; 
     let gisInited   = false;
+    let quizList = [];
 
     /***************************************************************
-     * 2) GAPI (Google Sheets API 呼び出し) の初期化
+     * 2) GAPI (Google Sheets API) の初期化
      ***************************************************************/
     function gapiLoaded() {
       console.log("gapiLoaded() called");
@@ -106,6 +143,20 @@
         console.log("Sheets data:", response.result.values);
         alert("Sheetsデータを取得しました。コンソールを確認してください。");
 
+        // クイズデータを配列に格納
+        quizList = response.result.values.slice(1).map(row => ({
+          "問題文": row[0],
+          "画像URL": row[1],
+          "選択肢1": row[2],
+          "選択肢2": row[3],
+          "選択肢3": row[4],
+          "選択肢4": row[5],
+          "正解": row[6]
+        }));
+
+        // クイズを開始
+        startQuiz();
+
       } catch (error) {
         console.error("Sheets API Error:", error);
         alert("❌ Sheets API のデータ取得に失敗しました！");
@@ -113,17 +164,46 @@
     }
 
     /***************************************************************
-     * 7) ページ読み込み後にボタンを設定
+     * 7) クイズを表示
      ***************************************************************/
+    function startQuiz() {
+      if (quizList.length === 0) {
+        alert("クイズデータがありません");
+        return;
+      }
+
+      // ランダムに問題を選択
+      let quiz = quizList[Math.floor(Math.random() * quizList.length)];
+      document.getElementById("question").textContent = quiz["問題文"];
+      document.getElementById("question-image").src = quiz["画像URL"];
+
+      let choicesDiv = document.getElementById("choices");
+      choicesDiv.innerHTML = "";
+
+      for (let i = 1; i <= 4; i++) {
+        let choice = quiz[`選択肢${i}`];
+        let btn = document.createElement("button");
+        btn.textContent = choice;
+        btn.className = "choice";
+        btn.onclick = () => checkAnswer(quiz, i);
+        choicesDiv.appendChild(btn);
+      }
+
+      document.getElementById("quiz-container").style.display = "block";
+    }
+
+    function checkAnswer(quiz, selected) {
+      let resultMessage = quiz["正解"] == selected ? "✅ 正解！" : "❌ 不正解！";
+      alert(resultMessage);
+      startQuiz();
+    }
+
     window.addEventListener('load', () => {
       document.getElementById("authorize_button").style.display = "inline-block";
       document.getElementById("authorize_button").onclick = handleAuthClick;
     });
-  </script>
 
-  <!-- ✅ 修正後のスクリプトの読み込み -->
-  <script async defer src="https://apis.google.com/js/api.js" onload="gapiLoaded()"></script>
-  <script async defer src="https://accounts.google.com/gsi/client" onload="gisLoaded()"></script>
+  </script>
 
 </body>
 </html>
