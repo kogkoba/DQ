@@ -99,19 +99,58 @@
      * 7) Google Sheets API でデータを取得
      ***************************************************************/
     async function fetchQuizData() {
-      console.log("fetchQuizData() called");
-      try {
-        const response = await gapi.client.sheets.spreadsheets.values.get({
-          spreadsheetId: SHEET_ID,
-          range: `${SHEET_NAME}!A1:J1000`  // ✅ シート名を適用
-        });
+  console.log("fetchQuizData() called");
+  try {
+    const response = await gapi.client.sheets.spreadsheets.values.get({
+      spreadsheetId: SHEET_ID,
+      range: `${SHEET_NAME}!A1:J1000`  // ✅ シート名を適用
+    });
 
-        console.log("Sheets data:", response.result.values);
-        alert("Sheetsデータを取得しました。コンソールを確認してください。");
-      } catch (error) {
-        console.error("Sheets API Error:", error);
-      }
-    }
+    console.log("Sheets data:", response.result.values);
+
+    // データを取得したら画面に表示する
+    displayQuiz(response.result.values);
+
+  } catch (error) {
+    console.error("Sheets API Error:", error);
+  }
+}
+
+// 取得したクイズデータを表示する関数
+function displayQuiz(data) {
+  if (!data || data.length === 0) {
+    alert("クイズデータがありません。");
+    return;
+  }
+
+  // 最初の問題を取得（例: 1行目を取得）
+  let firstQuestion = data[1]; // 2行目（index 1）
+
+  let questionText = firstQuestion[0]; // 問題文（A列）
+  let choices = firstQuestion.slice(1, 5); // 選択肢（B〜E列）
+  let correctAnswerIndex = parseInt(firstQuestion[5]) - 1; // 正解（F列）
+
+  // HTML に問題を表示
+  document.body.innerHTML += `<h2>${questionText}</h2>`;
+  
+  // 選択肢をボタンとして表示
+  choices.forEach((choice, index) => {
+    let btn = document.createElement("button");
+    btn.textContent = choice;
+    btn.className = "choice";
+    btn.onclick = () => checkAnswer(index, correctAnswerIndex);
+    document.body.appendChild(btn);
+  });
+}
+
+// 正解チェック
+function checkAnswer(selectedIndex, correctIndex) {
+  if (selectedIndex === correctIndex) {
+    alert("✅ 正解！");
+  } else {
+    alert("❌ 不正解！");
+  }
+}
 
     /***************************************************************
      * 8) ページ読み込み後にボタンを設定
