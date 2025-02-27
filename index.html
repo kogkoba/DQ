@@ -1,14 +1,13 @@
 <!DOCTYPE html>
-１
 <html>
 <head>
   <meta charset="UTF-8"/>
   <title>Google Identity Services + Sheets API Sample</title>
 
   <!-- Google Identity Services 用のライブラリ -->
-  <script src="https://accounts.google.com/gsi/client" async defer></script>
+  <script async defer src="https://accounts.google.com/gsi/client"></script>
   <!-- GAPI（Google Sheets API用） -->
-  <script src="https://apis.google.com/js/api.js"></script>
+  <script async defer src="https://apis.google.com/js/api.js"></script>
 
   <style>
     #authorize_button {
@@ -30,18 +29,15 @@
     const CLIENT_ID   = "403866618480-7dhf5rl00k6shl8jmm16s6tvm8ef0odj.apps.googleusercontent.com"; 
     const API_KEY     = "AIzaSyBszPu-BQ2_Aq9C3lhAiW--kyenM5vQsjs";
     const SHEET_ID    = "1GyKDfVQCNrBlkxjsrQDv_ouIio9yjO3mVQy6Ds5uQzg";  
-    const SHEET_NAME  = "sheet1";  // ✅ シート名を正しく指定OK
+    const SHEET_NAME  = "sheet1";  
     const SCOPES      = "https://www.googleapis.com/auth/spreadsheets.readonly";
 
-    /***************************************************************
-     * 2) 変数の宣言
-     ***************************************************************/
     let tokenClient;
     let gapiInited  = false; 
     let gisInited   = false;
 
     /***************************************************************
-     * 3) GAPI (Google Sheets API 呼び出し) の初期化
+     * 2) GAPI (Google Sheets API 呼び出し) の初期化
      ***************************************************************/
     function gapiLoaded() {
       console.log("gapiLoaded() called");
@@ -51,9 +47,7 @@
     async function initializeGapiClient() {
       console.log("initializeGapiClient() called");
       await gapi.client.init({
-        apiKey: "AIzaSyBszPu-BQ2_Aq9C3lhAiW--kyenM5vQsjs",
-      });
-
+        apiKey: API_KEY,
         discoveryDocs: ["https://sheets.googleapis.com/$discovery/rest?version=v4"]
       });
       gapiInited = true;
@@ -61,15 +55,12 @@
     }
 
     /***************************************************************
-     * 4) Google Identity Services (Token Client) の初期化
+     * 3) Google Identity Services (Token Client) の初期化
      ***************************************************************/
     function gisLoaded() {
       console.log("gisLoaded() called");
       tokenClient = google.accounts.oauth2.initTokenClient({
-        
-        /クライアントID/
-        client_id: 403866618480-7dhf5rl00k6shl8jmm16s6tvm8ef0odj.apps.googleusercontent.com,
-        
+        client_id: CLIENT_ID,
         scope: SCOPES,
         callback: (tokenResponse) => {
           if (tokenResponse.error) {
@@ -86,7 +77,7 @@
     }
 
     /***************************************************************
-     * 5) ログインボタンを表示するかどうか判断
+     * 4) ログインボタンを表示するかどうか判断
      ***************************************************************/
     function maybeEnableButton() {
       if (gapiInited && gisInited) {
@@ -95,85 +86,34 @@
     }
 
     /***************************************************************
-     * 6) ログインボタン押下時の処理
+     * 5) ログインボタン押下時の処理
      ***************************************************************/
     function handleAuthClick() {
       tokenClient.requestAccessToken({ prompt: '' });
     }
 
     /***************************************************************
-     * 7) Google Sheets API でデータを取得
+     * 6) Google Sheets API でデータを取得
      ***************************************************************/
     async function fetchQuizData() {
-  console.log("fetchQuizData() called");
-  try {
-    const response = await gapi.client.sheets.spreadsheets.values.get({
-      spreadsheetId:1GyKDfVQCNrBlkxjsrQDv_ouIio9yjO3mVQy6Ds5uQzg
-      range: `${sheet1}!A1:J1000`  // ✅ シート名を適用OK
-    });
+      console.log("fetchQuizData() called");
+      try {
+        const response = await gapi.client.sheets.spreadsheets.values.get({
+          spreadsheetId: SHEET_ID,
+          range: `${SHEET_NAME}!A1:J1000`
+        });
 
-    console.log("Sheets data:", response.result.values);
+        console.log("Sheets data:", response.result.values);
+        alert("Sheetsデータを取得しました。コンソールを確認してください。");
 
-    // データを取得したら画面に表示する
-    displayQuiz(response.result.values);
-
-  } catch (error) {
-    console.error("Sheets API Error:", error);
-  }
-}
-
-// 取得したクイズデータを表示する関数
-function displayQuiz(data) {
-  if (!data || data.length === 0) {
-    alert("クイズデータがありません。");
-    return;
-  }
-
-  // 最初の問題を取得（例: 1行目を取得）
-function displayQuiz(data) {
-  if (!data || data.length === 0) {
-    alert("クイズデータがありません。");
-    return;
-  }
-
-  // 最初の問題を取得（例: 2行目のデータ）
-  let firstQuestion = data[1]; // 1行目は見出しなので2行目を取得
-  let questionText = firstQuestion[0]; // 問題文（A列）
-  let imageUrl = firstQuestion[1]; // 画像URL（B列）
-  let choices = firstQuestion.slice(2, 6); // 選択肢（C〜F列）
-  let correctAnswerIndex = parseInt(firstQuestion[6]) - 1; // 正解（G列）
-
-  // HTML に問題を表示
-  document.body.innerHTML += `<h2>${questionText}</h2>`;
-
-  // Google Drive の画像URLを埋め込む
-  let img = document.createElement("img");
-  img.src = imageUrl.replace("open?id=", "uc?export=view&id=");
-  img.style.width = "300px"; // サイズ調整
-  img.style.display = "block"; // 中央寄せ
-  document.body.appendChild(img);
-
-  // 選択肢をボタンとして表示
-  choices.forEach((choice, index) => {
-    let btn = document.createElement("button");
-    btn.textContent = choice;
-    btn.className = "choice";
-    btn.onclick = () => checkAnswer(index, correctAnswerIndex);
-    document.body.appendChild(btn);
-  });
-}
-
-// 正解チェック
-function checkAnswer(selectedIndex, correctIndex) {
-  if (selectedIndex === correctIndex) {
-    alert("✅ 正解！");
-  } else {
-    alert("❌ 不正解！");
-  }
-}
+      } catch (error) {
+        console.error("Sheets API Error:", error);
+        alert("❌ Sheets API のデータ取得に失敗しました！");
+      }
+    }
 
     /***************************************************************
-     * 8) ページ読み込み後にボタンを設定
+     * 7) ページ読み込み後にボタンを設定
      ***************************************************************/
     window.addEventListener('load', () => {
       document.getElementById("authorize_button").style.display = "inline-block";
@@ -181,11 +121,9 @@ function checkAnswer(selectedIndex, correctIndex) {
     });
   </script>
 
-  <!--
-    9) 以下のscriptタグで "gapiLoaded()" と "gisLoaded()" を呼ぶ
-       onload 属性でライブラリ読み込み完了時に関数が呼ばれる
-  -->
-  <script async defer src="https://apis.google.com/js/api.js" onload="window.gapiLoaded()"></script>
- <script async defer src="https://accounts.google.com/gsi/client" onload="window.gisLoaded()"></script>
+  <!-- ✅ 修正後のスクリプトの読み込み -->
+  <script async defer src="https://apis.google.com/js/api.js" onload="gapiLoaded()"></script>
+  <script async defer src="https://accounts.google.com/gsi/client" onload="gisLoaded()"></script>
+
 </body>
 </html>
