@@ -1,254 +1,139 @@
 <!DOCTYPE html>
-<html lang="ja">
+<html>
 <head>
-  <meta name="google-site-verification" content="IIBqGUSVum4XxPypQftGeiI1YkJV28di55EAz9ZvPE8" />
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>ドラクエ風クイズゲーム</title>
+  <meta charset="UTF-8"/>
+  <title>Google Identity Services + Sheets API Sample</title>
 
-  <!-- Google API (古いGAPI方式) -->
-  <script src="https://apis.google.com/js/api.js" async defer></script>
+  <!-- 新しいGoogle Identity Services用のJSライブラリ -->
+  <script src="https://accounts.google.com/gsi/client" async defer></script>
+  <!-- GAPI（主に Sheets API 呼び出し用） -->
+  <script src="https://apis.google.com/js/api.js"></script>
 
   <style>
-    body {
-      text-align: center;
-      font-family: Arial, sans-serif;
-      background-color: #f4f4f4;
-      padding: 20px;
-    }
-    h1 {
-      color: #333;
-    }
-    #question-container {
-      background: #fff;
-      padding: 20px;
-      border-radius: 10px;
-      box-shadow: 0 0 10px rgba(0,0,0,0.1);
-      max-width: 400px;
-      margin: 20px auto;
-    }
-    #question-image {
-      max-width: 100%;
-      height: auto;
-      border-radius: 5px;
-      margin-bottom: 10px;
-    }
-    .choice {
-      display: block;
-      width: 100%;
-      margin: 5px 0;
-      padding: 10px;
-      background: #007bff;
-      color: white;
-      border: none;
-      border-radius: 5px;
-      cursor: pointer;
+    #authorize_button {
       font-size: 16px;
-    }
-    .choice:hover {
-      background: #0056b3;
-    }
-    /* ログイン/ログアウトボタンのスタイル */
-    #login-btn, #logout-btn {
-      margin-bottom: 10px;
       padding: 8px 16px;
-      font-size: 16px;
+      margin: 20px;
       cursor: pointer;
-      border: none;
-      border-radius: 4px;
-    }
-    #login-btn {
-      background-color: #4285f4;
-      color: white;
-    }
-    #logout-btn {
-      background-color: #db4437;
-      color: white;
-    }
-    /* デバッグ用メッセージを表示する領域 */
-    #debug {
-      margin: 10px auto;
-      max-width: 600px;
-      text-align: left;
-      background: #eee;
-      padding: 10px;
-      border-radius: 5px;
-      font-size: 14px;
-      color: #333;
-      white-space: pre-wrap; /* 改行を反映 */
     }
   </style>
 </head>
 <body>
-  <!-- ログイン/ログアウトボタン -->
-  <button id="login-btn" style="display:none;">Google でログイン</button>
-  <button id="logout-btn" style="display:none;">ログアウト</button>
-
-  <h1>ドラクエ風クイズゲーム</h1>
-
-  <div id="question-container" style="display:none;">
-    <h2 id="question"></h2>
-    <img id="question-image" width="200" alt="Question Image" /><br />
-    <div id="choices"></div>
-  </div>
-
-  <!-- デバッグ表示用 -->
-  <div id="debug"></div>
+  <h1>Google Identity Services + Sheets API Sample</h1>
+  <button id="authorize_button" style="display:none;">Googleでログイン</button>
 
   <script>
-    (function() {
-      // ★★★ 必要に応じて以下の各定数を設定 ★★★
-      const SHEET_ID   = "1GyKDfVQCNrBlkxjsrQDv_ouIio9yjO3mVQy6Ds5uQzg"; // あなたのスプレッドシートID
-      const CLIENT_ID  = "403866618480-7dhf5rl00k6shl8jmm16s6tvm8ef0odj.apps.googleusercontent.com"; // あなたのOAuthクライアントID
-      const API_KEY    = "AIzaSyBszPu-BQ2_Aq9C3lhAiW--kyenM5vQsjs";      // あなたのAPIキー
-      const SHEET_NAME = "DQquestion"; // シート名
+    /***************************************************************
+     * 1) 以下の値をあなたのプロジェクトに合わせて変更
+     ***************************************************************/
+    const CLIENT_ID   = "YOUR_CLIENT_ID.apps.googleusercontent.com"; 
+    const API_KEY     = "YOUR_API_KEY";
+    const SHEET_ID    = "YOUR_SHEET_ID";  // 例: "1GyKDfVQCNrBl...."
+    const SHEET_NAME  = "DQquestion";     // シート名
+    const SCOPES      = "https://www.googleapis.com/auth/spreadsheets.readonly";
 
-      const DISCOVERY_DOCS = [
-        "https://sheets.googleapis.com/$discovery/rest?version=v4"
-      ];
-      const SCOPES = "https://www.googleapis.com/auth/spreadsheets.readonly https://www.googleapis.com/auth/userinfo.profile https://www.googleapis.com/auth/userinfo.email";
+    /***************************************************************
+     * 2) 変数の宣言
+     ***************************************************************/
+    let tokenClient;       // Tokenクライアント
+    let gapiInited  = false; 
+    let gisInited   = false;
 
-      // DOM要素のキャッシュ
-      const loginBtn          = document.getElementById("login-btn");
-      const logoutBtn         = document.getElementById("logout-btn");
-      const questionContainer = document.getElementById("question-container");
-      const questionEl        = document.getElementById("question");
-      const questionImageEl   = document.getElementById("question-image");
-      const choicesDiv        = document.getElementById("choices");
-      const debugDiv          = document.getElementById("debug");
+    /***************************************************************
+     * 3) GAPI (Sheets API呼び出し) の初期化
+     ***************************************************************/
+    function gapiLoaded() {
+      console.log("gapiLoaded() called");
+      // GAPIクライアントを読み込む
+      gapi.load('client', initializeGapiClient);
+    }
 
-      // デバッグ用のログ出力関数
-      function debugLog(message) {
-        console.log(message);
-        debugDiv.textContent += message + "\n";
-      }
+    async function initializeGapiClient() {
+      console.log("initializeGapiClient() called");
+      // APIキーを使ってクライアントを初期化
+      await gapi.client.init({
+        apiKey: API_KEY
+      });
+      gapiInited = true;
+      maybeEnableButton();
+    }
 
-      // Google API クライアントの初期化
-      function initClient() {
-        debugLog("initClient() called.");
-        gapi.client.init({
-          apiKey: API_KEY,
-          clientId: CLIENT_ID,
-          discoveryDocs: DISCOVERY_DOCS,
-          scope: SCOPES
-        }).then(() => {
-          debugLog("gapi.client.init -> success");
-          const authInstance = gapi.auth2.getAuthInstance();
-          authInstance.isSignedIn.listen(updateSigninStatus);
-          updateSigninStatus(authInstance.isSignedIn.get());
-        }).catch(error => {
-          debugLog("Google API 初期化エラー: " + JSON.stringify(error));
-          console.error("Google API 初期化エラー", error);
-        });
-      }
-
-      // サインイン状態に応じたUI更新
-      function updateSigninStatus(isSignedIn) {
-        debugLog("updateSigninStatus: " + isSignedIn);
-        if (isSignedIn) {
-          loginBtn.style.display = "none";
-          logoutBtn.style.display = "inline-block";
-          questionContainer.style.display = "block";
-          fetchQuizData();
-        } else {
-          loginBtn.style.display = "inline-block";
-          logoutBtn.style.display = "none";
-          questionContainer.style.display = "none";
-        }
-      }
-
-      // ログイン/ログアウト用のグローバル関数
-      window.handleAuthClick = function() {
-        debugLog("handleAuthClick() -> signIn");
-        gapi.auth2.getAuthInstance().signIn();
-      };
-
-      window.handleSignoutClick = function() {
-        debugLog("handleSignoutClick() -> signOut");
-        gapi.auth2.getAuthInstance().signOut();
-      };
-
-      // APIクライアントのロード
-      function handleClientLoad() {
-        debugLog("handleClientLoad() called. Now loading client:auth2...");
-        gapi.load("client:auth2", initClient);
-      }
-
-      // Google Sheets からクイズデータを取得
-      function fetchQuizData() {
-        debugLog("fetchQuizData() called. Requesting Sheets data...");
-        gapi.client.sheets.spreadsheets.values.get({
-          spreadsheetId: SHEET_ID,
-          range: `${SHEET_NAME}!A1:J1000`
-        }).then(response => {
-          debugLog("Sheets data fetch -> success");
-          const values = response.result.values;
-          if (!values || values.length < 2) {
-            debugLog("クイズデータが不足しています");
-            console.error("クイズデータが不足しています");
+    /***************************************************************
+     * 4) Google Identity Services (Token Client) の初期化
+     ***************************************************************/
+    function gisLoaded() {
+      console.log("gisLoaded() called");
+      // Token Client を初期化
+      tokenClient = google.accounts.oauth2.initTokenClient({
+        client_id: CLIENT_ID,
+        scope: SCOPES,
+        // コールバックは後で設定
+        callback: (tokenResponse) => {
+          if (tokenResponse.error) {
+            console.error("Token Error:", tokenResponse);
             return;
           }
-          startQuiz(values);
-        }).catch(error => {
-          debugLog("Google Sheets 取得エラー: " + JSON.stringify(error));
-          console.error("Google Sheets 取得エラー", error);
-        });
-      }
-
-      // ランダムなクイズを選び、問題文と選択肢をレンダリング
-      function startQuiz(data) {
-        debugLog("startQuiz() called.");
-        const quizList = data.slice(1).map(row => ({
-          "問題文": row[1],
-          "画像URL": row[2],
-          "選択肢1": row[3],
-          "選択肢2": row[4],
-          "選択肢3": row[5],
-          "選択肢4": row[6],
-          "正解": row[7],
-          "解説": row[9]
-        }));
-
-        // ランダムに1問選ぶ
-        const quiz = quizList[Math.floor(Math.random() * quizList.length)];
-        questionEl.textContent = quiz["問題文"] || "問題文がありません";
-        questionImageEl.src = quiz["画像URL"] || "";
-        choicesDiv.innerHTML = "";
-
-        for (let i = 1; i <= 4; i++) {
-          const choiceText = quiz[`選択肢${i}`] || `選択肢${i}が空です`;
-          const btn = document.createElement("button");
-          btn.textContent = choiceText;
-          btn.className = "choice";
-          btn.addEventListener("click", () => checkAnswer(quiz, i));
-          choicesDiv.appendChild(btn);
+          console.log("Access Token:", tokenResponse.access_token);
+          // アクセストークンをGAPIクライアントに設定
+          gapi.client.setToken({ access_token: tokenResponse.access_token });
+          // Sheetsデータ取得などの処理を呼び出す
+          fetchQuizData();
         }
-      }
-
-      // 回答チェックと結果表示
-      function checkAnswer(quiz, selected) {
-        debugLog("checkAnswer() called. selected=" + selected);
-        let resultMessage = "";
-        if (parseInt(quiz["正解"], 10) === selected) {
-          resultMessage = "✅ 正解！モンスターを倒した！";
-        } else {
-          const correctChoice = quiz["選択肢" + quiz["正解"]];
-          resultMessage = `❌ 不正解！\n正解は「${correctChoice}」です。\n\n🔎 解説: ${quiz["解説"]}`;
-        }
-        alert(resultMessage);
-        // 次のクイズを取得
-        fetchQuizData();
-      }
-
-      // ページ読み込み完了後に Google API クライアントをロード
-      window.addEventListener("load", () => {
-        debugLog("window onload -> handleClientLoad()");
-        // ログインボタンに onclick を割り当て（HTML内に直接書いてもOK）
-        loginBtn.onclick = window.handleAuthClick;
-        logoutBtn.onclick = window.handleSignoutClick;
-        handleClientLoad();
       });
-    })();
+      gisInited = true;
+      maybeEnableButton();
+    }
+
+    /***************************************************************
+     * 5) ログインボタンを表示するかどうか判断
+     ***************************************************************/
+    function maybeEnableButton() {
+      if (gapiInited && gisInited) {
+        document.getElementById("authorize_button").style.display = "inline-block";
+      }
+    }
+
+    /***************************************************************
+     * 6) ログインボタン押下時の処理
+     ***************************************************************/
+    function handleAuthClick() {
+      // 毎回認証画面を表示したい場合: { prompt: 'consent' } を渡す
+      tokenClient.requestAccessToken({ prompt: '' });
+    }
+
+    /***************************************************************
+     * 7) Sheets API でデータを取得 (クイズデータを読み込む)
+     ***************************************************************/
+    async function fetchQuizData() {
+      console.log("fetchQuizData() called");
+      try {
+        const response = await gapi.client.sheets.spreadsheets.values.get({
+          spreadsheetId: SHEET_ID,
+          range: `${SHEET_NAME}!A1:J1000`
+        });
+        console.log("Sheets data:", response.result.values);
+        alert("Sheetsデータを取得しました。コンソールを確認してください。");
+        // TODO: ここでクイズロジックを実装し、画面表示を行う
+      } catch (error) {
+        console.error("Sheets API Error:", error);
+      }
+    }
+
+    /***************************************************************
+     * 8) ページ読み込み完了後にライブラリを初期化
+     ***************************************************************/
+    window.addEventListener('load', () => {
+      document.getElementById("authorize_button").onclick = handleAuthClick;
+      // gapi.js がロードされたら gapiLoaded() が呼ばれるよう、onloadを設定
+      // accounts.google.com/gsi/client がロードされたら gisLoaded() が呼ばれるよう、onloadを設定
+    });
   </script>
+
+  <!--
+    9) 以下のscriptタグで "gapiLoaded()" と "gisLoaded()" を呼ぶ
+       onload 属性によって、ライブラリ読み込み完了時に関数が呼ばれる仕組み
+  -->
+  <script async defer src="https://apis.google.com/js/api.js" onload="gapiLoaded()"></script>
+  <script async defer src="https://accounts.google.com/gsi/client" onload="gisLoaded()"></script>
 </body>
 </html>
