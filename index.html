@@ -101,10 +101,20 @@
     async function fetchQuizData() {
       console.log("fetchQuizData() called");
       try {
-        const response = await gapi.client.sheets.spreadsheets.values.get({
-          spreadsheetId: SHEET_ID,
-          range: `${SHEET_NAME}!A1:J1000`
-        });
+        async function fetchQuizData() {
+  console.log("fetchQuizData() called");
+  try {
+    const response = await gapi.client.sheets.spreadsheets.values.get({
+      spreadsheetId: SHEET_ID,
+      range: "Sheet1!A1:J1000"  // **ここを実際のシート名に変更**
+    });
+    console.log("Sheets data:", response.result.values);
+    alert("Sheetsデータを取得しました。コンソールを確認してください。");
+  } catch (error) {
+    console.error("Sheets API Error:", error);
+  }
+}
+
         console.log("Sheets data:", response.result.values);
         alert("Sheetsデータを取得しました。コンソールを確認してください。");
       } catch (error) {
