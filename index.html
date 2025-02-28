@@ -172,32 +172,44 @@
     }
 
     function showQuiz() {
-      if (quizData.length === 0) return alert("問題データがありません");
+  if (quizData.length === 0) return alert("問題データがありません");
 
-      let q = quizData[Math.floor(Math.random() * quizData.length)];
+  let q = quizData[Math.floor(Math.random() * quizData.length)];
+  document.getElementById("top-text-box").textContent = q.question;
 
-      document.getElementById("top-text-box").textContent = q.question;
+  let imageUrl = q.imageUrl;
 
-      // 画像 URL の適用
-      console.log("画像URL:", q.imageUrl);
-      let quizImage = document.getElementById("quiz-image");
-      if (q.imageUrl && q.imageUrl.startsWith("http")) {
-        quizImage.src = q.imageUrl;
-        quizImage.style.display = "block";
-      } else {
-        quizImage.style.display = "none"; // URL が無効なら非表示
-      }
+  // Google Drive の URL なら表示用に変換
+  if (imageUrl.includes("drive.google.com")) {
+    let match = imageUrl.match(/id=([^&]+)/);
+    if (match) {
+      let fileId = match[1];
+      imageUrl = `https://drive.google.com/uc?id=${fileId}`;
+    }
+  }
 
-      // 選択肢の表示
-      let choiceArea = document.getElementById("choice-area");
-      choiceArea.innerHTML = "";
-      for (let i = 1; i <= 4; i++) {
-        let btn = document.createElement("button");
-        btn.className = "choice-button";
-        btn.textContent = q["choice" + i];
-        btn.onclick = () => alert((i === q.correct) ? "正解!" : "不正解...");
-        choiceArea.appendChild(btn);
-      }
+  console.log("変換後の画像URL:", imageUrl);
+
+  // 画像 URL を適用
+  let quizImage = document.getElementById("quiz-image");
+  if (imageUrl && imageUrl.startsWith("http")) {
+    quizImage.src = imageUrl;
+    quizImage.style.display = "block";
+  } else {
+    quizImage.style.display = "none"; // URL が無効なら非表示
+  }
+
+  // 選択肢の表示
+  let choiceArea = document.getElementById("choice-area");
+  choiceArea.innerHTML = "";
+  for (let i = 1; i <= 4; i++) {
+    let btn = document.createElement("button");
+    btn.className = "choice-button";
+    btn.textContent = q["choice" + i];
+    btn.onclick = () => alert((i === q.correct) ? "正解!" : "不正解...");
+    choiceArea.appendChild(btn);
+  }
+
     }
   </script>
 </body>
