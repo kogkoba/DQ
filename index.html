@@ -2,7 +2,7 @@
 <html lang="ja">
 <head>
   <meta charset="UTF-8">
-  <title>ドラクエ風RPG</title>
+  <title>ドラクエ風クイズRPG</title>
   <style>
     body { margin: 0; padding: 20px; font-family: sans-serif; text-align: center; background-color: #222; color: #fff; }
     canvas { background: url('フィールド画像.png') no-repeat center center; background-size: cover; display: block; margin: auto; }
@@ -11,14 +11,6 @@
     #top-text-box { border: 2px solid white; padding: 10px; margin-bottom: 10px; }
     #enemy-container img { width: 80px; height: 80px; margin: 5px; }
     .choice-button { display: block; margin: 10px auto; padding: 10px; width: 200px; font-size: 18px; }
-    .shake { animation: shake 0.5s; }
-    @keyframes shake {
-      0% { transform: translate(1px, 1px); }
-      25% { transform: translate(-1px, -1px); }
-      50% { transform: translate(1px, -1px); }
-      75% { transform: translate(-1px, 1px); }
-      100% { transform: translate(0, 0); }
-    }
   </style>
 </head>
 <body>
@@ -30,21 +22,24 @@
   <!-- 戦闘画面 -->
   <div id="battle-screen">
     <div id="top-text-box">モンスターがあらわれた！</div>
-    <div id="enemy-container">
-      <img src="enemy.png"><img src="enemy.png"><img src="enemy.png"><img src="enemy.png">
-    </div>
+    <div id="enemy-container"></div>
     <img id="quiz-image" src="" style="display: none; width: 200px; height: 200px;">
     <div id="choice-area"></div>
   </div>
 
   <script>
+    const SHEET_ID = "1t08cjUMrug0nvIpredcxjuoxejDRazqqzLTqjVraJhw";
+    const SHEET_NAME = "sheet1";
+    const API_KEY = "AIzaSyBszPu-BQ2_Aq9C3lhAiW--kyenM5vQsjs";
+
     let player = { x: 300, y: 200, hp: 100, level: 1, steps: 0 };
     let ctx = document.getElementById("gameCanvas").getContext("2d");
     let inBattle = false;
     let quizData = [];
+    let enemies = [];
     let currentQuiz = null;
     let correctCount = 0;
-    
+
     function drawPlayer() {
       ctx.clearRect(0, 0, 600, 400);
       ctx.fillStyle = "red";
@@ -76,18 +71,73 @@
       document.addEventListener("mouseup", onMouseUp);
     }
 
-    function startEncounter() {
+    async function startEncounter() {
       inBattle = true;
       document.getElementById("battle-screen").style.display = "block";
       document.getElementById("gameCanvas").style.display = "none";
+
+      // 敵データ取得
+      await loadEnemies();
+      displayEnemies();
       showQuiz();
     }
 
+    async function loadEnemies() {
+      try {
+        const resp = await gapi.client.sheets.spreadsheets.values.get({
+          spreadsheetId: SHEET_ID,
+          range: `${SHEET_NAME}!A2:C100`
+        });
+
+        if (!resp.result.values || resp.result.values.length === 0) {
+          throw new Error("スプレッドシートに敵データがありません");
+        }
+
+        let allEnemies = resp.result.values.map(row => ({
+          id: row[0] || "",
+          name: row[1] || "",
+          imageUrl: convertGoogleDriveURL(row[2] || "")
+        }));
+
+        // ランダムに4体選択
+        enemies = [];
+        for (let i = 0; i < 4; i++) {
+          let randomIndex = Math.floor(Math.random() * allEnemies.length);
+          enemies.push(allEnemies[randomIndex]);
+        }
+
+        console.log("✅ 敵データ取得成功:", enemies);
+      } catch (err) {
+        console.error("⛔ 敵データ取得エラー:", err);
+      }
+    }
+
+    function displayEnemies() {
+      let enemyContainer = document.getElementById("enemy-container");
+      enemyContainer.innerHTML = "";
+      enemies.forEach((enemy, index) => {
+        let img = document.createElement("img");
+        img.src = enemy.imageUrl;
+        img.alt = enemy.name;
+        img.dataset.index = index;
+        enemyContainer.appendChild(img);
+      });
+    }
+
     function showQuiz() {
+      if (!quizData || quizData.length === 0) {
+        document.getElementById("top-text-box").textContent = "クイズデータがありません";
+        console.error("⛔ クイズデータが取得できていません！");
+        return;
+      }
+
       currentQuiz = quizData[Math.floor(Math.random() * quizData.length)];
+      console.log("✅ 出題中の問題:", currentQuiz);
+
       document.getElementById("top-text-box").textContent = currentQuiz.question;
       document.getElementById("quiz-image").src = currentQuiz.imageUrl;
       document.getElementById("quiz-image").style.display = "block";
+
       let choiceArea = document.getElementById("choice-area");
       choiceArea.innerHTML = "";
       for (let i = 1; i <= 4; i++) {
@@ -110,8 +160,6 @@
         document.getElementById("top-text-box").textContent = "ミス！プレイヤーに25ダメージ！";
         player.hp -= 25;
         document.getElementById("hp").textContent = player.hp;
-        document.getElementById("battle-screen").classList.add("shake");
-        setTimeout(() => document.getElementById("battle-screen").classList.remove("shake"), 500);
         if (player.hp <= 0) gameOver();
       }
     }
