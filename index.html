@@ -5,7 +5,14 @@
   <title>ドラクエ風クイズRPG</title>
   <style>
     body { margin: 0; padding: 20px; font-family: sans-serif; text-align: center; background-color: #222; color: #fff; }
-    canvas { background: url('フィールド画像.png') no-repeat center center; background-size: cover; display: block; margin: auto; }
+    canvas {
+  background: url('フィールド画像.png') no-repeat center center;
+  background-size: cover;
+  display: block;
+  margin: auto;
+  border: 2px solid white; /* 追加 */
+}
+
     #status { font-size: 20px; margin: 10px; }
     #battle-screen { display: none; background: black; padding: 20px; text-align: center; }
     #top-text-box { border: 2px solid white; padding: 10px; margin-bottom: 10px; }
@@ -39,6 +46,12 @@
     let quizData = [];
     let enemies = [];
     let correctCount = 0;
+
+
+    window.onload = function () {
+  drawPlayer(); // ゲーム開始時にプレイヤーを描画
+};
+
 
     // ✅ Google DriveのURLを画像URLに変換する関数（ここを追加！）
     function convertGoogleDriveURL(url) {
