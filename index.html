@@ -4,21 +4,24 @@
   <meta charset="UTF-8">
   <title>ドラクエ風クイズゲーム</title>
 
-  <!-- Google API -->
+  <!-- Google API 読み込み -->
   <script async defer src="https://accounts.google.com/gsi/client"></script>
   <script async defer src="https://apis.google.com/js/api.js"></script>
 
   <style>
-    body { margin: 0; padding: 20px; font-family: sans-serif; background-color: #f0f8ff; }
-    h1 { text-align: center; }
-    
+    body { margin: 0; padding: 20px; font-family: sans-serif; background-color: #f0f8ff; text-align: center; }
+    h1 { margin-bottom: 20px; }
+
     /* ログインボタン */
     #login-btn {
       display: none;
-      padding: 10px 20px;
-      font-size: 16px;
-      background: #4285f4; color: #fff;
-      border: none; cursor: pointer;
+      padding: 12px 20px;
+      font-size: 18px;
+      background: #4285f4;
+      color: #fff;
+      border: none;
+      cursor: pointer;
+      border-radius: 5px;
     }
 
     /* 戦闘画面 */
@@ -29,14 +32,14 @@
       background: #dff;
       height: 100vh;
     }
-    
+
     #top-text-box {
       border: 1px solid #666;
       min-height: 60px;
       padding: 8px;
       background: #eee;
     }
-    
+
     #quiz-image {
       max-width: 80%;
       height: auto;
@@ -48,14 +51,15 @@
       width: 80%;
       max-width: 300px;
       margin: 5px auto;
-      padding: 10px;
+      padding: 12px;
       font-size: 16px;
       cursor: pointer;
       background: #007bff;
       color: #fff;
       border: none;
+      border-radius: 5px;
     }
-    
+
     .choice-button:hover {
       background: #0056b3;
     }
@@ -80,7 +84,7 @@
     const CLIENT_ID = "403866618480-7dhf5rl00k6shl8jmm16s6tvm8ef0odj.apps.googleusercontent.com";
     const API_KEY = "AIzaSyBszPu-BQ2_Aq9C3lhAiW--kyenM5vQsjs";
     const SHEET_ID = "1GyKDfVQCNrBlkxjsrQDv_ouIio9yjO3mVQy6Ds5uQzg";
-    const SHEET_NAME = "sheet1"; 
+    const SHEET_NAME = "sheet1";
 
     let tokenClient;
     let gapiInited = false;
@@ -91,23 +95,26 @@
      * 2) 認証 & データ取得
      *****************************************************************/
     function gapiLoaded() {
-      console.log("gapiLoaded() called");
+      console.log("✅ GAPI 読み込み完了");
       gapi.load("client", async () => {
         await gapi.client.init({ apiKey: API_KEY, discoveryDocs: ["https://sheets.googleapis.com/$discovery/rest?version=v4"] });
-        console.log("GAPI initialized");
         gapiInited = true;
         maybeEnableButton();
       });
     }
 
     function gisLoaded() {
-      console.log("gisLoaded() called");
+      console.log("✅ GIS 読み込み完了");
       tokenClient = google.accounts.oauth2.initTokenClient({
         client_id: CLIENT_ID,
         scope: SCOPES,
         callback: async (resp) => {
-          if (resp.error) return;
+          if (resp.error) {
+            console.error("⛔ 認証エラー:", resp);
+            return;
+          }
           gapi.client.setToken(resp);
+          console.log("✅ 認証成功");
           await loadQuizData();
         }
       });
@@ -120,7 +127,7 @@
       if (gapiInited && gisInited) {
         loginBtn.style.display = "inline-block";
         loginBtn.onclick = () => tokenClient.requestAccessToken({ prompt: "" });
-        console.log("Login button enabled");
+        console.log("✅ ログインボタン有効化");
       }
     }
 
@@ -142,10 +149,10 @@
           missed: parseInt(row[8] || "0", 10),
           info: row[9] || ""
         }));
-        console.log("取得したクイズデータ:", quizData);
+        console.log("✅ クイズデータ取得完了:", quizData);
         startBattle();
       } catch (err) {
-        console.error("シートの読み込みエラー:", err);
+        console.error("⛔ クイズデータ取得エラー:", err);
       }
     }
 
@@ -174,10 +181,6 @@
       let q = quizData[Math.floor(Math.random() * quizData.length)];
       document.getElementById("top-text-box").textContent = q.question;
       document.getElementById("quiz-image").src = q.imageUrl;
-      document.getElementById("quiz-image").onerror = function() {
-        this.onerror = null;
-        this.src = "https://placehold.jp/200x100.png?text=No+Image";
-      };
 
       let choiceArea = document.getElementById("choice-area");
       choiceArea.innerHTML = "";
@@ -185,26 +188,9 @@
         let btn = document.createElement("button");
         btn.className = "choice-button";
         btn.textContent = q["choice" + i];
-        btn.onclick = () => answerQuiz(q, i);
+        btn.onclick = () => alert((i === q.correct) ? "正解!" : "不正解...");
         choiceArea.appendChild(btn);
       }
-    }
-
-    /*****************************************************************
-     * 7) 回答処理
-     *****************************************************************/
-    function answerQuiz(q, selected) {
-      document.getElementById("top-text-box").textContent = (selected === q.correct) ? "正解！" : "不正解...";
-      if (selected !== q.correct) updateMissedCount(q.id, ++q.missed);
-      setTimeout(showQuiz, 1000);
-    }
-
-    async function updateMissedCount(questionID, newMissedCount) {
-      let rowNum = quizData.findIndex(q => q.id === questionID) + 2;
-      await gapi.client.sheets.spreadsheets.values.update({
-        spreadsheetId: SHEET_ID, range: `${SHEET_NAME}!I${rowNum}`,
-        valueInputOption: "USER_ENTERED", values: [[newMissedCount]]
-      });
     }
   </script>
 </body>
