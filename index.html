@@ -428,6 +428,8 @@ function maybeEnableButton() {
     loginBtn.style.display = "inline-block";
     loginBtn.onclick = () => {
       tokenClient.requestAccessToken({ prompt: '' });
+    console.log("取得したクイズデータ:", quizData);
+
     };
   }
 }
