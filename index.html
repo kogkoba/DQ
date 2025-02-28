@@ -213,42 +213,39 @@ function startBattle() {
 /*****************************************************************
  * 6) クイズ表示
  *****************************************************************/
-// 問題を使い切ったら再シャッフルするなどの対応をする場合に備えてフラグ管理
 function showQuiz() {
-  // 敵全滅
-  if (currentEnemyIndex > enemyCount) {
-    topTextBox.textContent = "敵をすべて倒した！";
-    endBattle();
-    return;
-  }
-  // プレイヤー倒れ
+  // ※ 4体倒しても続行したいので、下記をコメントアウト
+  // if (currentEnemyIndex > enemyCount) {
+  //   topTextBox.textContent = "敵をすべて倒した！";
+  //   endBattle();
+  //   return;
+  // }
+
   if (playerHP <= 0) {
+    // プレイヤー倒れ
     topTextBox.textContent = "プレイヤーは倒れた...";
     zaorikuButton.style.display = "inline-block";
     choiceArea.innerHTML = "";
     return;
   }
 
-  // クイズデータが空
   if (quizData.length === 0) {
-    topTextBox.textContent = "問題をすべて使い切りました！";
-    choiceArea.innerHTML = "";
+    topTextBox.textContent = "問題データがありません。シートを確認してください。";
     return;
   }
 
-  // quizData から 1問取り出し（重複しないよう splice）
-  let randIndex = Math.floor(Math.random() * quizData.length);
-  let q = quizData.splice(randIndex, 1)[0]; // 取り出した要素を返す
-
-  // テキストと画像
+  // ランダムに1問（削除しない）→ 何度でも出題可能
+  let q = quizData[Math.floor(Math.random() * quizData.length)];
   topTextBox.textContent = q.question || "問題文が空です";
-  quizImage.src = convertGoogleDriveURL(q.imageUrl) || "";
+
+  // 画像URLセット
+  quizImage.src = q.imageUrl || "";
   quizImage.onerror = function() {
-    this.onerror = null; // 無限ループ防止
+    this.onerror = null;
     this.src = "https://placehold.jp/200x100.png?text=No+Image";
   };
 
-  // 選択肢ボタン
+  // 選択肢
   choiceArea.innerHTML = "";
   for (let i = 1; i <= 4; i++) {
     let btn = document.createElement("button");
@@ -257,19 +254,6 @@ function showQuiz() {
     btn.onclick = () => answerQuiz(q, i);
     choiceArea.appendChild(btn);
   }
-}
-
-/**
- * Googleドライブの共有リンクを自動的に「uc?export=view」形式へ変換
- * 例: https://drive.google.com/file/d/XXXXX/view?usp=sharing
- *  ->  https://drive.google.com/uc?export=view&id=XXXXX
- */
-function convertGoogleDriveURL(originalUrl) {
-  if (!originalUrl) return "";
-  const match = originalUrl.match(/\/file\/d\/([^/]+)/);
-  if (!match) return originalUrl; // 共有リンク形式でなければそのまま返す
-  const fileId = match[1];
-  return `https://drive.google.com/uc?export=view&id=${fileId}`;
 }
 
 /*****************************************************************
@@ -315,25 +299,15 @@ function answerQuiz(q, selected) {
 
 // 不正解時に I 列(間違え回数) を更新する
 async function updateMissedCount(questionID, newMissedCount) {
-  // quizData配列から対象の行を探す → IDが一致する行を探す
-  // （注意：quizDataからは問題を取り除いているため、見つからないかもしれません）
-  // すでに削除された要素を検索したい場合は、別途「全問題リスト」を保持するか、
-  // あるいはここでスプレッドシート上の行を直接検索する必要があります。
-  // ここでは簡易的に quizData から探す実装例のままにします。
-
+  // quizData配列から対象の行を探す
   let idx = quizData.findIndex(item => item.id === questionID);
-  // splice済みで見つからない可能性あり
-  if (idx === -1) {
-    console.warn("updateMissedCount: 該当IDが見つからず", questionID);
-    return;
-  }
+  if (idx === -1) return;
 
   // シート上の行番号 = idx + 2 (1行目は見出し)
   let rowNum = idx + 2;
   let range = `${SHEET_NAME}!I${rowNum}`; // I列が間違い回数
 
   try {
-    // values.update で単セルを更新
     let result = await gapi.client.sheets.spreadsheets.values.update({
       spreadsheetId: SHEET_ID,
       range: range,
@@ -387,7 +361,8 @@ zaorikuButton.onclick = function() {
   playerHP = 100;
   localStorage.setItem("playerHP", playerHP);
   zaorikuButton.style.display = "none";
-  endBattle();
+  // endBattle(); // 戦闘終了せずに続けるなら呼ばなくてもOK
+  // ここでフィールドに戻りたいなら上記を呼ぶ
 };
 
 /*****************************************************************
@@ -404,7 +379,7 @@ async function loadQuizDataFromSheets() {
       console.error("シートにデータがありません");
       return;
     }
-    // 1行目は見出し: A:ID / B:問題文 / C:画像URL / D:選択肢1 / E:選択肢2 / F:選択肢3 / G:選択肢4 / H:正解 / I:間違え回数 / J:解説
+    // A:ID / B:問題文 / C:画像URL / D:選択肢1 / E:選択肢2 / F:選択肢3 / G:選択肢4 / H:正解 / I:間違え回数 / J:解説
     quizData = values.slice(1).map((row) => ({
       id:       row[0] || "",
       question: row[1] || "",
@@ -413,12 +388,10 @@ async function loadQuizDataFromSheets() {
       choice2:  row[4] || "",
       choice3:  row[5] || "",
       choice4:  row[6] || "",
-      correct:  row[7] || "1",  // 正解
-      missed:   row[8] || "0",  // 間違え回数
-      info:     row[9] || ""    // 解説
+      correct:  row[7] || "1",
+      missed:   row[8] || "0",
+      info:     row[9] || ""
     }));
-
-    // 初期ロード完了: consoleログで確認
     console.log("取得したクイズデータ:", quizData);
   } catch (err) {
     console.error("Sheets API Error:", err);
@@ -444,7 +417,7 @@ function gisLoaded() {
   console.log("gisLoaded() called");
   tokenClient = google.accounts.oauth2.initTokenClient({
     client_id: CLIENT_ID,
-    scope: SCOPES, // "https://www.googleapis.com/auth/spreadsheets"
+    scope: SCOPES,
     callback: async (resp) => {
       if (resp.error) {
         console.error("Token Error:", resp);
