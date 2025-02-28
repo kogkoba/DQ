@@ -1,7 +1,6 @@
 <!DOCTYPE html>
 <html lang="ja">
 <head>
-  １
   <meta charset="UTF-8">
   <title>ドラクエ風クイズRPG</title>
   <style>
@@ -28,7 +27,7 @@
     <div id="choice-area"></div>
   </div>
 
-  <!-- Google APIのスクリプト追加 -->
+  <!-- Google APIのスクリプト -->
   <script async defer src="https://apis.google.com/js/api.js" onload="gapiLoaded()" onerror="console.error('❌ Google APIの読み込みに失敗しました');"></script>
 
   <script>
@@ -41,13 +40,20 @@
     let enemies = [];
     let correctCount = 0;
 
+    // ✅ Google DriveのURLを画像URLに変換する関数（ここを追加！）
+    function convertGoogleDriveURL(url) {
+      if (!url) return ""; // URLが空ならそのまま返す
+      let match = url.match(/(?:id=|\/d\/)([a-zA-Z0-9_-]+)/);
+      return match ? `https://lh3.googleusercontent.com/d/${match[1]}=s0` : url;
+    }
+
     function gapiLoaded() {
       console.log("✅ Google API 読み込み完了");
       gapi.load("client", async () => {
         try {
           await gapi.client.init({ apiKey: API_KEY, discoveryDocs: ["https://sheets.googleapis.com/$discovery/rest?version=v4"] });
           console.log("✅ GAPI 初期化完了");
-          loadQuizData(); // Google APIが初期化された後にクイズデータを取得
+          loadQuizData();
         } catch (err) {
           console.error("⛔ GAPI 初期化エラー:", err);
         }
