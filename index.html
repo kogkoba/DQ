@@ -46,6 +46,16 @@
     let currentQuiz = null;
     let correctCount = 0;
 
+    function gapiLoaded() {
+  console.log("✅ Google API 読み込み完了");
+  gapi.load("client", async () => {
+    try {
+      await gapi.client.init({ apiKey: API_KEY, discoveryDocs: ["https://sheets.googleapis.com/$discovery/rest?version=v4"] });
+      console.log("✅ GAPI 初期化完了");
+    } catch (err) {
+      console.error("⛔ GAPI 初期化エラー:", err);
+    }
+
     function drawPlayer() {
       ctx.clearRect(0, 0, 600, 400);
       ctx.fillStyle = "red";
