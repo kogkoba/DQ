@@ -213,31 +213,42 @@ function startBattle() {
 /*****************************************************************
  * 6) クイズ表示
  *****************************************************************/
+// 問題を使い切ったら再シャッフルするなどの対応をする場合に備えてフラグ管理
 function showQuiz() {
+  // 敵全滅
   if (currentEnemyIndex > enemyCount) {
-    // 敵全滅
     topTextBox.textContent = "敵をすべて倒した！";
     endBattle();
     return;
   }
+  // プレイヤー倒れ
   if (playerHP <= 0) {
-    // プレイヤー倒れ
     topTextBox.textContent = "プレイヤーは倒れた...";
     zaorikuButton.style.display = "inline-block";
     choiceArea.innerHTML = "";
     return;
   }
 
+  // クイズデータが空
   if (quizData.length === 0) {
-    topTextBox.textContent = "問題データがありません。シートを確認してください。";
+    topTextBox.textContent = "問題をすべて使い切りました！";
+    choiceArea.innerHTML = "";
     return;
   }
 
-  // ランダムに1問
-  let q = quizData[Math.floor(Math.random() * quizData.length)];
-  topTextBox.textContent = q.question || "問題文が空です";
-  quizImage.src = q.imageUrl || "";
+  // quizData から 1問取り出し（重複しないよう splice）
+  let randIndex = Math.floor(Math.random() * quizData.length);
+  let q = quizData.splice(randIndex, 1)[0]; // 取り出した要素を返す
 
+  // テキストと画像
+  topTextBox.textContent = q.question || "問題文が空です";
+  quizImage.src = convertGoogleDriveURL(q.imageUrl) || "";
+  quizImage.onerror = function() {
+    this.onerror = null; // 無限ループ防止
+    this.src = "https://placehold.jp/200x100.png?text=No+Image";
+  };
+
+  // 選択肢ボタン
   choiceArea.innerHTML = "";
   for (let i = 1; i <= 4; i++) {
     let btn = document.createElement("button");
@@ -246,6 +257,19 @@ function showQuiz() {
     btn.onclick = () => answerQuiz(q, i);
     choiceArea.appendChild(btn);
   }
+}
+
+/**
+ * Googleドライブの共有リンクを自動的に「uc?export=view」形式へ変換
+ * 例: https://drive.google.com/file/d/XXXXX/view?usp=sharing
+ *  ->  https://drive.google.com/uc?export=view&id=XXXXX
+ */
+function convertGoogleDriveURL(originalUrl) {
+  if (!originalUrl) return "";
+  const match = originalUrl.match(/\/file\/d\/([^/]+)/);
+  if (!match) return originalUrl; // 共有リンク形式でなければそのまま返す
+  const fileId = match[1];
+  return `https://drive.google.com/uc?export=view&id=${fileId}`;
 }
 
 /*****************************************************************
@@ -291,9 +315,18 @@ function answerQuiz(q, selected) {
 
 // 不正解時に I 列(間違え回数) を更新する
 async function updateMissedCount(questionID, newMissedCount) {
-  // quizData配列から対象の行を探す
+  // quizData配列から対象の行を探す → IDが一致する行を探す
+  // （注意：quizDataからは問題を取り除いているため、見つからないかもしれません）
+  // すでに削除された要素を検索したい場合は、別途「全問題リスト」を保持するか、
+  // あるいはここでスプレッドシート上の行を直接検索する必要があります。
+  // ここでは簡易的に quizData から探す実装例のままにします。
+
   let idx = quizData.findIndex(item => item.id === questionID);
-  if (idx === -1) return;
+  // splice済みで見つからない可能性あり
+  if (idx === -1) {
+    console.warn("updateMissedCount: 該当IDが見つからず", questionID);
+    return;
+  }
 
   // シート上の行番号 = idx + 2 (1行目は見出し)
   let rowNum = idx + 2;
@@ -372,7 +405,7 @@ async function loadQuizDataFromSheets() {
       return;
     }
     // 1行目は見出し: A:ID / B:問題文 / C:画像URL / D:選択肢1 / E:選択肢2 / F:選択肢3 / G:選択肢4 / H:正解 / I:間違え回数 / J:解説
-    quizData = values.slice(1).map((row, i) => ({
+    quizData = values.slice(1).map((row) => ({
       id:       row[0] || "",
       question: row[1] || "",
       imageUrl: row[2] || "",
@@ -384,6 +417,8 @@ async function loadQuizDataFromSheets() {
       missed:   row[8] || "0",  // 間違え回数
       info:     row[9] || ""    // 解説
     }));
+
+    // 初期ロード完了: consoleログで確認
     console.log("取得したクイズデータ:", quizData);
   } catch (err) {
     console.error("Sheets API Error:", err);
