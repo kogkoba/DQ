@@ -5,8 +5,8 @@
   <title>ドラクエ風クイズゲーム</title>
 
   <!-- Google API 読み込み -->
-  <script async defer src="https://accounts.google.com/gsi/client" onerror="console.error('Google Identity Services APIの読み込みに失敗しました');"></script>
-  <script async defer src="https://apis.google.com/js/api.js" onload="gapiLoaded()" onerror="console.error('Google APIの読み込みに失敗しました');"></script>
+  <script async defer src="https://accounts.google.com/gsi/client" onload="gisLoaded()" onerror="console.error('❌ Google Identity Services APIの読み込みに失敗しました');"></script>
+  <script async defer src="https://apis.google.com/js/api.js" onload="gapiLoaded()" onerror="console.error('❌ Google APIの読み込みに失敗しました');"></script>
 
   <style>
     body { margin: 0; padding: 20px; font-family: sans-serif; background-color: #f0f8ff; text-align: center; }
@@ -92,7 +92,7 @@
     let quizData = [];
 
     /*****************************************************************
-     * 2) 認証 & データ取得
+     * 2) Google API 読み込み
      *****************************************************************/
     function gapiLoaded() {
       console.log("✅ GAPI 読み込み完了");
@@ -128,10 +128,14 @@
 
     function maybeEnableButton() {
       const loginBtn = document.getElementById("login-btn");
+      console.log("🔄 API準備状況:", { gapiInited, gisInited });
+
       if (gapiInited && gisInited) {
         loginBtn.style.display = "inline-block";
         loginBtn.onclick = () => tokenClient.requestAccessToken({ prompt: "" });
-        console.log("✅ ログインボタン有効化");
+        console.log("✅ ログインボタン表示完了");
+      } else {
+        console.warn("❌ APIの初期化が完了していません");
       }
     }
 
@@ -163,27 +167,15 @@
     }
 
     /*****************************************************************
-     * 4) Google Drive 画像URLの変換
-     *****************************************************************/
-    function formatDriveImage(url) {
-      const match = url.match(/id=([a-zA-Z0-9_-]+)/);
-      return match ? `https://lh3.googleusercontent.com/d/${match[1]}=w500-h500` : url;
-    }
-
-    /*****************************************************************
-     * 5) 戦闘開始
+     * 4) 戦闘開始 & クイズ表示
      *****************************************************************/
     function startBattle() {
       document.getElementById("battle-screen").style.display = "block";
       showQuiz();
     }
 
-    /*****************************************************************
-     * 6) クイズ表示
-     *****************************************************************/
     function showQuiz() {
       if (quizData.length === 0) return alert("問題データがありません");
-
       let q = quizData[Math.floor(Math.random() * quizData.length)];
       document.getElementById("top-text-box").textContent = q.question;
       document.getElementById("quiz-image").src = q.imageUrl;
