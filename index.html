@@ -64,33 +64,29 @@
       });
     }
 
-    function drawPlayer() {
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
-      ctx.fillStyle = "red";
-      ctx.fillRect(player.x - 10, player.y - 10, 20, 20);
-    }
+    async function loadQuizData() {
+      try {
+        const resp = await gapi.client.sheets.spreadsheets.values.get({
+          spreadsheetId: QUESTION_SHEET_ID,
+          range: `${SHEET_NAME}!A2:K1000`
+        });
 
-    function startDrag(event) {
-      if (inBattle) return;
-      isDragging = true;
-    }
+        if (!resp.result.values || resp.result.values.length === 0) {
+          throw new Error("スプレッドシートにクイズデータがありません");
+        }
 
-    function dragMove(event) {
-      if (!isDragging) return;
-      let rect = canvas.getBoundingClientRect();
-      player.x = event.clientX - rect.left;
-      player.y = event.clientY - rect.top;
-      player.steps++;
+        quizData = resp.result.values.map(row => ({
+          question: row[1] || "",
+          imageUrl: row[2] ? convertGoogleDriveURL(row[2]) : "",
+          choices: [row[3], row[4], row[5], row[6]],
+          correct: parseInt(row[7] || "1", 10),
+          explanation: row[10] || ""
+        }));
 
-      drawPlayer();
-
-      if (player.steps % Math.floor(Math.random() * 20 + 10) === 0) {
-        startEncounter();
+        console.log("✅ クイズデータ取得成功:", quizData);
+      } catch (err) {
+        console.error("⛔ クイズデータ取得エラー:", err);
       }
-    }
-
-    function endDrag() {
-      isDragging = false;
     }
 
     function startEncounter() {
@@ -98,20 +94,27 @@
       document.getElementById("battle-screen").style.display = "block";
       document.getElementById("gameCanvas").style.display = "none";
       showQuiz();
-      showEnemies();
     }
 
-    function showEnemies() {
-      let enemyContainer = document.getElementById("enemy-container");
-      enemyContainer.innerHTML = "";
-      let selectedEnemies = enemyData.sort(() => 0.5 - Math.random()).slice(0, 4);
+    function showQuiz() {
+      if (!quizData || quizData.length === 0) {
+        document.getElementById("top-text-box").textContent = "クイズデータがありません";
+        return;
+      }
 
-      selectedEnemies.forEach(enemy => {
-        let img = document.createElement("img");
-        img.src = enemy.imageUrl;
-        img.style.width = "80px";
-        img.style.height = "80px";
-        enemyContainer.appendChild(img);
+      let currentQuiz = quizData[Math.floor(Math.random() * quizData.length)];
+      document.getElementById("top-text-box").textContent = currentQuiz.question;
+      document.getElementById("quiz-image").src = currentQuiz.imageUrl;
+      document.getElementById("quiz-image").style.display = "block";
+
+      let choiceArea = document.getElementById("choice-area");
+      choiceArea.innerHTML = "";
+      currentQuiz.choices.forEach((choice, index) => {
+        let btn = document.createElement("button");
+        btn.className = "choice-button";
+        btn.textContent = `▶ ${choice}`;
+        btn.onclick = () => handleAnswer(index + 1, currentQuiz.correct, currentQuiz.explanation);
+        choiceArea.appendChild(btn);
       });
     }
 
@@ -124,10 +127,7 @@
     function initGame() {
       canvas = document.getElementById("gameCanvas");
       ctx = canvas.getContext("2d");
-
-      // ✅ プレイヤーの描画を修正（復活）
       drawPlayer();
-
       canvas.addEventListener("mousedown", startDrag);
       canvas.addEventListener("mousemove", dragMove);
       canvas.addEventListener("mouseup", endDrag);
