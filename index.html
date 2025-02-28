@@ -94,36 +94,49 @@
 
     // シートから画像URL（C列）を読み込み、画像表示
     async function loadSheetImages() {
-      try {
-        const response = await gapi.client.sheets.spreadsheets.values.get({
-          spreadsheetId: SHEET_ID,
-          range: `${SHEET_NAME}!A1:J1000`
-        });
-        const values = response.result.values;
-        if (!values || values.length < 2) {
-          console.error("スプレッドシートにデータがありません");
-          return;
+  try {
+    const response = await gapi.client.sheets.spreadsheets.values.get({
+      spreadsheetId: SHEET_ID,
+      range: `${SHEET_NAME}!A1:J1000`
+    });
+    const values = response.result.values;
+    if (!values || values.length < 2) {
+      console.error("スプレッドシートにデータがありません");
+      return;
+    }
+
+    const container = document.getElementById("image-container");
+    container.innerHTML = ""; // 画像の重複を防ぐ
+
+    for (let i = 1; i < values.length; i++) {
+      const row = values[i];
+      let imageUrl = row[2] || "";
+
+      if (imageUrl.includes("drive.google.com")) {
+        // Google Drive のURLを変換
+        const match = imageUrl.match(/id=([a-zA-Z0-9_-]+)/);
+        if (match) {
+          const fileId = match[1];
+          imageUrl = `https://lh3.googleusercontent.com/d/${fileId}=w500-h500`;
         }
-        // 1行目はヘッダーとして、2行目以降のC列（index 2）のURLを利用
-        const container = document.getElementById("image-container");
-        for (let i = 1; i < values.length; i++) {
-          const row = values[i];
-          const imageUrl = row[2] || "";
-          if (imageUrl) {
-            const img = document.createElement("img");
-            img.src = imageUrl;
-            img.alt = "画像";
-            img.onerror = function() {
-              this.onerror = null;
-              this.src = "https://placehold.jp/200x100.png?text=No+Image";
-            };
-            container.appendChild(img);
-          }
-        }
-      } catch (error) {
-        console.error("シートの画像読み込みエラー:", error);
+      }
+
+      if (imageUrl) {
+        const img = document.createElement("img");
+        img.src = imageUrl;
+        img.alt = "画像";
+        img.onerror = function() {
+          this.onerror = null;
+          this.src = "https://placehold.jp/200x100.png?text=No+Image";
+        };
+        container.appendChild(img);
       }
     }
+  } catch (error) {
+    console.error("シートの画像読み込みエラー:", error);
+  }
+}
+
   </script>
 </body>
 </html>
