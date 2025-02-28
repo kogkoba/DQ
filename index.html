@@ -13,6 +13,10 @@
       border: 2px solid white;
     }
     #status { font-size: 20px; margin: 10px; }
+    #battle-screen { display: none; background: black; padding: 20px; text-align: center; }
+    #top-text-box { border: 2px solid white; padding: 10px; margin-bottom: 10px; color: white; }
+    #enemy-container img { width: 80px; height: 80px; margin: 5px; }
+    .choice-button { display: block; margin: 10px auto; padding: 10px; width: 200px; font-size: 18px; }
   </style>
 </head>
 <body>
@@ -21,54 +25,143 @@
   <div id="status">プレイヤーのHP: <span id="hp">100</span> / レベル: <span id="level">1</span></div>
   <canvas id="gameCanvas" width="600" height="400"></canvas>
 
+  <!-- 戦闘画面 -->
+  <div id="battle-screen">
+    <div id="top-text-box">モンスターがあらわれた！</div>
+    <div id="enemy-container"></div>
+    <img id="quiz-image" src="" style="display: none; width: 200px; height: 200px;">
+    <div id="choice-area"></div>
+  </div>
+
+  <!-- Google APIのスクリプト -->
+  <script async defer src="https://apis.google.com/js/api.js" onload="gapiLoaded()" onerror="console.error('❌ Google APIの読み込みに失敗しました');"></script>
+
   <script>
+    const SHEET_ID = "1t08cjUMrug0nvIpredcxjuoxejDRazqqzLTqjVraJhw";
+    const SHEET_NAME = "sheet1";
+    const API_KEY = "AIzaSyBszPu-BQ2_Aq9C3lhAiW--kyenM5vQsjs";
+
     let player = { x: 300, y: 200, hp: 100, level: 1, steps: 0 };
-    let isDragging = false;  // マウスドラッグ中かどうか
+    let isDragging = false;
+    let inBattle = false;
+    let quizData = [];
+    let enemies = [];
+    let correctCount = 0;
     let canvas, ctx;
 
     // ✅ プレイヤーを描画する関数
     function drawPlayer() {
-      ctx.clearRect(0, 0, canvas.width, canvas.height); // 画面をクリア
-      ctx.fillStyle = "red"; // プレイヤーの色（赤）
-      ctx.fillRect(player.x - 10, player.y - 10, 20, 20); // プレイヤーの描画
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      ctx.fillStyle = "red";
+      ctx.fillRect(player.x - 10, player.y - 10, 20, 20);
     }
 
-    // ✅ マウスのドラッグ操作でプレイヤーを移動
+    // ✅ Google DriveのURLを画像URLに変換する関数
+    function convertGoogleDriveURL(url) {
+      if (!url) return "";
+      let match = url.match(/(?:id=|\/d\/)([a-zA-Z0-9_-]+)/);
+      return match ? `https://lh3.googleusercontent.com/d/${match[1]}=s0` : url;
+    }
+
+    // ✅ マウスドラッグでプレイヤーを移動
     function startDrag(event) {
+      if (inBattle) return;
       isDragging = true;
     }
 
     function dragMove(event) {
       if (!isDragging) return;
-
-      // マウス座標をキャンバス内の座標に変換
       let rect = canvas.getBoundingClientRect();
       player.x = event.clientX - rect.left;
       player.y = event.clientY - rect.top;
+      player.steps++;
 
-      drawPlayer(); // 位置を更新して再描画
+      drawPlayer();
+
+      // ランダム歩数（10~30歩）ごとに戦闘開始
+      if (player.steps % Math.floor(Math.random() * 20 + 10) === 0) {
+        startEncounter();
+      }
     }
 
     function endDrag() {
       isDragging = false;
     }
 
-    // ✅ 初期化関数（canvasとイベントを設定）
+    // ✅ 戦闘開始（エンカウント）
+    function startEncounter() {
+      inBattle = true;
+      document.getElementById("battle-screen").style.display = "block";
+      document.getElementById("gameCanvas").style.display = "none";
+
+      showQuiz();
+    }
+
+    // ✅ クイズと敵を表示
+    function showQuiz() {
+      if (!quizData || quizData.length === 0) {
+        document.getElementById("top-text-box").textContent = "クイズデータがありません";
+        return;
+      }
+
+      let currentQuiz = quizData[Math.floor(Math.random() * quizData.length)];
+      document.getElementById("top-text-box").textContent = currentQuiz.question;
+      document.getElementById("quiz-image").src = currentQuiz.imageUrl;
+      document.getElementById("quiz-image").style.display = "block";
+
+      let choiceArea = document.getElementById("choice-area");
+      choiceArea.innerHTML = "";
+      for (let i = 1; i <= 4; i++) {
+        let btn = document.createElement("button");
+        btn.className = "choice-button";
+        btn.textContent = `▶ ${currentQuiz["choice" + i]}`;
+        btn.onclick = () => handleAnswer(i, currentQuiz.correct);
+        choiceArea.appendChild(btn);
+      }
+    }
+
+    // ✅ プレイヤーの回答処理
+    function handleAnswer(choice, correct) {
+      if (choice === correct) {
+        correctCount++;
+        document.getElementById("top-text-box").textContent = "正解！敵は倒れた！";
+        if (correctCount >= 4) endBattle();
+      } else {
+        document.getElementById("top-text-box").textContent = "ミス！プレイヤーに25ダメージ！";
+        player.hp -= 25;
+        document.getElementById("hp").textContent = player.hp;
+        if (player.hp <= 0) gameOver();
+      }
+    }
+
+    // ✅ 戦闘終了
+    function endBattle() {
+      inBattle = false;
+      correctCount = 0;
+      document.getElementById("battle-screen").style.display = "none";
+      document.getElementById("gameCanvas").style.display = "block";
+    }
+
+    // ✅ ゲームオーバー
+    function gameOver() {
+      document.getElementById("top-text-box").textContent = "ゲームオーバー！";
+      setTimeout(() => alert("ザオリク？"), 1000);
+      player.hp = 100;
+      document.getElementById("hp").textContent = player.hp;
+      endBattle();
+    }
+
+    // ✅ ゲーム開始時にプレイヤーを描画
     function initGame() {
       canvas = document.getElementById("gameCanvas");
       ctx = canvas.getContext("2d");
-
-      drawPlayer(); // 初回のプレイヤー描画
-
-      // イベントリスナーを設定（マウスドラッグ処理）
+      drawPlayer();
       canvas.addEventListener("mousedown", startDrag);
       canvas.addEventListener("mousemove", dragMove);
       canvas.addEventListener("mouseup", endDrag);
-      canvas.addEventListener("mouseleave", endDrag);
     }
 
-    window.onload = initGame; // ゲーム開始時に初期化
+    window.onload = initGame;
   </script>
-
 </body>
 </html>
