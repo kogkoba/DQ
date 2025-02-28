@@ -1,7 +1,6 @@
 <!DOCTYPE html>
 <html lang="ja">
 <head>
-  １
   <meta charset="UTF-8">
   <title>ドラクエ風クイズRPG</title>
   <style>
@@ -65,32 +64,67 @@
       });
     }
 
-    function convertGoogleDriveURL(url) {
-      if (!url) return "";
-      let match = url.match(/(?:id=|\/d\/)([a-zA-Z0-9_-]+)/);
-      return match ? `https://drive.google.com/uc?export=view&id=${match[1]}` : url;
-    }
-
-    async function loadEnemyData() {
+    async function loadQuizData() {
       try {
         const resp = await gapi.client.sheets.spreadsheets.values.get({
-          spreadsheetId: ENEMY_SHEET_ID,
-          range: `${SHEET_NAME}!A2:C100`
+          spreadsheetId: QUESTION_SHEET_ID,
+          range: `${SHEET_NAME}!A2:K1000`
         });
 
         if (!resp.result.values || resp.result.values.length === 0) {
-          throw new Error("スプレッドシートに敵データがありません");
+          throw new Error("スプレッドシートにクイズデータがありません");
         }
 
-        enemyData = resp.result.values.map(row => ({
-          name: row[1] || "",
-          imageUrl: row[2] ? convertGoogleDriveURL(row[2]) : ""
+        quizData = resp.result.values.map(row => ({
+          question: row[1] || "",
+          imageUrl: row[2] ? convertGoogleDriveURL(row[2]) : "",
+          choices: [row[3], row[4], row[5], row[6]],
+          correct: parseInt(row[7] || "1", 10),
+          explanation: row[10] || ""
         }));
 
-        console.log("✅ 敵データ取得成功:", enemyData);
+        console.log("✅ クイズデータ取得成功:", quizData);
       } catch (err) {
-        console.error("⛔ 敵データ取得エラー:", err);
+        console.error("⛔ クイズデータ取得エラー:", err);
       }
+    }
+
+    function startEncounter() {
+      inBattle = true;
+      document.getElementById("battle-screen").style.display = "block";
+      document.getElementById("gameCanvas").style.display = "none";
+      showQuiz();
+    }
+
+    function showQuiz() {
+      if (!quizData || quizData.length === 0) {
+        document.getElementById("top-text-box").textContent = "クイズデータがありません";
+        return;
+      }
+
+      let currentQuiz = quizData[Math.floor(Math.random() * quizData.length)];
+      document.getElementById("top-text-box").textContent = currentQuiz.question;
+      document.getElementById("quiz-image").src = currentQuiz.imageUrl;
+      document.getElementById("quiz-image").style.display = "block";
+
+      let choiceArea = document.getElementById("choice-area");
+      choiceArea.innerHTML = "";
+      currentQuiz.choices.forEach((choice, index) => {
+        let btn = document.createElement("button");
+        btn.className = "choice-button";
+        btn.textContent = `▶ ${choice}`;
+        btn.onclick = () => handleAnswer(index + 1, currentQuiz.correct, currentQuiz.explanation);
+        choiceArea.appendChild(btn);
+      });
+    }
+
+    function initGame() {
+      canvas = document.getElementById("gameCanvas");
+      ctx = canvas.getContext("2d");
+      drawPlayer();
+      canvas.addEventListener("mousedown", startDrag);
+      canvas.addEventListener("mousemove", dragMove);
+      canvas.addEventListener("mouseup", endDrag);
     }
 
     function drawPlayer() {
@@ -120,17 +154,6 @@
 
     function endDrag() {
       isDragging = false;
-    }
-
-    function initGame() {
-      canvas = document.getElementById("gameCanvas");
-      ctx = canvas.getContext("2d");
-
-      drawPlayer();
-
-      canvas.addEventListener("mousedown", startDrag);
-      canvas.addEventListener("mousemove", dragMove);
-      canvas.addEventListener("mouseup", endDrag);
     }
 
     window.onload = initGame;
