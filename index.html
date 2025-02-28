@@ -172,10 +172,22 @@
 
     function showQuiz() {
       if (quizData.length === 0) return alert("問題データがありません");
-      let q = quizData[Math.floor(Math.random() * quizData.length)];
-      document.getElementById("top-text-box").textContent = q.question;
-      document.getElementById("quiz-image").src = q.imageUrl;
 
+      let q = quizData[Math.floor(Math.random() * quizData.length)];
+
+      document.getElementById("top-text-box").textContent = q.question;
+
+      // 画像 URL の適用
+      console.log("画像URL:", q.imageUrl);
+      let quizImage = document.getElementById("quiz-image");
+      if (q.imageUrl && q.imageUrl.startsWith("http")) {
+        quizImage.src = q.imageUrl;
+        quizImage.style.display = "block";
+      } else {
+        quizImage.style.display = "none"; // URL が無効なら非表示
+      }
+
+      // 選択肢の表示
       let choiceArea = document.getElementById("choice-area");
       choiceArea.innerHTML = "";
       for (let i = 1; i <= 4; i++) {
