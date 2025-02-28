@@ -2,6 +2,98 @@
 <html lang="ja">
 <head>
   <meta charset="UTF-8">
+  <title>画像表示テスト</title>
+  
+  <!-- Google API 読み込み -->
+  <script async defer src="https://apis.google.com/js/api.js" onload="gapiLoaded()" onerror="console.error('❌ Google APIの読み込みに失敗しました');"></script>
+
+  <style>
+    body { text-align: center; font-family: Arial, sans-serif; }
+    #image-container img { max-width: 80%; height: auto; margin: 10px auto; display: block; }
+  </style>
+</head>
+<body>
+
+  <h1>スプレッドシートの画像表示</h1>
+  <button onclick="loadImages()">画像を取得</button>
+  <div id="image-container"></div>
+
+  <script>
+    const API_KEY = "AIzaSyBszPu-BQ2_Aq9C3lhAiW--kyenM5vQsjs";  // 自分のAPIキーに変更
+    const SHEET_ID = "1GyKDfVQCNrBlkxjsrQDv_ouIio9yjO3mVQy6Ds5uQzg";  // スプレッドシートID
+    const SHEET_NAME = "sheet1";  // シート名
+
+    function gapiLoaded() {
+      console.log("✅ Google API 読み込み完了");
+      gapi.load("client", async () => {
+        try {
+          await gapi.client.init({ apiKey: API_KEY, discoveryDocs: ["https://sheets.googleapis.com/$discovery/rest?version=v4"] });
+          console.log("✅ GAPI 初期化完了");
+        } catch (err) {
+          console.error("⛔ GAPI 初期化エラー:", err);
+        }
+      });
+    }
+
+    async function loadImages() {
+      try {
+        const resp = await gapi.client.sheets.spreadsheets.values.get({
+          spreadsheetId: SHEET_ID,
+          range: `${SHEET_NAME}!C2:C100`  // C列のデータ取得
+        });
+
+        if (!resp.result.values || resp.result.values.length === 0) {
+          throw new Error("スプレッドシートに画像URLがありません");
+        }
+
+        let imageContainer = document.getElementById("image-container");
+        imageContainer.innerHTML = "";  // クリア
+
+        resp.result.values.forEach(row => {
+          let imageUrl = row[0];
+
+          // Google DriveのURLを適切な形式に変換
+          let match = imageUrl.match(/(?:id=|\/d\/)([a-zA-Z0-9_-]+)/);
+          if (match) {
+            let fileId = match[1];
+            imageUrl = `https://drive.google.com/uc?id=${fileId}`;
+          }
+
+          let img = document.createElement("img");
+          img.src = imageUrl;
+          img.alt = "スプレッドシート画像";
+          imageContainer.appendChild(img);
+        });
+
+        console.log("✅ 画像を表示しました");
+      } catch (err) {
+        console.error("⛔ 画像取得エラー:", err);
+      }
+    }
+  </script>
+</body>
+</html>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
   <title>ドラクエ風クイズゲーム</title>
 
   <!-- Google API 読み込み -->
