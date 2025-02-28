@@ -45,8 +45,6 @@
     let isDragging = false;
     let inBattle = false;
     let quizData = [];
-    let enemies = [];
-    let correctCount = 0;
     let canvas, ctx;
 
     // ✅ Google API 読み込み完了時に呼ばれる関数
@@ -98,19 +96,58 @@
       return match ? `https://lh3.googleusercontent.com/d/${match[1]}=s0` : url;
     }
 
+    // ✅ プレイヤーを描画する関数
+    function drawPlayer() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      ctx.fillStyle = "red";
+      ctx.fillRect(player.x - 10, player.y - 10, 20, 20);
+    }
+
+    // ✅ マウスドラッグでプレイヤーを移動
+    function startDrag(event) {
+      if (inBattle) return;
+      isDragging = true;
+    }
+
+    function dragMove(event) {
+      if (!isDragging) return;
+      let rect = canvas.getBoundingClientRect();
+      player.x = event.clientX - rect.left;
+      player.y = event.clientY - rect.top;
+      player.steps++;
+
+      drawPlayer();
+
+      // ランダム歩数（10~30歩）ごとに戦闘開始
+      if (player.steps % Math.floor(Math.random() * 20 + 10) === 0) {
+        startEncounter();
+      }
+    }
+
+    function endDrag() {
+      isDragging = false;
+    }
+
+    // ✅ 戦闘開始（エンカウント）
+    function startEncounter() {
+      inBattle = true;
+      document.getElementById("battle-screen").style.display = "block";
+      document.getElementById("gameCanvas").style.display = "none";
+      showQuiz();
+    }
+
     // ✅ ゲーム開始時の初期化処理
     function initGame() {
       canvas = document.getElementById("gameCanvas");
       ctx = canvas.getContext("2d");
 
       drawPlayer();
-    }
 
-    // ✅ プレイヤーを描画する関数
-    function drawPlayer() {
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
-      ctx.fillStyle = "red";
-      ctx.fillRect(player.x - 10, player.y - 10, 20, 20);
+      // 🛠 ここが修正ポイント → マウスドラッグのイベントリスナーを追加
+      canvas.addEventListener("mousedown", startDrag);
+      canvas.addEventListener("mousemove", dragMove);
+      canvas.addEventListener("mouseup", endDrag);
+      canvas.addEventListener("mouseleave", endDrag);
     }
 
     window.onload = initGame;
