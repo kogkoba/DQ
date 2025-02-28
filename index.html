@@ -49,11 +49,46 @@
     let correctCount = 0;
     let canvas, ctx;
 
-    // ✅ プレイヤーを描画する関数
-    function drawPlayer() {
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
-      ctx.fillStyle = "red";
-      ctx.fillRect(player.x - 10, player.y - 10, 20, 20);
+    // ✅ Google API 読み込み完了時に呼ばれる関数
+    function gapiLoaded() {
+      console.log("✅ Google API 読み込み完了");
+      gapi.load("client", async () => {
+        try {
+          await gapi.client.init({ apiKey: API_KEY, discoveryDocs: ["https://sheets.googleapis.com/$discovery/rest?version=v4"] });
+          console.log("✅ GAPI 初期化完了");
+          loadQuizData();
+        } catch (err) {
+          console.error("⛔ GAPI 初期化エラー:", err);
+        }
+      });
+    }
+
+    // ✅ クイズデータをスプレッドシートから取得
+    async function loadQuizData() {
+      try {
+        const resp = await gapi.client.sheets.spreadsheets.values.get({
+          spreadsheetId: SHEET_ID,
+          range: `${SHEET_NAME}!A2:J1000`
+        });
+
+        if (!resp.result.values || resp.result.values.length === 0) {
+          throw new Error("スプレッドシートにクイズデータがありません");
+        }
+
+        quizData = resp.result.values.map(row => ({
+          question: row[1] || "",
+          imageUrl: row[2] ? convertGoogleDriveURL(row[2]) : "",
+          choice1: row[3] || "",
+          choice2: row[4] || "",
+          choice3: row[5] || "",
+          choice4: row[6] || "",
+          correct: parseInt(row[7] || "1", 10),
+        }));
+
+        console.log("✅ クイズデータ取得成功:", quizData);
+      } catch (err) {
+        console.error("⛔ クイズデータ取得エラー:", err);
+      }
     }
 
     // ✅ Google DriveのURLを画像URLに変換する関数
@@ -63,102 +98,19 @@
       return match ? `https://lh3.googleusercontent.com/d/${match[1]}=s0` : url;
     }
 
-    // ✅ マウスドラッグでプレイヤーを移動
-    function startDrag(event) {
-      if (inBattle) return;
-      isDragging = true;
-    }
-
-    function dragMove(event) {
-      if (!isDragging) return;
-      let rect = canvas.getBoundingClientRect();
-      player.x = event.clientX - rect.left;
-      player.y = event.clientY - rect.top;
-      player.steps++;
-
-      drawPlayer();
-
-      // ランダム歩数（10~30歩）ごとに戦闘開始
-      if (player.steps % Math.floor(Math.random() * 20 + 10) === 0) {
-        startEncounter();
-      }
-    }
-
-    function endDrag() {
-      isDragging = false;
-    }
-
-    // ✅ 戦闘開始（エンカウント）
-    function startEncounter() {
-      inBattle = true;
-      document.getElementById("battle-screen").style.display = "block";
-      document.getElementById("gameCanvas").style.display = "none";
-
-      showQuiz();
-    }
-
-    // ✅ クイズと敵を表示
-    function showQuiz() {
-      if (!quizData || quizData.length === 0) {
-        document.getElementById("top-text-box").textContent = "クイズデータがありません";
-        return;
-      }
-
-      let currentQuiz = quizData[Math.floor(Math.random() * quizData.length)];
-      document.getElementById("top-text-box").textContent = currentQuiz.question;
-      document.getElementById("quiz-image").src = currentQuiz.imageUrl;
-      document.getElementById("quiz-image").style.display = "block";
-
-      let choiceArea = document.getElementById("choice-area");
-      choiceArea.innerHTML = "";
-      for (let i = 1; i <= 4; i++) {
-        let btn = document.createElement("button");
-        btn.className = "choice-button";
-        btn.textContent = `▶ ${currentQuiz["choice" + i]}`;
-        btn.onclick = () => handleAnswer(i, currentQuiz.correct);
-        choiceArea.appendChild(btn);
-      }
-    }
-
-    // ✅ プレイヤーの回答処理
-    function handleAnswer(choice, correct) {
-      if (choice === correct) {
-        correctCount++;
-        document.getElementById("top-text-box").textContent = "正解！敵は倒れた！";
-        if (correctCount >= 4) endBattle();
-      } else {
-        document.getElementById("top-text-box").textContent = "ミス！プレイヤーに25ダメージ！";
-        player.hp -= 25;
-        document.getElementById("hp").textContent = player.hp;
-        if (player.hp <= 0) gameOver();
-      }
-    }
-
-    // ✅ 戦闘終了
-    function endBattle() {
-      inBattle = false;
-      correctCount = 0;
-      document.getElementById("battle-screen").style.display = "none";
-      document.getElementById("gameCanvas").style.display = "block";
-    }
-
-    // ✅ ゲームオーバー
-    function gameOver() {
-      document.getElementById("top-text-box").textContent = "ゲームオーバー！";
-      setTimeout(() => alert("ザオリク？"), 1000);
-      player.hp = 100;
-      document.getElementById("hp").textContent = player.hp;
-      endBattle();
-    }
-
-    // ✅ ゲーム開始時にプレイヤーを描画
+    // ✅ ゲーム開始時の初期化処理
     function initGame() {
       canvas = document.getElementById("gameCanvas");
       ctx = canvas.getContext("2d");
+
       drawPlayer();
-      canvas.addEventListener("mousedown", startDrag);
-      canvas.addEventListener("mousemove", dragMove);
-      canvas.addEventListener("mouseup", endDrag);
+    }
+
+    // ✅ プレイヤーを描画する関数
+    function drawPlayer() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      ctx.fillStyle = "red";
+      ctx.fillRect(player.x - 10, player.y - 10, 20, 20);
     }
 
     window.onload = initGame;
