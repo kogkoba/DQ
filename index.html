@@ -71,6 +71,16 @@
           throw new Error("スプレッドシートにクイズデータがありません");
         }
 
+        function drawPlayer() {
+  let canvas = document.getElementById("gameCanvas");
+  let ctx = canvas.getContext("2d");
+
+  ctx.clearRect(0, 0, canvas.width, canvas.height); // 画面をクリア
+  ctx.fillStyle = "red"; // プレイヤーの色（赤）
+  ctx.fillRect(player.x - 10, player.y - 10, 20, 20); // プレイヤーの描画
+}
+
+
         quizData = resp.result.values.map(row => ({
           question: row[1] || "",
           imageUrl: row[2] ? convertGoogleDriveURL(row[2]) : "",
