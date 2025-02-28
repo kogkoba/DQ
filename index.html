@@ -6,13 +6,12 @@
   <style>
     body { margin: 0; padding: 20px; font-family: sans-serif; text-align: center; background-color: #222; color: #fff; }
     canvas {
-  background: url('フィールド画像.png') no-repeat center center;
-  background-size: cover;
-  display: block;
-  margin: auto;
-  border: 2px solid white; /* 追加 */
-}
-
+      background: url('フィールド画像.png') no-repeat center center;
+      background-size: cover;
+      display: block;
+      margin: auto;
+      border: 2px solid white;
+    }
     #status { font-size: 20px; margin: 10px; }
     #battle-screen { display: none; background: black; padding: 20px; text-align: center; }
     #top-text-box { border: 2px solid white; padding: 10px; margin-bottom: 10px; }
@@ -47,19 +46,24 @@
     let enemies = [];
     let correctCount = 0;
 
-
-    window.onload = function () {
-  drawPlayer(); // ゲーム開始時にプレイヤーを描画
-};
-
-
-    // ✅ Google DriveのURLを画像URLに変換する関数（ここを追加！）
+    // ✅ Google DriveのURLを画像URLに変換する関数
     function convertGoogleDriveURL(url) {
       if (!url) return ""; // URLが空ならそのまま返す
       let match = url.match(/(?:id=|\/d\/)([a-zA-Z0-9_-]+)/);
       return match ? `https://lh3.googleusercontent.com/d/${match[1]}=s0` : url;
     }
 
+    // ✅ プレイヤーを描画する関数
+    function drawPlayer() {
+      let canvas = document.getElementById("gameCanvas");
+      let ctx = canvas.getContext("2d");
+
+      ctx.clearRect(0, 0, canvas.width, canvas.height); // 画面をクリア
+      ctx.fillStyle = "red"; // プレイヤーの色（赤）
+      ctx.fillRect(player.x - 10, player.y - 10, 20, 20); // プレイヤーの描画
+    }
+
+    // ✅ Google APIの初期化
     function gapiLoaded() {
       console.log("✅ Google API 読み込み完了");
       gapi.load("client", async () => {
@@ -73,6 +77,7 @@
       });
     }
 
+    // ✅ クイズデータをスプレッドシートから取得
     async function loadQuizData() {
       try {
         const resp = await gapi.client.sheets.spreadsheets.values.get({
@@ -83,16 +88,6 @@
         if (!resp.result.values || resp.result.values.length === 0) {
           throw new Error("スプレッドシートにクイズデータがありません");
         }
-
-        function drawPlayer() {
-  let canvas = document.getElementById("gameCanvas");
-  let ctx = canvas.getContext("2d");
-
-  ctx.clearRect(0, 0, canvas.width, canvas.height); // 画面をクリア
-  ctx.fillStyle = "red"; // プレイヤーの色（赤）
-  ctx.fillRect(player.x - 10, player.y - 10, 20, 20); // プレイヤーの描画
-}
-
 
         quizData = resp.result.values.map(row => ({
           question: row[1] || "",
@@ -109,6 +104,11 @@
         console.error("⛔ クイズデータ取得エラー:", err);
       }
     }
+
+    // ✅ ゲーム開始時にプレイヤーを描画
+    window.onload = function () {
+      drawPlayer(); // ゲーム開始時にプレイヤーを描画
+    };
   </script>
 </body>
 </html>
