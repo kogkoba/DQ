@@ -1,10 +1,10 @@
 <!DOCTYPE html>
 <html lang="ja">
 <head>
+  １
   <meta charset="UTF-8">
   <title>画像表示テスト</title>
   
-  <!-- Google API 読み込み -->
   <script async defer src="https://apis.google.com/js/api.js" onload="gapiLoaded()" onerror="console.error('❌ Google APIの読み込みに失敗しました');"></script>
 
   <style>
@@ -19,9 +19,9 @@
   <div id="image-container"></div>
 
   <script>
-    const API_KEY = "AIzaSyBszPu-BQ2_Aq9C3lhAiW--kyenM5vQsjs";  // 自分のAPIキーに変更
-    const SHEET_ID = "1GyKDfVQCNrBlkxjsrQDv_ouIio9yjO3mVQy6Ds5uQzg";  // スプレッドシートID
-    const SHEET_NAME = "sheet1";  // シート名
+    const API_KEY = "AIzaSyBszPu-BQ2_Aq9C3lhAiW--kyenM5vQsjs";
+    const SHEET_ID = "1GyKDfVQCNrBlkxjsrQDv_ouIio9yjO3mVQy6Ds5uQzg";
+    const SHEET_NAME = "sheet1";
 
     function gapiLoaded() {
       console.log("✅ Google API 読み込み完了");
@@ -35,11 +35,19 @@
       });
     }
 
+    function convertGoogleDriveURL(url) {
+      let match = url.match(/(?:id=|\/d\/)([a-zA-Z0-9_-]+)/);
+      if (match) {
+        return `https://lh3.googleusercontent.com/d/${match[1]}=s0`;
+      }
+      return url;
+    }
+
     async function loadImages() {
       try {
         const resp = await gapi.client.sheets.spreadsheets.values.get({
           spreadsheetId: SHEET_ID,
-          range: `${SHEET_NAME}!C2:C100`  // C列のデータ取得
+          range: `${SHEET_NAME}!C2:C100`
         });
 
         if (!resp.result.values || resp.result.values.length === 0) {
@@ -47,21 +55,19 @@
         }
 
         let imageContainer = document.getElementById("image-container");
-        imageContainer.innerHTML = "";  // クリア
+        imageContainer.innerHTML = "";
 
         resp.result.values.forEach(row => {
           let imageUrl = row[0];
-
-          // Google DriveのURLを適切な形式に変換
-          let match = imageUrl.match(/(?:id=|\/d\/)([a-zA-Z0-9_-]+)/);
-          if (match) {
-            let fileId = match[1];
-            imageUrl = `https://drive.google.com/uc?id=${fileId}`;
-          }
+          imageUrl = convertGoogleDriveURL(imageUrl);
 
           let img = document.createElement("img");
           img.src = imageUrl;
           img.alt = "スプレッドシート画像";
+          img.onerror = function() {
+            console.warn("❌ 画像が読み込めませんでした: " + imageUrl);
+            this.style.display = "none";
+          };
           imageContainer.appendChild(img);
         });
 
@@ -73,6 +79,7 @@
   </script>
 </body>
 </html>
+
 
 
 
