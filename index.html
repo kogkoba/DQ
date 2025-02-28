@@ -239,6 +239,15 @@ function showQuiz() {
   topTextBox.textContent = q.question || "問題文が空です";
   quizImage.src = q.imageUrl || "";
 
+  // Google Drive のURL変換処理を追加
+  let imageUrl = q.imageUrl;
+  if (imageUrl.includes("drive.google.com")) {
+    let fileId = imageUrl.match(/id=([a-zA-Z0-9_-]+)/);
+    if (fileId && fileId[1]) {
+      imageUrl = `https://drive.google.com/thumbnail?id=${fileId[1]}&sz=w1000`;
+    }
+  }
+  
   choiceArea.innerHTML = "";
   for (let i = 1; i <= 4; i++) {
     let btn = document.createElement("button");
@@ -308,10 +317,9 @@ async function updateMissedCount(questionID, newMissedCount) {
       valueInputOption: "USER_ENTERED",
       values: [[ newMissedCount ]]
     });
-    console.log(`I列に間違い回数(${newMissedCount})を更新: row=${rowNum}`, result);
-  } catch (err) {
-    console.error("I列更新エラー:", err);
-  }
+     console.log("変換後の画像URL:", imageUrl);
+  quizImage.src = imageUrl || "https://placehold.jp/300x200.png?text=No+Image";
+}
 }
 
 /*****************************************************************
