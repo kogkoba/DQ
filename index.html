@@ -15,7 +15,7 @@
     #status { font-size: 20px; margin: 10px; }
     #battle-screen { display: none; background: black; padding: 20px; text-align: center; }
     #top-text-box { border: 2px solid white; padding: 10px; margin-bottom: 10px; color: white; }
-    #enemy-container img { width: 80px; height: 80px; margin: 5px; } /* 敵画像を1/4サイズに調整 */
+    #enemy-container img { width: 80px; height: 80px; margin: 5px; }
     .choice-button { display: block; margin: 10px auto; padding: 10px; width: 200px; font-size: 18px; }
   </style>
 </head>
@@ -64,52 +64,33 @@
       });
     }
 
-    async function loadQuizData() {
-      try {
-        const resp = await gapi.client.sheets.spreadsheets.values.get({
-          spreadsheetId: QUESTION_SHEET_ID,
-          range: `${SHEET_NAME}!A2:K1000`
-        });
+    function drawPlayer() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      ctx.fillStyle = "red";
+      ctx.fillRect(player.x - 10, player.y - 10, 20, 20);
+    }
 
-        if (!resp.result.values || resp.result.values.length === 0) {
-          throw new Error("スプレッドシートにクイズデータがありません");
-        }
+    function startDrag(event) {
+      if (inBattle) return;
+      isDragging = true;
+    }
 
-        quizData = resp.result.values.map(row => ({
-          question: row[1] || "",
-          imageUrl: row[2] ? convertGoogleDriveURL(row[2]) : "",
-          choices: [row[3], row[4], row[5], row[6]],
-          correct: parseInt(row[7] || "1", 10),
-          mistakeCountCell: row[9] || "",
-          explanation: row[10] || ""
-        }));
+    function dragMove(event) {
+      if (!isDragging) return;
+      let rect = canvas.getBoundingClientRect();
+      player.x = event.clientX - rect.left;
+      player.y = event.clientY - rect.top;
+      player.steps++;
 
-        console.log("✅ クイズデータ取得成功:", quizData);
-      } catch (err) {
-        console.error("⛔ クイズデータ取得エラー:", err);
+      drawPlayer();
+
+      if (player.steps % Math.floor(Math.random() * 20 + 10) === 0) {
+        startEncounter();
       }
     }
 
-    async function loadEnemyData() {
-      try {
-        const resp = await gapi.client.sheets.spreadsheets.values.get({
-          spreadsheetId: ENEMY_SHEET_ID,
-          range: `${SHEET_NAME}!A2:C100`
-        });
-
-        if (!resp.result.values || resp.result.values.length === 0) {
-          throw new Error("スプレッドシートに敵データがありません");
-        }
-
-        enemyData = resp.result.values.map(row => ({
-          name: row[1] || "",
-          imageUrl: row[2] ? convertGoogleDriveURL(row[2]) : ""
-        }));
-
-        console.log("✅ 敵データ取得成功:", enemyData);
-      } catch (err) {
-        console.error("⛔ 敵データ取得エラー:", err);
-      }
+    function endDrag() {
+      isDragging = false;
     }
 
     function startEncounter() {
@@ -143,7 +124,10 @@
     function initGame() {
       canvas = document.getElementById("gameCanvas");
       ctx = canvas.getContext("2d");
+
+      // ✅ プレイヤーの描画を修正（復活）
       drawPlayer();
+
       canvas.addEventListener("mousedown", startDrag);
       canvas.addEventListener("mousemove", dragMove);
       canvas.addEventListener("mouseup", endDrag);
