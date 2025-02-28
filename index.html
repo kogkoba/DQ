@@ -1,13 +1,12 @@
 <!DOCTYPE html>
-１
 <html lang="ja">
 <head>
   <meta charset="UTF-8">
   <title>ドラクエ風クイズゲーム</title>
 
   <!-- Google API 読み込み -->
-  <script async defer src="https://accounts.google.com/gsi/client"></script>
-  <script async defer src="https://apis.google.com/js/api.js"></script>
+  <script async defer src="https://accounts.google.com/gsi/client" onerror="console.error('Google Identity Services APIの読み込みに失敗しました');"></script>
+  <script async defer src="https://apis.google.com/js/api.js" onload="gapiLoaded()" onerror="console.error('Google APIの読み込みに失敗しました');"></script>
 
   <style>
     body { margin: 0; padding: 20px; font-family: sans-serif; background-color: #f0f8ff; text-align: center; }
@@ -81,7 +80,7 @@
     /*****************************************************************
      * 1) Google Sheets API 設定
      *****************************************************************/
-    const SCOPES = "https://www.googleapis.com/auth/spreadsheets";
+    const SCOPES = "https://www.googleapis.com/auth/spreadsheets.readonly";
     const CLIENT_ID = "403866618480-7dhf5rl00k6shl8jmm16s6tvm8ef0odj.apps.googleusercontent.com";
     const API_KEY = "AIzaSyBszPu-BQ2_Aq9C3lhAiW--kyenM5vQsjs";
     const SHEET_ID = "1GyKDfVQCNrBlkxjsrQDv_ouIio9yjO3mVQy6Ds5uQzg";
@@ -98,9 +97,13 @@
     function gapiLoaded() {
       console.log("✅ GAPI 読み込み完了");
       gapi.load("client", async () => {
-        await gapi.client.init({ apiKey: API_KEY, discoveryDocs: ["https://sheets.googleapis.com/$discovery/rest?version=v4"] });
-        gapiInited = true;
-        maybeEnableButton();
+        try {
+          await gapi.client.init({ apiKey: API_KEY, discoveryDocs: ["https://sheets.googleapis.com/$discovery/rest?version=v4"] });
+          gapiInited = true;
+          maybeEnableButton();
+        } catch (err) {
+          console.error("⛔ GAPI 初期化エラー:", err);
+        }
       });
     }
 
@@ -138,6 +141,9 @@
     async function loadQuizData() {
       try {
         const resp = await gapi.client.sheets.spreadsheets.values.get({ spreadsheetId: SHEET_ID, range: `${SHEET_NAME}!A2:J1000` });
+        if (!resp.result.values || resp.result.values.length === 0) {
+          throw new Error("スプレッドシートにデータがありません");
+        }
         quizData = resp.result.values.map(row => ({
           id: row[0] || "",
           question: row[1] || "",
@@ -147,7 +153,6 @@
           choice3: row[5] || "",
           choice4: row[6] || "",
           correct: parseInt(row[7] || "1", 10),
-          missed: parseInt(row[8] || "0", 10),
           info: row[9] || ""
         }));
         console.log("✅ クイズデータ取得完了:", quizData);
