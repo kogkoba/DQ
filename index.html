@@ -2,7 +2,7 @@
 <html lang="ja">
 <head>
   <meta charset="UTF-8">
-  <title>ドラクエ風クイズゲーム</title>
+  <title>ドラクエ風クイズゲーム１</title>
 
   <!-- Google API 読み込み -->
   <script async defer src="https://accounts.google.com/gsi/client" onload="gisLoaded()" onerror="console.error('❌ Google Identity Services APIの読み込みに失敗しました');"></script>
@@ -24,14 +24,13 @@
       border-radius: 5px;
     }
 
-    /* 戦闘画面 */
-    #battle-screen {
-      display: none;
-      text-align: center;
-      padding: 20px;
-      background: #dff;
-      height: 100vh;
-    }
+<!-- 戦闘画面 -->
+<div id="battle-screen">
+  <div id="top-text-box">ここにテキストが表示されます</div>
+  <img id="quiz-image" src="" alt="クイズ画像" />
+  <div id="choice-area"></div>
+</div>
+
 
     #top-text-box {
       border: 1px solid #666;
@@ -41,10 +40,12 @@
     }
 
     #quiz-image {
-      max-width: 80%;
-      height: auto;
-      margin: 10px 0;
-    }
+  display: block;  /* 確実に表示 */
+  max-width: 80%;
+  height: auto;
+  margin: 10px auto;  /* 中央揃え */
+}
+
 
     .choice-button {
       display: block;
