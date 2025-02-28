@@ -118,7 +118,7 @@
             return;
           }
           gapi.client.setToken(resp);
-          console.log("✅ 認証成功");
+          console.log("✅ 認証成功。クイズデータ取得を開始...");
           await loadQuizData();
         }
       });
@@ -128,14 +128,12 @@
 
     function maybeEnableButton() {
       const loginBtn = document.getElementById("login-btn");
-      console.log("🔄 API準備状況:", { gapiInited, gisInited });
-
       if (gapiInited && gisInited) {
         loginBtn.style.display = "inline-block";
-        loginBtn.onclick = () => tokenClient.requestAccessToken({ prompt: "" });
-        console.log("✅ ログインボタン表示完了");
-      } else {
-        console.warn("❌ APIの初期化が完了していません");
+        loginBtn.onclick = () => {
+          console.log("🔄 Google認証リクエスト");
+          tokenClient.requestAccessToken({ prompt: "" });
+        };
       }
     }
 
@@ -149,15 +147,13 @@
           throw new Error("スプレッドシートにデータがありません");
         }
         quizData = resp.result.values.map(row => ({
-          id: row[0] || "",
           question: row[1] || "",
-          imageUrl: formatDriveImage(row[2] || ""),
+          imageUrl: row[2] || "",
           choice1: row[3] || "",
           choice2: row[4] || "",
           choice3: row[5] || "",
           choice4: row[6] || "",
           correct: parseInt(row[7] || "1", 10),
-          info: row[9] || ""
         }));
         console.log("✅ クイズデータ取得完了:", quizData);
         startBattle();
@@ -167,7 +163,7 @@
     }
 
     /*****************************************************************
-     * 4) 戦闘開始 & クイズ表示
+     * 4) クイズ開始
      *****************************************************************/
     function startBattle() {
       document.getElementById("battle-screen").style.display = "block";
