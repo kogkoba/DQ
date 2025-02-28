@@ -4,7 +4,82 @@
   <meta charset="UTF-8">
   <title>ドラクエ風クイズゲーム</title>
 
-  <!-- Google API 読み込み -->
+  <!-- Google AP<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <title>ドラクエ風RPG</title>
+  <style>
+    body { margin: 0; padding: 0; font-family: sans-serif; text-align: center; background-color: #222; color: #fff; }
+    canvas { background: url('フィールド画像.png') no-repeat center center; background-size: cover; display: block; margin: auto; }
+    #status { font-size: 20px; margin: 10px; }
+    #battle-screen { display: none; background: black; padding: 20px; }
+  </style>
+</head>
+<body>
+
+  <h1>ドラクエ風クイズRPG</h1>
+  <div id="status">プレイヤーのHP: <span id="hp">100</span> / レベル: <span id="level">1</span></div>
+  <canvas id="gameCanvas" width="600" height="400"></canvas>
+  
+  <div id="battle-screen">
+    <p id="battle-text">モンスターがあらわれた！</p>
+    <button onclick="startBattle()">戦う</button>
+  </div>
+
+  <script>
+    let player = { x: 300, y: 200, hp: 100, level: 1, steps: 0 };
+    let ctx = document.getElementById("gameCanvas").getContext("2d");
+    let inBattle = false;
+
+    function drawPlayer() {
+      ctx.clearRect(0, 0, 600, 400);
+      ctx.fillStyle = "red";
+      ctx.fillRect(player.x - 10, player.y - 10, 20, 20);
+    }
+
+    document.getElementById("gameCanvas").addEventListener("mousedown", startDrag);
+    function startDrag(event) {
+      if (inBattle) return;
+      let offsetX = event.clientX - player.x;
+      let offsetY = event.clientY - player.y;
+
+      function onMouseMove(event) {
+        player.x = event.clientX - offsetX;
+        player.y = event.clientY - offsetY;
+        player.steps++;
+        drawPlayer();
+
+        if (player.steps % Math.floor(Math.random() * 20 + 10) === 0) {
+          startEncounter();
+        }
+      }
+
+      function onMouseUp() {
+        document.removeEventListener("mousemove", onMouseMove);
+        document.removeEventListener("mouseup", onMouseUp);
+      }
+
+      document.addEventListener("mousemove", onMouseMove);
+      document.addEventListener("mouseup", onMouseUp);
+    }
+
+    function startEncounter() {
+      inBattle = true;
+      document.getElementById("battle-screen").style.display = "block";
+      document.getElementById("gameCanvas").style.display = "none";
+    }
+
+    function startBattle() {
+      document.getElementById("battle-screen").style.display = "none";
+      document.getElementById("gameCanvas").style.display = "block";
+      inBattle = false;
+    }
+
+    drawPlayer();
+  </script>
+</body>
+</html>I 読み込み -->
   <script async defer src="https://accounts.google.com/gsi/client" onload="gisLoaded()" onerror="console.error('❌ Google Identity Services APIの読み込みに失敗しました');"></script>
   <script async defer src="https://apis.google.com/js/api.js" onload="gapiLoaded()" onerror="console.error('❌ Google APIの読み込みに失敗しました');"></script>
 
