@@ -267,41 +267,43 @@
     }
 
     function showQuiz() {
-      if (quizData.length === 0) return alert("問題データがありません");
+  if (quizData.length === 0) return alert("問題データがありません");
 
-      let q = quizData[Math.floor(Math.random() * quizData.length)];
-      document.getElementById("top-text-box").textContent = q.question;
+  let q = quizData[Math.floor(Math.random() * quizData.length)];
+  document.getElementById("top-text-box").textContent = q.question;
 
-      let imageUrl = q.imageUrl;
+  let imageUrl = q.imageUrl;
+  imageUrl = convertGoogleDriveURL(imageUrl); // Google DriveのURLを変換
 
-      // Google Drive の URL 変換
-      let match = imageUrl.match(/(?:id=|\/d\/)([a-zA-Z0-9_-]+)/);
-      if (match) {
-        let fileId = match[1];
-        imageUrl = `https://drive.google.com/uc?id=${fileId}`;
-      }
+  console.log("変換後の画像URL:", imageUrl);
 
-      console.log("変換後の画像URL:", imageUrl);
+  let quizImage = document.getElementById("quiz-image");
+  quizImage.onerror = function() {
+    console.warn("❌ 画像が読み込めませんでした: " + imageUrl);
+    this.style.display = "none";
+  };
 
-      let quizImage = document.getElementById("quiz-image");
-      if (imageUrl && imageUrl.startsWith("http")) {
-        quizImage.src = imageUrl;
-        quizImage.style.display = "block";
-      } else {
-        quizImage.src = "";
-        quizImage.style.display = "none";
-      }
+  if (imageUrl && imageUrl.startsWith("http")) {
+    quizImage.src = imageUrl;
+    quizImage.style.display = "block";
+  } else {
+    quizImage.src = "";
+    quizImage.style.display = "none";
+  }
 
-      let choiceArea = document.getElementById("choice-area");
-      choiceArea.innerHTML = "";
-      for (let i = 1; i <= 4; i++) {
-        let btn = document.createElement("button");
-        btn.className = "choice-button";
-        btn.textContent = q["choice" + i];
-        btn.onclick = () => alert((i === q.correct) ? "正解!" : "不正解...");
-        choiceArea.appendChild(btn);
-      }
-    }
+  // 選択肢の表示
+  let choiceArea = document.getElementById("choice-area");
+  choiceArea.innerHTML = "";
+  for (let i = 1; i <= 4; i++) {
+    let btn = document.createElement("button");
+    btn.className = "choice-button";
+    btn.textContent = q["choice" + i];
+    btn.onclick = () => alert((i === q.correct) ? "正解!" : "不正解...");
+    choiceArea.appendChild(btn);
+  }
+}
+
+
   </script>
 </body>
 </html>
