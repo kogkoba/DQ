@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="ja">
 <head>
+  １
   <meta charset="UTF-8">
   <title>ドラクエ風クイズRPG</title>
   <style>
@@ -15,9 +16,6 @@
 </head>
 <body>
 
-<!-- Google APIの読み込みを追加 -->
-<script async defer src="https://apis.google.com/js/api.js" onload="gapiLoaded()" onerror="console.error('❌ Google APIの読み込みに失敗しました');"></script>
-
   <h1>ドラクエ風クイズRPG</h1>
   <div id="status">プレイヤーのHP: <span id="hp">100</span> / レベル: <span id="level">1</span></div>
   <canvas id="gameCanvas" width="600" height="400"></canvas>
@@ -30,172 +28,58 @@
     <div id="choice-area"></div>
   </div>
 
-  <script>
-    
-   
+  <!-- Google APIのスクリプト追加 -->
+  <script async defer src="https://apis.google.com/js/api.js" onload="gapiLoaded()" onerror="console.error('❌ Google APIの読み込みに失敗しました');"></script>
 
+  <script>
     const SHEET_ID = "1t08cjUMrug0nvIpredcxjuoxejDRazqqzLTqjVraJhw";
     const SHEET_NAME = "sheet1";
     const API_KEY = "AIzaSyBszPu-BQ2_Aq9C3lhAiW--kyenM5vQsjs";
 
     let player = { x: 300, y: 200, hp: 100, level: 1, steps: 0 };
-    let ctx = document.getElementById("gameCanvas").getContext("2d");
-    let inBattle = false;
     let quizData = [];
     let enemies = [];
-    let currentQuiz = null;
     let correctCount = 0;
 
     function gapiLoaded() {
-  console.log("✅ Google API 読み込み完了");
-  gapi.load("client", async () => {
-    try {
-      await gapi.client.init({ apiKey: API_KEY, discoveryDocs: ["https://sheets.googleapis.com/$discovery/rest?version=v4"] });
-      console.log("✅ GAPI 初期化完了");
-    } catch (err) {
-      console.error("⛔ GAPI 初期化エラー:", err);
-    }
-
-    function drawPlayer() {
-      ctx.clearRect(0, 0, 600, 400);
-      ctx.fillStyle = "red";
-      ctx.fillRect(player.x - 10, player.y - 10, 20, 20);
-    }
-
-    document.getElementById("gameCanvas").addEventListener("mousedown", startDrag);
-    function startDrag(event) {
-      if (inBattle) return;
-      let offsetX = event.clientX - player.x;
-      let offsetY = event.clientY - player.y;
-
-      function onMouseMove(event) {
-        player.x = event.clientX - offsetX;
-        player.y = event.clientY - offsetY;
-        player.steps++;
-        drawPlayer();
-        if (player.steps % Math.floor(Math.random() * 20 + 10) === 0) {
-          startEncounter();
+      console.log("✅ Google API 読み込み完了");
+      gapi.load("client", async () => {
+        try {
+          await gapi.client.init({ apiKey: API_KEY, discoveryDocs: ["https://sheets.googleapis.com/$discovery/rest?version=v4"] });
+          console.log("✅ GAPI 初期化完了");
+          loadQuizData(); // Google APIが初期化された後にクイズデータを取得
+        } catch (err) {
+          console.error("⛔ GAPI 初期化エラー:", err);
         }
-      }
-
-      function onMouseUp() {
-        document.removeEventListener("mousemove", onMouseMove);
-        document.removeEventListener("mouseup", onMouseUp);
-      }
-
-      document.addEventListener("mousemove", onMouseMove);
-      document.addEventListener("mouseup", onMouseUp);
-    }
-
-    async function startEncounter() {
-      inBattle = true;
-      document.getElementById("battle-screen").style.display = "block";
-      document.getElementById("gameCanvas").style.display = "none";
-
-      // 敵データ取得
-      await loadEnemies();
-      displayEnemies();
-      showQuiz();
-    }
-
-    async function loadEnemies() {
-      try {
-        const resp = await gapi.client.sheets.spreadsheets.values.get({
-          spreadsheetId: SHEET_ID,
-          range: `${SHEET_NAME}!A2:C100`
-        });
-
-        if (!resp.result.values || resp.result.values.length === 0) {
-          throw new Error("スプレッドシートに敵データがありません");
-        }
-
-        let allEnemies = resp.result.values.map(row => ({
-          id: row[0] || "",
-          name: row[1] || "",
-          imageUrl: convertGoogleDriveURL(row[2] || "")
-        }));
-
-        // ランダムに4体選択
-        enemies = [];
-        for (let i = 0; i < 4; i++) {
-          let randomIndex = Math.floor(Math.random() * allEnemies.length);
-          enemies.push(allEnemies[randomIndex]);
-        }
-
-        console.log("✅ 敵データ取得成功:", enemies);
-      } catch (err) {
-        console.error("⛔ 敵データ取得エラー:", err);
-      }
-    }
-
-    function displayEnemies() {
-      let enemyContainer = document.getElementById("enemy-container");
-      enemyContainer.innerHTML = "";
-      enemies.forEach((enemy, index) => {
-        let img = document.createElement("img");
-        img.src = enemy.imageUrl;
-        img.alt = enemy.name;
-        img.dataset.index = index;
-        enemyContainer.appendChild(img);
       });
     }
 
-    function showQuiz() {
-      if (!quizData || quizData.length === 0) {
-        document.getElementById("top-text-box").textContent = "クイズデータがありません";
-        console.error("⛔ クイズデータが取得できていません！");
-        return;
-      }
+    async function loadQuizData() {
+      try {
+        const resp = await gapi.client.sheets.spreadsheets.values.get({
+          spreadsheetId: SHEET_ID,
+          range: `${SHEET_NAME}!A2:J1000`
+        });
 
-      currentQuiz = quizData[Math.floor(Math.random() * quizData.length)];
-      console.log("✅ 出題中の問題:", currentQuiz);
+        if (!resp.result.values || resp.result.values.length === 0) {
+          throw new Error("スプレッドシートにクイズデータがありません");
+        }
 
-      document.getElementById("top-text-box").textContent = currentQuiz.question;
-      document.getElementById("quiz-image").src = currentQuiz.imageUrl;
-      document.getElementById("quiz-image").style.display = "block";
+        quizData = resp.result.values.map(row => ({
+          question: row[1] || "",
+          imageUrl: row[2] ? convertGoogleDriveURL(row[2]) : "",
+          choice1: row[3] || "",
+          choice2: row[4] || "",
+          choice3: row[5] || "",
+          choice4: row[6] || "",
+          correct: parseInt(row[7] || "1", 10),
+        }));
 
-      let choiceArea = document.getElementById("choice-area");
-      choiceArea.innerHTML = "";
-      for (let i = 1; i <= 4; i++) {
-        let btn = document.createElement("button");
-        btn.className = "choice-button";
-        btn.textContent = `▶ ${currentQuiz["choice" + i]}`;
-        btn.onclick = () => handleAnswer(i, btn);
-        choiceArea.appendChild(btn);
-      }
-    }
-
-    function handleAnswer(choice, button) {
-      button.textContent = `▶ ${button.textContent.slice(2)}`;
-      if (choice === currentQuiz.correct) {
-        correctCount++;
-        document.getElementById("top-text-box").textContent = "正解！敵は倒れた！";
-        document.getElementById("enemy-container").children[correctCount - 1].style.opacity = "0.3";
-        if (correctCount >= 4) endBattle();
-      } else {
-        document.getElementById("top-text-box").textContent = "ミス！プレイヤーに25ダメージ！";
-        player.hp -= 25;
-        document.getElementById("hp").textContent = player.hp;
-        if (player.hp <= 0) gameOver();
+        console.log("✅ クイズデータ取得成功:", quizData);
+      } catch (err) {
+        console.error("⛔ クイズデータ取得エラー:", err);
       }
     }
-
-    function endBattle() {
-      inBattle = false;
-      document.getElementById("battle-screen").style.display = "none";
-      document.getElementById("gameCanvas").style.display = "block";
-      correctCount = 0;
-    }
-
-    function gameOver() {
-      document.getElementById("top-text-box").textContent = "ゲームオーバー！";
-      setTimeout(() => alert("ザオリク？"), 1000);
-      player.hp = 100;
-      document.getElementById("hp").textContent = player.hp;
-      endBattle();
-    }
-
-    drawPlayer();
   </script>
 </body>
 </html>
