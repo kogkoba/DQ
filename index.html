@@ -1,13 +1,12 @@
 <!DOCTYPE html>
 <html lang="ja">
 <head>
-  １
   <meta charset="UTF-8">
-  <title>ドラクエ風クイズゲーム１</title>
+  <title>ドラクエ風クイズゲーム</title>
 
-  <!-- Google API 読み込み -->
-  <script async defer src="https://accounts.google.com/gsi/client" onload="gisLoaded()" onerror="console.error('❌ Google Identity Services APIの読み込みに失敗しました');"></script>
-  <script async defer src="https://apis.google.com/js/api.js" onload="gapiLoaded()" onerror="console.error('❌ Google APIの読み込みに失敗しました');"></script>
+  <!-- Google API -->
+  <script async defer src="https://accounts.google.com/gsi/client"></script>
+  <script async defer src="https://apis.google.com/js/api.js"></script>
 
   <style>
     body { margin: 0; padding: 20px; font-family: sans-serif; background-color: #f0f8ff; text-align: center; }
@@ -24,61 +23,11 @@
       cursor: pointer;
       border-radius: 5px;
     }
-
-<!-- 戦闘画面 -->
-<div id="battle-screen">
-  <div id="top-text-box">ここにテキストが表示されます</div>
-  <img id="quiz-image" src="" alt="クイズ画像" />
-  <div id="choice-area"></div>
-</div>
-
-
-    #top-text-box {
-      border: 1px solid #666;
-      min-height: 60px;
-      padding: 8px;
-      background: #eee;
-    }
-
-    #quiz-image {
-  display: block;  /* 確実に表示 */
-  max-width: 80%;
-  height: auto;
-  margin: 10px auto;  /* 中央揃え */
-}
-
-
-    .choice-button {
-      display: block;
-      width: 80%;
-      max-width: 300px;
-      margin: 5px auto;
-      padding: 12px;
-      font-size: 16px;
-      cursor: pointer;
-      background: #007bff;
-      color: #fff;
-      border: none;
-      border-radius: 5px;
-    }
-
-    .choice-button:hover {
-      background: #0056b3;
-    }
   </style>
-  <meta name="google-site-verification" content="IIBqGUSVum4XxPypQftGeiI1YkJV28di55EAz9ZvPE8" />
 </head>
 <body>
-  
-  <h1>ドラクエ風クイズゲーム２</h1>
+  <h1>ドラクエ風クイズゲーム</h1>
   <button id="login-btn">Googleでログイン</button>
-
-  <!-- 戦闘画面 -->
-  <div id="battle-screen">
-    <div id="top-text-box">ここにテキストが表示されます</div>
-    <img id="quiz-image" src="" alt="クイズ画像" />
-    <div id="choice-area"></div>
-  </div>
 
   <script>
     /*****************************************************************
@@ -88,26 +37,20 @@
     const CLIENT_ID = "403866618480-7dhf5rl00k6shl8jmm16s6tvm8ef0odj.apps.googleusercontent.com";
     const API_KEY = "AIzaSyBszPu-BQ2_Aq9C3lhAiW--kyenM5vQsjs";
     const SHEET_ID = "1GyKDfVQCNrBlkxjsrQDv_ouIio9yjO3mVQy6Ds5uQzg";
-    const SHEET_NAME = "sheet1";
 
     let tokenClient;
     let gapiInited = false;
     let gisInited = false;
-    let quizData = [];
 
     /*****************************************************************
-     * 2) Google API 読み込み
+     * 2) Google API の初期化
      *****************************************************************/
     function gapiLoaded() {
       console.log("✅ GAPI 読み込み完了");
       gapi.load("client", async () => {
-        try {
-          await gapi.client.init({ apiKey: API_KEY, discoveryDocs: ["https://sheets.googleapis.com/$discovery/rest?version=v4"] });
-          gapiInited = true;
-          maybeEnableButton();
-        } catch (err) {
-          console.error("⛔ GAPI 初期化エラー:", err);
-        }
+        await gapi.client.init({ apiKey: API_KEY, discoveryDocs: ["https://sheets.googleapis.com/$discovery/rest?version=v4"] });
+        gapiInited = true;
+        maybeEnableButton();
       });
     }
 
@@ -122,8 +65,7 @@
             return;
           }
           gapi.client.setToken(resp);
-          console.log("✅ 認証成功。クイズデータ取得を開始...");
-          await loadQuizData();
+          console.log("✅ 認証成功");
         }
       });
       gisInited = true;
@@ -134,86 +76,17 @@
       const loginBtn = document.getElementById("login-btn");
       if (gapiInited && gisInited) {
         loginBtn.style.display = "inline-block";
-        loginBtn.onclick = () => {
-          console.log("🔄 Google認証リクエスト");
-          tokenClient.requestAccessToken({ prompt: "" });
-        };
+        loginBtn.onclick = () => tokenClient.requestAccessToken({ prompt: "" });
+        console.log("✅ ログインボタン有効化");
+      } else {
+        console.log("❌ ログインボタン未準備 (gapiInited:", gapiInited, ", gisInited:", gisInited, ")");
       }
-    }
-
-    /*****************************************************************
-     * 3) クイズデータ読み込み
-     *****************************************************************/
-    async function loadQuizData() {
-      try {
-        const resp = await gapi.client.sheets.spreadsheets.values.get({ spreadsheetId: SHEET_ID, range: `${SHEET_NAME}!A2:J1000` });
-        if (!resp.result.values || resp.result.values.length === 0) {
-          throw new Error("スプレッドシートにデータがありません");
-        }
-        quizData = resp.result.values.map(row => ({
-          question: row[1] || "",
-          imageUrl: row[2] || "",
-          choice1: row[3] || "",
-          choice2: row[4] || "",
-          choice3: row[5] || "",
-          choice4: row[6] || "",
-          correct: parseInt(row[7] || "1", 10),
-        }));
-        console.log("✅ クイズデータ取得完了:", quizData);
-        startBattle();
-      } catch (err) {
-        console.error("⛔ クイズデータ取得エラー:", err);
-      }
-    }
-
-    /*****************************************************************
-     * 4) クイズ開始
-     *****************************************************************/
-    function startBattle() {
-      document.getElementById("battle-screen").style.display = "block";
-      showQuiz();
-    }
-
-    function showQuiz() {
-  if (quizData.length === 0) return alert("問題データがありません");
-
-  let q = quizData[Math.floor(Math.random() * quizData.length)];
-  document.getElementById("top-text-box").textContent = q.question;
-
-  let imageUrl = q.imageUrl;
-
-  // Google Drive の URL なら表示用に変換
-  if (imageUrl.includes("drive.google.com")) {
-    let match = imageUrl.match(/id=([^&]+)/);
-    if (match) {
-      let fileId = match[1];
-      imageUrl = `https://drive.google.com/uc?id=${fileId}`;
-    }
-  }
-
-  console.log("変換後の画像URL:", imageUrl);
-
-  // 画像 URL を適用
-  let quizImage = document.getElementById("quiz-image");
-  if (imageUrl && imageUrl.startsWith("http")) {
-    quizImage.src = imageUrl;
-    quizImage.style.display = "block";
-  } else {
-    quizImage.style.display = "none"; // URL が無効なら非表示
-  }
-
-  // 選択肢の表示
-  let choiceArea = document.getElementById("choice-area");
-  choiceArea.innerHTML = "";
-  for (let i = 1; i <= 4; i++) {
-    let btn = document.createElement("button");
-    btn.className = "choice-button";
-    btn.textContent = q["choice" + i];
-    btn.onclick = () => alert((i === q.correct) ? "正解!" : "不正解...");
-    choiceArea.appendChild(btn);
-  }
-
     }
   </script>
+
+  <!-- GAPI & GIS スクリプト読み込み -->
+  <script async defer src="https://apis.google.com/js/api.js" onload="gapiLoaded()"></script>
+  <script async defer src="https://accounts.google.com/gsi/client" onload="gisLoaded()"></script>
+
 </body>
 </html>
