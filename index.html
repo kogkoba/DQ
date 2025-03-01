@@ -133,6 +133,39 @@
       showQuiz();
     }
 
+function showQuiz() {
+    if (!quizData || quizData.length === 0) {
+        document.getElementById("top-text-box").textContent = "クイズデータがありません";
+        return;
+    }
+
+    let currentQuiz = quizData[Math.floor(Math.random() * quizData.length)];
+    console.log("選択されたクイズ:", currentQuiz);
+
+    document.getElementById("top-text-box").textContent = currentQuiz.question;
+
+    let quizImage = document.getElementById("quiz-image");
+    quizImage.src = currentQuiz.imageUrl;
+    quizImage.style.display = "block";
+
+    let choiceArea = document.getElementById("choice-area");
+    choiceArea.innerHTML = "";
+
+    currentQuiz.choices.forEach((choice, index) => {
+        let btn = document.createElement("button");
+        btn.className = "choice-button";
+        btn.textContent = `▶ ${choice}`;
+        btn.onclick = () => handleAnswer(index + 1, currentQuiz.correct, currentQuiz.explanation);
+        choiceArea.appendChild(btn);
+    });
+}
+
+
+
+
+
+ <!--
+    
     function showQuiz() {
       if (!quizData || quizData.length === 0) {
         document.getElementById("top-text-box").textContent = "クイズデータがありません";
@@ -159,6 +192,9 @@
         choiceArea.appendChild(btn);
       });
     }
+
+    -->
+
 
     function handleAnswer(selected, correct, explanation) {
     if (selected === correct) {
