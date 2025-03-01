@@ -160,6 +160,19 @@
       });
     }
 
+    function handleAnswer(selected, correct, explanation) {
+    if (selected === correct) {
+        alert("✅ 正解！");
+        // 戦闘画面を閉じてフィールドに戻る
+        document.getElementById("battle-screen").style.display = "none";
+        document.getElementById("gameCanvas").style.display = "block";
+        inBattle = false;
+    } else {
+        alert("❌ 不正解！\n" + explanation);
+    }
+}
+
+
     function initGame() {
       canvas = document.getElementById("gameCanvas");
       ctx = canvas.getContext("2d");
