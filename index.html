@@ -98,8 +98,34 @@
       }
 
       let currentQuiz = quizData[Math.floor(Math.random() * quizData.length)];
+
+      console.log("選択されたクイズ:", currentQuiz);
+      console.log("画像URL:", currentQuiz.imageUrl);
+      console.log("選択肢:", currentQuiz.choices);
+
+
+     // 問題文の表示
       document.getElementById("top-text-box").textContent = currentQuiz.question;
-    }
+
+      // 画像の表示
+      let quizImage = document.getElementById("quiz-image");
+      quizImage.src = currentQuiz.imageUrl;
+      quizImage.style.display = "block";
+
+      // 選択肢の表示
+      let choiceArea = document.getElementById("choice-area");
+      choiceArea.innerHTML = ""; // 既存の選択肢を削除
+
+      currentQuiz.choices.forEach((choice, index) => {
+        let btn = document.createElement("button");
+        btn.className = "choice-button";
+        btn.textContent = `▶ ${choice}`;
+        btn.onclick = () => handleAnswer(index + 1, currentQuiz.correct, currentQuiz.explanation);
+        
+        console.log("生成されたボタン:", btn); // 確認用
+
+        choiceArea.appendChild(btn);
+
 
     function initGame() {
       canvas = document.getElementById("gameCanvas");
