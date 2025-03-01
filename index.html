@@ -112,14 +112,34 @@
 
       document.getElementById("top-text-box").textContent = currentQuiz.question;
 
-      let quizImage = document.getElementById("quiz-image");
-      quizImage.src = currentQuiz.imageUrl;
-      quizImage.style.display = "block";
+      function showQuiz() {
+    if (!quizData || quizData.length === 0) {
+        document.getElementById("top-text-box").textContent = "クイズデータがありません";
+        return;
+    }
 
-      let choiceArea = document.getElementById("choice-area");
-      choiceArea.innerHTML = "";
+    let currentQuiz = quizData[Math.floor(Math.random() * quizData.length)];
 
-      currentQuiz.choices.forEach((choice, index) => {
+    console.log("選択されたクイズ:", currentQuiz);
+    console.log("変換後の画像URL:", convertGoogleDriveURL(currentQuiz.imageUrl));
+
+    // 問題文の表示
+    document.getElementById("top-text-box").textContent = currentQuiz.question;
+
+    // 画像の表示
+    let quizImage = document.getElementById("quiz-image");
+    quizImage.style.display = "none"; // まず非表示
+    quizImage.src = convertGoogleDriveURL(currentQuiz.imageUrl);
+    
+    quizImage.onload = function() {
+        quizImage.style.display = "block"; // 読み込んでから表示
+    };
+
+    // 選択肢の表示
+    let choiceArea = document.getElementById("choice-area");
+    choiceArea.innerHTML = "";
+
+    currentQuiz.choices.forEach((choice, index) => {
         let btn = document.createElement("button");
         btn.className = "choice-button";
         btn.textContent = `▶ ${choice}`;
@@ -127,8 +147,9 @@
         
         console.log("生成されたボタン:", btn);
         choiceArea.appendChild(btn);
-      });
-    }
+    });
+}
+
 
     function initGame() {
       canvas = document.getElementById("gameCanvas");
