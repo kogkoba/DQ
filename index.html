@@ -4,7 +4,14 @@
   <meta charset="UTF-8">
   <title>ドラクエ風クイズRPG</title>
   <style>
-    body { margin: 0; padding: 20px; font-family: sans-serif; text-align: center; background-color: #222; color: #fff; }
+    body {
+      margin: 0;
+      padding: 20px;
+      font-family: sans-serif;
+      text-align: center;
+      background-color: #222;
+      color: #fff;
+    }
     canvas {
       background: url('フィールド画像.png') no-repeat center center;
       background-size: cover;
@@ -12,11 +19,40 @@
       margin: auto;
       border: 2px solid white;
     }
-    #status { font-size: 20px; margin: 10px; }
-    #battle-screen { display: none; background: black; padding: 20px; text-align: center; }
-    #top-text-box { border: 2px solid white; padding: 10px; margin-bottom: 10px; color: white; }
-    #enemy-container img { width: 80px; height: 80px; margin: 5px; }
-    .choice-button { display: block; margin: 10px auto; padding: 10px; width: 200px; font-size: 18px; }
+    #status {
+      font-size: 20px;
+      margin: 10px;
+    }
+    #battle-screen {
+      display: none;
+      background: black;
+      padding: 20px;
+      text-align: center;
+    }
+    #top-text-box {
+      border: 2px solid white;
+      padding: 10px;
+      margin-bottom: 10px;
+      color: white;
+    }
+    #enemy-container img {
+      width: 80px;
+      height: 80px;
+      margin: 5px;
+    }
+    #quiz-image {
+      display: none;
+      width: 200px;
+      height: 200px;
+      margin: 10px auto;
+    }
+    .choice-button {
+      display: block;
+      margin: 10px auto;
+      padding: 10px;
+      width: 200px;
+      font-size: 18px;
+    }
   </style>
 </head>
 <body>
@@ -29,7 +65,7 @@
   <div id="battle-screen">
     <div id="top-text-box">モンスターがあらわれた！</div>
     <div id="enemy-container"></div>
-    <img id="quiz-image" src="" style="display: none; width: 200px; height: 200px;">
+    <img id="quiz-image" src="">
     <div id="choice-area"></div>
     <p id="explanation" style="display:none; color:yellow;"></p>
   </div>
@@ -49,7 +85,7 @@
     let canvas, ctx;
 
     function gapiLoaded() {
-      console.log("✅ Google API 読み込み完了");
+      console.log("✅ gapiLoaded 関数が呼ばれました");
       gapi.load("client", async () => {
         try {
           await gapi.client.init({ apiKey: API_KEY, discoveryDocs: ["https://sheets.googleapis.com/$discovery/rest?version=v4"] });
@@ -62,11 +98,10 @@
     }
 
     function convertGoogleDriveURL(url) {
-    if (!url) return "";
-    let match = url.match(/(?:id=|\/d\/)([a-zA-Z0-9_-]+)/);
-    return match ? `https://lh3.googleusercontent.com/d/${match[1]}=s0` : url;
-}
-
+      if (!url || typeof url !== "string") return "";
+      let match = url.match(/(?:id=|\/d\/)([a-zA-Z0-9_-]+)/);
+      return match ? `https://lh3.googleusercontent.com/d/${match[1]}=s0` : url;
+    }
 
     async function loadQuizData() {
       try {
@@ -105,51 +140,25 @@
       }
 
       let currentQuiz = quizData[Math.floor(Math.random() * quizData.length)];
-
       console.log("選択されたクイズ:", currentQuiz);
       console.log("画像URL:", currentQuiz.imageUrl);
-      console.log("選択肢:", currentQuiz.choices);
 
       document.getElementById("top-text-box").textContent = currentQuiz.question;
+      let quizImage = document.getElementById("quiz-image");
+      quizImage.src = currentQuiz.imageUrl;
+      quizImage.style.display = "block";
 
-      function showQuiz() {
-    if (!quizData || quizData.length === 0) {
-        document.getElementById("top-text-box").textContent = "クイズデータがありません";
-        return;
-    }
+      let choiceArea = document.getElementById("choice-area");
+      choiceArea.innerHTML = "";
 
-    let currentQuiz = quizData[Math.floor(Math.random() * quizData.length)];
-
-    console.log("選択されたクイズ:", currentQuiz);
-    console.log("変換後の画像URL:", convertGoogleDriveURL(currentQuiz.imageUrl));
-
-    // 問題文の表示
-    document.getElementById("top-text-box").textContent = currentQuiz.question;
-
-    // 画像の表示
-    let quizImage = document.getElementById("quiz-image");
-    quizImage.style.display = "none"; // まず非表示
-    quizImage.src = convertGoogleDriveURL(currentQuiz.imageUrl);
-    
-    quizImage.onload = function() {
-        quizImage.style.display = "block"; // 読み込んでから表示
-    };
-
-    // 選択肢の表示
-    let choiceArea = document.getElementById("choice-area");
-    choiceArea.innerHTML = "";
-
-    currentQuiz.choices.forEach((choice, index) => {
+      currentQuiz.choices.forEach((choice, index) => {
         let btn = document.createElement("button");
         btn.className = "choice-button";
         btn.textContent = `▶ ${choice}`;
         btn.onclick = () => handleAnswer(index + 1, currentQuiz.correct, currentQuiz.explanation);
-        
-        console.log("生成されたボタン:", btn);
         choiceArea.appendChild(btn);
-    });
-}
-
+      });
+    }
 
     function initGame() {
       canvas = document.getElementById("gameCanvas");
@@ -186,6 +195,7 @@
     }
 
     window.onload = initGame;
+    console.log("✅ スクリプト読み込み完了");
   </script>
 </body>
 </html>
