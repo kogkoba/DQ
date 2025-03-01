@@ -61,6 +61,12 @@
       });
     }
 
+    function convertGoogleDriveURL(url) {
+      if (!url) return "";
+      let match = url.match(/(?:id=|\/d\/)([a-zA-Z0-9_-]+)/);
+      return match ? `https://drive.google.com/uc?export=view&id=${match[1]}` : url;
+    }
+
     async function loadQuizData() {
       try {
         const resp = await gapi.client.sheets.spreadsheets.values.get({
@@ -72,7 +78,7 @@
 
         quizData = resp.result.values.map(row => ({
           question: row[1] || "",
-          imageUrl: row[2] || "",
+          imageUrl: convertGoogleDriveURL(row[2]) || "",
           choices: [row[3], row[4], row[5], row[6]],
           correct: parseInt(row[7] || "1", 10),
           explanation: row[10] || ""
@@ -103,18 +109,14 @@
       console.log("画像URL:", currentQuiz.imageUrl);
       console.log("選択肢:", currentQuiz.choices);
 
-
-     // 問題文の表示
       document.getElementById("top-text-box").textContent = currentQuiz.question;
 
-      // 画像の表示
       let quizImage = document.getElementById("quiz-image");
       quizImage.src = currentQuiz.imageUrl;
       quizImage.style.display = "block";
 
-      // 選択肢の表示
       let choiceArea = document.getElementById("choice-area");
-      choiceArea.innerHTML = ""; // 既存の選択肢を削除
+      choiceArea.innerHTML = "";
 
       currentQuiz.choices.forEach((choice, index) => {
         let btn = document.createElement("button");
@@ -122,10 +124,10 @@
         btn.textContent = `▶ ${choice}`;
         btn.onclick = () => handleAnswer(index + 1, currentQuiz.correct, currentQuiz.explanation);
         
-        console.log("生成されたボタン:", btn); // 確認用
-
+        console.log("生成されたボタン:", btn);
         choiceArea.appendChild(btn);
-
+      });
+    }
 
     function initGame() {
       canvas = document.getElementById("gameCanvas");
