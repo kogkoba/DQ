@@ -62,10 +62,11 @@
     }
 
     function convertGoogleDriveURL(url) {
-      if (!url) return "";
-      let match = url.match(/(?:id=|\/d\/)([a-zA-Z0-9_-]+)/);
-      return match ? `https://drive.google.com/uc?export=view&id=${match[1]}` : url;
-    }
+    if (!url) return "";
+    let match = url.match(/(?:id=|\/d\/)([a-zA-Z0-9_-]+)/);
+    return match ? `https://lh3.googleusercontent.com/d/${match[1]}=s0` : url;
+}
+
 
     async function loadQuizData() {
       try {
