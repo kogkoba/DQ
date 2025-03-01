@@ -39,7 +39,6 @@
 
   <script>
     const QUESTION_SHEET_ID = "1GyKDfVQCNrBlkxjsrQDv_ouIio9yjO3mVQy6Ds5uQzg";
-    const ENEMY_SHEET_ID = "1t08cjUMrug0nvIpredcxjuoxejDRazqqzLTqjVraJhw";
     const SHEET_NAME = "sheet1";
     const API_KEY = "AIzaSyBszPu-BQ2_Aq9C3lhAiW--kyenM5vQsjs";
 
@@ -47,7 +46,6 @@
     let isDragging = false;
     let inBattle = false;
     let quizData = [];
-    let enemyData = [];
     let canvas, ctx;
 
     function gapiLoaded() {
@@ -57,39 +55,10 @@
           await gapi.client.init({ apiKey: API_KEY, discoveryDocs: ["https://sheets.googleapis.com/$discovery/rest?version=v4"] });
           console.log("✅ GAPI 初期化完了");
           loadQuizData();
-          loadEnemyData();
         } catch (err) {
           console.error("⛔ GAPI 初期化エラー:", err);
         }
       });
-    }
-
-    function convertGoogleDriveURL(url) {
-      if (!url) return "";
-      let match = url.match(/(?:id=|\/d\/)([a-zA-Z0-9_-]+)/);
-      return match ? `https://drive.google.com/uc?export=view&id=${match[1]}` : url;
-    }
-
-    async function loadEnemyData() {
-      try {
-        const resp = await gapi.client.sheets.spreadsheets.values.get({
-          spreadsheetId: ENEMY_SHEET_ID,
-          range: `${SHEET_NAME}!A2:C100`
-        });
-
-        if (!resp.result.values || resp.result.values.length === 0) {
-          throw new Error("スプレッドシートに敵データがありません");
-        }
-
-        enemyData = resp.result.values.map(row => ({
-          name: row[1] || "",
-          imageUrl: row[2] ? convertGoogleDriveURL(row[2]) : ""
-        }));
-
-        console.log("✅ 敵データ取得成功:", enemyData);
-      } catch (err) {
-        console.error("⛔ 敵データ取得エラー:", err);
-      }
     }
 
     async function loadQuizData() {
@@ -99,24 +68,74 @@
           range: `${SHEET_NAME}!A2:K1000`
         });
 
-        if (!resp.result.values || resp.result.values.length === 0) {
-          throw new Error("スプレッドシートにクイズデータがありません");
-        }
-
-        console.log("✅ クイズデータ取得成功:", resp.result.values);
+        console.log("取得データ:", resp.result.values);
 
         quizData = resp.result.values.map(row => ({
           question: row[1] || "",
-          imageUrl: row[2] ? convertGoogleDriveURL(row[2]) : "",
+          imageUrl: row[2] || "",
           choices: [row[3], row[4], row[5], row[6]],
           correct: parseInt(row[7] || "1", 10),
           explanation: row[10] || ""
         }));
+
+        console.log("✅ クイズデータ取得成功:", quizData);
       } catch (err) {
         console.error("⛔ クイズデータ取得エラー:", err);
       }
     }
 
+    function startEncounter() {
+      inBattle = true;
+      document.getElementById("battle-screen").style.display = "block";
+      document.getElementById("gameCanvas").style.display = "none";
+      showQuiz();
+    }
+
+    function showQuiz() {
+      if (!quizData || quizData.length === 0) {
+        document.getElementById("top-text-box").textContent = "クイズデータがありません";
+        return;
+      }
+
+      let currentQuiz = quizData[Math.floor(Math.random() * quizData.length)];
+      document.getElementById("top-text-box").textContent = currentQuiz.question;
+    }
+
+    function initGame() {
+      canvas = document.getElementById("gameCanvas");
+      ctx = canvas.getContext("2d");
+      drawPlayer();
+      canvas.addEventListener("mousedown", startDrag);
+      canvas.addEventListener("mousemove", dragMove);
+      canvas.addEventListener("mouseup", endDrag);
+    }
+
+    function drawPlayer() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      ctx.fillStyle = "red";
+      ctx.fillRect(player.x - 10, player.y - 10, 20, 20);
+    }
+
+    function startDrag() {
+      isDragging = true;
+    }
+
+    function dragMove(event) {
+      if (!isDragging) return;
+      let rect = canvas.getBoundingClientRect();
+      player.x = event.clientX - rect.left;
+      player.y = event.clientY - rect.top;
+      player.steps++;
+      console.log("歩数:", player.steps);
+      drawPlayer();
+      if (player.steps % 10 === 0) startEncounter();
+    }
+
+    function endDrag() {
+      isDragging = false;
+    }
+
+    window.onload = initGame;
   </script>
 </body>
 </html>
