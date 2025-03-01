@@ -63,33 +63,40 @@
     }
 
     async function loadQuizData() {
-      try {
-        const resp = await gapi.client.sheets.spreadsheets.values.get({
-          spreadsheetId: QUESTION_SHEET_ID,
-          range: `${SHEET_NAME}!A2:K1000`
-        });
+  try {
+    const resp = await gapi.client.sheets.spreadsheets.values.get({
+      spreadsheetId: QUESTION_SHEET_ID,
+      range: `${SHEET_NAME}!A2:K1000`
+    });
 
-        console.log("取得データ:", resp.result.values);
-
-        quizData = resp.result.values.map(row => ({
-          question: row[1] || "",
-          imageUrl: convertGoogleDriveURL(row[2]) || "",
-          choices: [row[3], row[4], row[5], row[6]],
-          correct: parseInt(row[7] || "1", 10),
-          explanation: row[10] || ""
-        }));
-
-        console.log("✅ クイズデータ取得成功:", quizData);
-      } catch (err) {
-        console.error("⛔ クイズデータ取得エラー:", err);
-      }
+    if (!resp.result.values || resp.result.values.length === 0) {
+      console.error("❌ クイズデータが取得できませんでした。スプレッドシートの範囲を確認してください。");
+      return;
     }
+
+    console.log("✅ クイズデータ取得成功:", resp.result.values);
+
+    quizData = resp.result.values.map(row => ({
+      question: row[1]?.trim() || "（問題なし）",
+      imageUrl: convertGoogleDriveURL(row[2]?.trim()) || "",
+      choices: [row[3]?.trim(), row[4]?.trim(), row[5]?.trim(), row[6]?.trim()],
+      correct: parseInt(row[7]?.trim() || "1", 10),
+      explanation: row[10]?.trim() || ""
+    }));
+
+    console.log("📊 整形後のクイズデータ:", quizData);
+  } catch (err) {
+    console.error("⛔ クイズデータ取得エラー:", err);
+  }
+}
+
 
     function convertGoogleDriveURL(url) {
-      if (!url) return "";
-      let match = url.match(/(?:id=|\/d\/)([a-zA-Z0-9_-]+)/);
-      return match ? `https://lh3.googleusercontent.com/d/${match[1]}=s0` : url;
-    }
+  if (!url || !url.includes("drive.google.com")) return url;
+  let match = url.match(/(?:id=|\/d\/)([a-zA-Z0-9_-]+)/);
+  return match ? `https://lh3.googleusercontent.com/d/${match[1]}=s0` : url;
+}
+
 
     function startEncounter() {
       inBattle = true;
