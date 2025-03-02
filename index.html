@@ -29,7 +29,7 @@
   <div id="battle-screen">
     <div id="top-text-box">モンスターがあらわれた！</div>
     <div id="enemy-container"></div>
-    <img id="quiz-image" src="" style="display: none; width: 200px; height: 200px; margin:auto;">
+    <img id="quiz-image" src="" style="display: none; width: 200px; height: 200px; margin: 10px auto;">
     <div id="choice-area"></div>
     <p id="explanation" style="display:none; color:yellow;"></p>
   </div>
@@ -39,15 +39,15 @@
 
   <script>
     const QUESTION_SHEET_ID = "1GyKDfVQCNrBlkxjsrQDv_ouIio9yjO3mVQy6Ds5uQzg";
+    const ENEMY_SHEET_ID = "1t08cjUMrug0nvIpredcxjuoxejDRazqqzLTqjVraJhw";
     const SHEET_NAME = "sheet1";
     const API_KEY = "AIzaSyBszPu-BQ2_Aq9C3lhAiW--kyenM5vQsjs";
 
     let player = { x: 300, y: 200, hp: 100, level: 1, steps: 0 };
+    let isDragging = false;
     let inBattle = false;
     let quizData = [];
     let canvas, ctx;
-    let playerImg = new Image();
-    playerImg.src = "https://lh3.googleusercontent.com/d/1nZqB14z-hYwnRKnk4fEA12-_OUxnhVw1=s0"; // プレイヤー画像
 
     function gapiLoaded() {
       console.log("✅ Google API 読み込み完了");
@@ -62,41 +62,37 @@
       });
     }
 
-    async function loadQuizData() {
-  try {
-    const resp = await gapi.client.sheets.spreadsheets.values.get({
-      spreadsheetId: QUESTION_SHEET_ID,
-      range: `${SHEET_NAME}!A2:K1000`
-    });
-
-    if (!resp.result.values || resp.result.values.length === 0) {
-      console.error("❌ クイズデータが取得できませんでした。スプレッドシートの範囲を確認してください。");
-      return;
+    function convertGoogleDriveURL(url) {
+      if (!url || !url.includes("drive.google.com")) return url;
+      let match = url.match(/(?:id=|\/d\/)([a-zA-Z0-9_-]+)/);
+      return match ? `https://lh3.googleusercontent.com/d/${match[1]}=s0` : url;
     }
 
-    console.log("✅ クイズデータ取得成功:", resp.result.values);
+    async function loadQuizData() {
+      try {
+        const resp = await gapi.client.sheets.spreadsheets.values.get({
+          spreadsheetId: QUESTION_SHEET_ID,
+          range: `${SHEET_NAME}!A2:K1000`
+        });
 
-    quizData = resp.result.values.map(row => ({
-      question: row[1]?.trim() || "（問題なし）",
-      imageUrl: convertGoogleDriveURL(row[2]?.trim()) || "",
-      choices: [row[3]?.trim(), row[4]?.trim(), row[5]?.trim(), row[6]?.trim()],
-      correct: parseInt(row[7]?.trim() || "1", 10),
-      explanation: row[10]?.trim() || ""
-    }));
+        if (!resp.result.values || resp.result.values.length === 0) {
+          console.error("❌ クイズデータが取得できませんでした。");
+          return;
+        }
 
-    console.log("📊 整形後のクイズデータ:", quizData);
-  } catch (err) {
-    console.error("⛔ クイズデータ取得エラー:", err);
-  }
-}
+        console.log("✅ クイズデータ取得成功:", resp.result.values);
 
-
-    function convertGoogleDriveURL(url) {
-  if (!url || !url.includes("drive.google.com")) return url;
-  let match = url.match(/(?:id=|\/d\/)([a-zA-Z0-9_-]+)/);
-  return match ? `https://lh3.googleusercontent.com/d/${match[1]}=s0` : url;
-}
-
+        quizData = resp.result.values.map(row => ({
+          question: row[1] || "",
+          imageUrl: convertGoogleDriveURL(row[2]) || "",
+          choices: [row[3], row[4], row[5], row[6]].filter(Boolean),
+          correct: parseInt(row[7] || "1", 10),
+          explanation: row[10] || ""
+        }));
+      } catch (err) {
+        console.error("⛔ クイズデータ取得エラー:", err);
+      }
+    }
 
     function startEncounter() {
       inBattle = true;
@@ -112,9 +108,11 @@
       }
 
       let currentQuiz = quizData[Math.floor(Math.random() * quizData.length)];
+
       document.getElementById("top-text-box").textContent = currentQuiz.question;
-      document.getElementById("quiz-image").src = currentQuiz.imageUrl;
-      document.getElementById("quiz-image").style.display = "block";
+      let quizImage = document.getElementById("quiz-image");
+      quizImage.src = currentQuiz.imageUrl;
+      quizImage.style.display = "block";
 
       let choiceArea = document.getElementById("choice-area");
       choiceArea.innerHTML = "";
@@ -128,37 +126,36 @@
       });
     }
 
-    function drawPlayer() {
-      let fieldImg = new Image();
-      fieldImg.src = "フィールド画像.png";
-      fieldImg.onload = function() {
-        ctx.drawImage(fieldImg, 0, 0, canvas.width, canvas.height);
-        ctx.drawImage(playerImg, player.x - 16, player.y - 16, 32, 32);
-      };
-    }
-
-    function movePlayer(dx, dy) {
-      if (inBattle) return;
-      player.x += dx;
-      player.y += dy;
-      player.steps++;
-
-      drawPlayer();
-      if (player.steps % 10 === 0) startEncounter();
-    }
-
     function initGame() {
       canvas = document.getElementById("gameCanvas");
       ctx = canvas.getContext("2d");
       drawPlayer();
-
-      document.addEventListener("keydown", function(e) {
-        if (e.key === "ArrowUp") movePlayer(0, -16);
-        if (e.key === "ArrowDown") movePlayer(0, 16);
-        if (e.key === "ArrowLeft") movePlayer(-16, 0);
-        if (e.key === "ArrowRight") movePlayer(16, 0);
-      });
+      canvas.addEventListener("mousedown", startDrag);
+      canvas.addEventListener("mousemove", dragMove);
+      canvas.addEventListener("mouseup", endDrag);
     }
+
+    function drawPlayer() {
+      let playerImg = new Image();
+      playerImg.src = "https://lh3.googleusercontent.com/d/1nZqB14z-hYwnRKnk4fEA12-_OUxnhVw1=s0";
+      
+      playerImg.onload = function() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        ctx.drawImage(playerImg, player.x - 16, player.y - 16, 32, 32);
+      };
+    }
+
+    function startDrag() { isDragging = true; }
+    function dragMove(event) {
+      if (!isDragging) return;
+      let rect = canvas.getBoundingClientRect();
+      player.x = event.clientX - rect.left;
+      player.y = event.clientY - rect.top;
+      player.steps++;
+      drawPlayer();
+      if (player.steps % 10 === 0) startEncounter();
+    }
+    function endDrag() { isDragging = false; }
 
     window.onload = initGame;
   </script>
