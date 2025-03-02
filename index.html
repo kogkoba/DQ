@@ -4,6 +4,13 @@
   <meta charset="UTF-8">
   <!-- モバイル対応のためのビューポート設定 -->
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  
+  
+  
+  
+  
+  
   <title>ドラクエ風クイズRPG 統合サンプル</title>
   <style>
     /* ---------- 共通設定 ---------- */
@@ -63,7 +70,15 @@
       width: 30px;
       height: auto;
     }
-    /* 画面右下の D-Pad */
+    
+    
+    
+    
+    
+    
+    
+    
+    
     #dpad {
       position: absolute;
       bottom: 10px;
@@ -77,14 +92,21 @@
         ".    down  .";
       grid-gap: 5px;
     }
-    .dpad-button {
-      width: 30px;
-      height: 30px;
-      background: rgba(0,0,0,0.3);
-      border: 2px solid #fff;
-      border-radius: 5px;
-      cursor: pointer;
-    }
+    
+    
+    
+    /* 画面右下の D-.dpad-button {
+  width: 50px;   /* 以前より大きく */
+  height: 50px;
+  background: rgba(0, 0, 0, 0.3);
+  border: 2px solid #fff;
+  border-radius: 5px;
+  cursor: pointer;
+  touch-action: none;   /* iOSでのタッチ操作を安定させる */
+  user-select: none;    /* テキスト選択を防ぐ */
+}
+    
+    
     .up { grid-area: up; }
     .down { grid-area: down; }
     .left { grid-area: left; }
@@ -218,6 +240,18 @@
         <div class="dpad-button right" onclick="movePlayer(STEP, 0)"></div>
         <div class="dpad-button down" onclick="movePlayer(0, STEP)"></div>
       </div>
+      
+      
+      <div class="dpad-button up"
+  ontouchstart="movePlayer(0, -STEP); event.preventDefault();"
+  onclick="movePlayer(0, -STEP)">
+</div>
+      
+      
+      
+      
+      
+      
       <!-- ---------- 円拡大演出用オーバーレイ ---------- -->
       <div id="transition-overlay">
         <div id="transition-circle"></div>
