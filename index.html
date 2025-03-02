@@ -365,7 +365,14 @@
       startBattle();
     }
 
-    /* ---------- 戦闘開始：モンスター4体表示 → テキスト演出 → クイズ開始 ---------- */
+    /* ---------- 戦闘開始：
+         モンスター4体表示 → テキスト演出（
+            1. 「○○があらわれた！」
+            2. 2秒後テキスト消去
+            3. 1秒後「○○の攻撃！」
+            4. 2秒後「クイズ開始！」
+         ） → クイズ出題
+    ---------- */
     function startBattle() {
       correctCount = 0;
       missCount = 0;
@@ -375,24 +382,19 @@
       document.getElementById("quiz-image").style.display = "none";
       document.getElementById("choice-area").innerHTML = "";
 
-      // 4体選択＆表示
       currentMonsters = getRandomMonsters();
       showMonsters(currentMonsters);
 
-      // モンスター名をまとめる（B列の名前）
       const monsterNames = currentMonsters.map(m => m.name).join("、");
       const topTextBox = document.getElementById("top-text-box");
       topTextBox.textContent = monsterNames + "があらわれた！";
 
-      // 2秒後、テキスト消去
       setTimeout(() => {
         topTextBox.textContent = "";
       }, 2000);
-      // 3秒後、「○○の攻撃！」
       setTimeout(() => {
         topTextBox.textContent = monsterNames + "の攻撃！";
       }, 3000);
-      // 5秒後、「クイズ開始！」→クイズ表示
       setTimeout(() => {
         topTextBox.textContent = "クイズ開始！";
         showQuiz();
@@ -430,7 +432,6 @@
       if (selected === quiz.correct) {
         correctCount++;
         alert("✅ 正解！");
-        // 左端のモンスターにシェイク演出→削除
         shakeAndRemoveMonster();
       } else {
         missCount++;
@@ -439,7 +440,6 @@
         explanationElem.textContent = quiz.explanation;
       }
       
-      // 終了判定
       if (correctCount >= MAX_CORRECT) {
         alert("4回正解！モンスターを倒した！");
         endBattle();
@@ -450,7 +450,6 @@
         document.getElementById("zaorikuButton").style.display = "inline-block";
         return;
       }
-      // 次の問題
       showQuiz();
     }
 
@@ -478,7 +477,7 @@
     function endBattle() {
       document.getElementById("battle-screen").style.display = "none";
       document.getElementById("gameArea").style.display = "block";
-      // ※ 必要に応じてBGM切替などを追加
+      // 必要に応じてBGMの切替も
     }
 
     /* ---------- BGM管理 ---------- */
@@ -507,7 +506,7 @@
       playFieldBGM();
     }
 
-    /* ---------- 勇者の移動設定 ---------- */
+    /* ---------- 勇者の移動設定（フィールドを歩く） ---------- */
     const playerImages = [
       "https://lh3.googleusercontent.com/d/1peHOi70oOmL8c9v3OQydE5N-9R0PB6vh",  // 立ち姿
       "https://lh3.googleusercontent.com/d/1iuVZiT6Eh9mp2Ta__Cpm5z28HZ2k0YA0",  // 右足前
@@ -526,7 +525,7 @@
     }
 
     function movePlayer(dx, dy) {
-      if (inBattle) return;
+      if (inBattle) return; // 戦闘中は移動不可
       if (dx < 0) { facingRight = false; }
       else if (dx > 0) { facingRight = true; }
       currentImageIndex = (currentImageIndex + 1) % playerImages.length;
