@@ -14,7 +14,6 @@
       background-color: #222;
       color: #fff;
     }
-    
     /* ---------- タイトル画面 ---------- */
     #titleScreen {
       display: flex;
@@ -34,14 +33,12 @@
       color: #fff;
       border-radius: 5px;
     }
-    
     /* ---------- ゲーム画面全体 ---------- */
     #gameContainer {
       display: none;
       width: 100%;
       height: 100%;
     }
-    
     /* ---------- ステータス表示 ---------- */
     #status {
       padding: 20px;
@@ -49,7 +46,6 @@
       font-size: 20px;
       background-color: #111;
     }
-    
     /* ---------- フィールド画面 ---------- */
     #gameArea {
       position: relative;
@@ -87,12 +83,11 @@
       border-radius: 5px;
       cursor: pointer;
     }
-    .up    { grid-area: up; }
-    .down  { grid-area: down; }
-    .left  { grid-area: left; }
+    .up { grid-area: up; }
+    .down { grid-area: down; }
+    .left { grid-area: left; }
     .right { grid-area: right; }
-    .center{ grid-area: center; }
-    
+    .center { grid-area: center; }
     /* ---------- 戦闘画面 ---------- */
     #battle-screen {
       display: none;
@@ -147,14 +142,10 @@
       margin-top: 20px;
       cursor: pointer;
     }
-    
-  
-
-/* 円拡大演出用オーバーレイ */
+    /* ---------- 円拡大演出用オーバーレイ ---------- */
     #transition-overlay {
       position: absolute;
-      top: 0; 
-      left: 0;
+      top: 0; left: 0;
       width: 100%;
       height: 100%;
       overflow: hidden;
@@ -176,23 +167,13 @@
     #transition-circle.active {
       transform: translate(-50%, -50%) scale(1);
     }
-
-
-
-
-
-    
-    #transition-circle.active {
-      transform: translate(-50%, -50%) scale(1);
-    }
-    
     /* ---------- シェイクアニメーション ---------- */
     @keyframes shake {
-      0%   { transform: translate(0, 0); }
-      20%  { transform: translate(-5px, 0); }
-      40%  { transform: translate(5px, 0); }
-      60%  { transform: translate(-5px, 0); }
-      80%  { transform: translate(5px, 0); }
+      0% { transform: translate(0, 0); }
+      20% { transform: translate(-5px, 0); }
+      40% { transform: translate(5px, 0); }
+      60% { transform: translate(-5px, 0); }
+      80% { transform: translate(5px, 0); }
       100% { transform: translate(0, 0); }
     }
     .shake {
@@ -208,16 +189,13 @@
     <button id="startButton" onclick="startGame()">▶ ゲームスタート</button>
   </div>
 
-
-  
-
   <!-- ---------- ゲーム画面全体 ---------- -->
   <div id="gameContainer">
     <!-- ステータス表示 -->
     <div id="status">
       プレイヤーのHP: <span id="hp">100</span> / レベル: <span id="level">1</span>
     </div>
-    <!-- フィールド画面 -->
+    <!-- ---------- フィールド画面 ---------- -->
     <div id="gameArea">
       <img id="player" src="https://lh3.googleusercontent.com/d/1peHOi70oOmL8c9v3OQydE5N-9R0PB6vh" alt="hero">
       <div id="dpad">
@@ -227,14 +205,12 @@
         <div class="dpad-button right" onclick="movePlayer(STEP, 0)"></div>
         <div class="dpad-button down" onclick="movePlayer(0, STEP)"></div>
       </div>
- 
-     <!-- 円拡大演出用オーバーレイ -->
+      <!-- ---------- 円拡大演出用オーバーレイ ---------- -->
       <div id="transition-overlay">
         <div id="transition-circle"></div>
       </div>
     </div>
-    
-    <!-- 戦闘画面 -->
+    <!-- ---------- 戦闘画面 ---------- -->
     <div id="battle-screen">
       <div id="top-text-box">モンスターがあらわれた！</div>
       <div id="enemy-container"></div>
@@ -246,7 +222,6 @@
   </div>
 
   <!-- ---------- BGM用オーディオタグ ---------- -->
-  <!-- 例: 同じ階層に kouyawoiku.mp3 と gypsydance.mp3 を置いた場合 -->
   <audio id="fieldBGM" loop preload="auto">
     <source src="./kouyawoiku.mp3" type="audio/mpeg">
   </audio>
@@ -260,34 +235,34 @@
           onerror="console.error('❌ Google APIの読み込みに失敗しました');"></script>
 
   <script>
+    // グローバル変数
+    let inBattle = false;
+    const STEP = 20;
+    
     /* ======= Google Sheets & クイズ／モンスター用の設定 ======= */
     const API_KEY = "AIzaSyBszPu-BQ2_Aq9C3lhAiW--kyenM5vQsjs"; // ご自身のAPIキーに置き換え
     const QUIZ_SHEET_ID = "1GyKDfVQCNrBlkxjsrQDv_ouIio9yjO3mVQy6Ds5uQzg"; // クイズ用シートID
     const MONSTER_SHEET_ID = "1t08cjUMrug0nvIpredcxjuoxejDRazqqzLTqjVraJhw"; // モンスター用シートID
     const SHEET_NAME_QUIZ = "sheet1";   // クイズシート名（例）
     const SHEET_NAME_MONSTER = "sheet1"; // モンスターシート名（例）
-
-
-    let inBattle = false;
-
-
+  
     /* ---------- データ保持 ---------- */
     let quizData = [];       // クイズ用
     let monsterData = [];    // モンスター用
     let currentMonsters = []; // 今回選んだ4体
-
+  
     /* ---------- 戦闘用カウント ---------- */
     let correctCount = 0;
     let missCount = 0;
     const MAX_CORRECT = 4;
     const MAX_MISS = 4;
-
+  
     /* ---------- Google API 読み込み完了時 ---------- */
     function gapiLoaded() {
       console.log("✅ gapiLoaded 関数が呼ばれました");
       gapi.load("client", initClient);
     }
-
+  
     async function initClient() {
       try {
         await gapi.client.init({
@@ -295,7 +270,7 @@
           discoveryDocs: ["https://sheets.googleapis.com/$discovery/rest?version=v4"]
         });
         console.log("✅ GAPI 初期化完了");
-
+  
         // クイズデータ＆モンスターデータ読み込み
         await loadQuizData();
         await loadMonsterData();
@@ -305,7 +280,7 @@
         console.error("⛔ GAPI 初期化エラー:", err);
       }
     }
-
+  
     /* ---------- クイズデータ取得 ----------
          ※B列：問題文、C列：画像URL、D～G列：選択肢、H列：正解番号、K列：解説
     ---------- */
@@ -327,31 +302,7 @@
         console.error("クイズデータ取得エラー:", err);
       }
     }
- /* ---------- 画面の切り替わり ----------
-
   
-  // オーバーレイを表示して円を拡大させる
-  overlay.style.display = "block";
-  requestAnimationFrame(() => {
-    circle.classList.add("active");
-  });
-  
-  // 0.8秒後に画面切り替え
-  setTimeout(() => {
-    document.getElementById("gameArea").style.display = "none";
-    document.getElementById("battle-screen").style.display = "block";
-    overlay.style.display = "none";
-    circle.classList.remove("active");
-    
-    playBattleBGM();
-    startBattle(); // 戦闘開始の残りの処理
-  }, 800);
-}
-
-
-
-    
-
     /* ---------- モンスターデータ取得 ----------
          ※A列：ID、B列：名前、C列：URL
     ---------- */
@@ -371,25 +322,25 @@
         console.error("モンスターデータ取得エラー:", err);
       }
     }
-
+  
     /* ---------- クイズランダム取得 ---------- */
     function getRandomQuiz() {
       if (!quizData || quizData.length === 0) return null;
       const idx = Math.floor(Math.random() * quizData.length);
       return quizData[idx];
     }
-
+  
     /* ---------- モンスター4体ランダム取得 ---------- */
     function getRandomMonsters() {
       if (monsterData.length < 4) {
-        console.warn("モンスターが4体未満です");
+        console.warn("モンスターデータが4体未満です");
         return [];
       }
       const shuffled = [...monsterData].sort(() => Math.random() - 0.5);
       return shuffled.slice(0, 4);
     }
-
-    /* ---------- モンスター画像表示 ---------- */
+  
+    /* ---------- モンスタ画像表示 ---------- */
     function showMonsters(monsters) {
       const container = document.getElementById("enemy-container");
       container.innerHTML = "";
@@ -401,26 +352,38 @@
         container.appendChild(img);
       });
     }
-
-    /* ---------- エンカウント開始（フィールド→戦闘） ---------- */
-    function startEncounter() {
-      document.getElementById("gameArea").style.display = "none";
-      document.getElementById("battle-screen").style.display = "block";
-      startBattle();
-    }
-
-
-
-
   
-
+    /* ---------- 円拡大演出を含むエンカウント開始 ---------- */
+    function startEncounter() {
+      inBattle = true;
+      stopFieldBGM();
+  
+      const overlay = document.getElementById("transition-overlay");
+      const circle = document.getElementById("transition-circle");
+  
+      overlay.style.display = "block";
+      requestAnimationFrame(() => {
+        circle.classList.add("active");
+      });
+  
+      setTimeout(() => {
+        document.getElementById("gameArea").style.display = "none";
+        document.getElementById("battle-screen").style.display = "block";
+        overlay.style.display = "none";
+        circle.classList.remove("active");
+  
+        playBattleBGM();
+        startBattle();
+      }, 800);
+    }
+  
     /* ---------- 戦闘開始：
-         モンスター4体表示 → テキスト演出（
-            1. 「○○があらわれた！」
-            2. 2秒後テキスト消去
-            3. 1秒後「○○の攻撃！」
-            4. 2秒後「クイズ開始！」
-         ） → クイズ出題
+         モンスター4体表示 → テキスト演出 →
+         1. 「○○があらわれた！」
+         2. 2秒後テキスト消去
+         3. 1秒後「○○の攻撃！」
+         4. 2秒後「クイズ開始！」
+         → クイズ出題
     ---------- */
     function startBattle() {
       correctCount = 0;
@@ -430,14 +393,14 @@
       document.getElementById("zaorikuButton").style.display = "none";
       document.getElementById("quiz-image").style.display = "none";
       document.getElementById("choice-area").innerHTML = "";
-
+  
       currentMonsters = getRandomMonsters();
       showMonsters(currentMonsters);
-
+  
       const monsterNames = currentMonsters.map(m => m.name).join("、");
       const topTextBox = document.getElementById("top-text-box");
       topTextBox.textContent = monsterNames + "があらわれた！";
-
+  
       setTimeout(() => {
         topTextBox.textContent = "";
       }, 2000);
@@ -449,7 +412,7 @@
         showQuiz();
       }, 5000);
     }
-
+  
     /* ---------- クイズ1問表示 ---------- */
     function showQuiz() {
       const quiz = getRandomQuiz();
@@ -471,7 +434,7 @@
         choiceArea.appendChild(btn);
       });
     }
-
+  
     /* ---------- 回答処理 ---------- */
     function handleAnswer(selected, quiz) {
       const explanationElem = document.getElementById("explanation");
@@ -501,7 +464,7 @@
       }
       showQuiz();
     }
-
+  
     /* ---------- 左端のモンスターをシェイクして削除 ---------- */
     function shakeAndRemoveMonster() {
       const container = document.getElementById("enemy-container");
@@ -515,20 +478,20 @@
         }, 500);
       }
     }
-
+  
     /* ---------- ザオリクボタン ---------- */
     function onZaoriku() {
       alert("ザオリクが唱えられた！ しかし何も起こらなかった...");
       endBattle();
     }
-
+  
     /* ---------- 戦闘終了 → フィールドに戻る ---------- */
     function endBattle() {
       document.getElementById("battle-screen").style.display = "none";
       document.getElementById("gameArea").style.display = "block";
       // 必要に応じてBGMの切替も
     }
-
+  
     /* ---------- BGM管理 ---------- */
     const fieldBGM = document.getElementById("fieldBGM");
     const battleBGM = document.getElementById("battleBGM");
@@ -546,7 +509,7 @@
     function stopBattleBGM() {
       battleBGM.pause();
     }
-
+  
     /* ---------- タイトル画面からゲーム開始 ---------- */
     function startGame() {
       document.getElementById("titleScreen").style.display = "none";
@@ -554,32 +517,31 @@
       initGame();
       playFieldBGM();
     }
-
-    /* ---------- 勇者の移動設定（フィールドを歩く） ---------- */   
+  
+    /* ---------- 勇者の移動設定（フィールドを歩く） ---------- */
     const playerImages = [
       "https://lh3.googleusercontent.com/d/1peHOi70oOmL8c9v3OQydE5N-9R0PB6vh",  // 立ち姿
       "https://lh3.googleusercontent.com/d/1iuVZiT6Eh9mp2Ta__Cpm5z28HZ2k0YA0",  // 右足前
       "https://lh3.googleusercontent.com/d/1fCmul9iotoUh4MLa_qzHvaOUDYMvng8C"   // 左足前
     ];
     let currentImageIndex = 0;
- 
     let player = { x: 0, y: 0, hp: 100, level: 1, steps: 0 };
     let facingRight = true;
     const playerElement = document.getElementById("player");
-
+  
     function updatePlayerPosition() {
       playerElement.style.left = player.x + "px";
       playerElement.style.top = player.y + "px";
       playerElement.style.transform = "translate(-50%, -50%) " + (facingRight ? "scaleX(1)" : "scaleX(-1)");
     }
-
+  
     function movePlayer(dx, dy) {
       if (inBattle) return; // 戦闘中は移動不可
       if (dx < 0) { facingRight = false; }
       else if (dx > 0) { facingRight = true; }
       currentImageIndex = (currentImageIndex + 1) % playerImages.length;
       playerElement.src = playerImages[currentImageIndex];
-
+  
       player.x += dx;
       player.y += dy;
       const playerWidth = playerElement.offsetWidth;
@@ -591,7 +553,7 @@
       if (player.x > maxX) player.x = maxX;
       if (player.y > maxY) player.y = maxY;
       updatePlayerPosition();
-
+  
       player.steps++;
       document.getElementById("hp").textContent = player.hp;
       document.getElementById("level").textContent = player.level;
@@ -600,13 +562,13 @@
         startEncounter();
       }
     }
-
+  
     function initGame() {
       player.x = window.innerWidth / 2;
       player.y = document.getElementById("gameArea").clientHeight / 2;
       updatePlayerPosition();
     }
   </script>
-
+  
 </body>
 </html>
