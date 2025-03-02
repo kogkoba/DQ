@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="ja">
 <head>
+  1
   <meta charset="UTF-8">
   <title>ドラクエ風クイズRPG</title>
   <style>
@@ -52,17 +53,14 @@
     // 🎮 フィールド背景
     let backgroundImg = new Image();
     backgroundImg.src = "https://lh3.googleusercontent.com/d/1jDckidA8IqAdhUncYX09kzOQd2IqanYQ=s0";
-    
-    backgroundImg.onload = function() {
-      console.log("✅ 背景画像ロード完了");
-      drawPlayer();
-    };
 
     function drawBackground() {
+      if (!ctx) return;
       ctx.drawImage(backgroundImg, 0, 0, canvas.width, canvas.height);
     }
 
     function drawPlayer() {
+      if (!ctx) return;
       let playerImg = new Image();
       playerImg.src = playerImages[frameIndex]; // 歩行アニメ用のフレーム
 
@@ -108,8 +106,24 @@
 
     function initGame() {
       canvas = document.getElementById("gameCanvas");
+      if (!canvas) {
+        console.error("❌ Canvas が見つかりません");
+        return;
+      }
       ctx = canvas.getContext("2d");
-      backgroundImg.onload = drawPlayer;
+      if (!ctx) {
+        console.error("❌ Canvas のコンテキスト取得に失敗しました");
+        return;
+      }
+
+      console.log("✅ Canvas 初期化成功");
+
+      // 背景がロードされてから描画する
+      backgroundImg.onload = function() {
+        console.log("✅ 背景画像ロード完了");
+        drawPlayer();
+      };
+
       canvas.addEventListener("mousedown", startDrag);
       canvas.addEventListener("mousemove", dragMove);
       canvas.addEventListener("mouseup", endDrag);
