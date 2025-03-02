@@ -2,78 +2,11 @@
 <html lang="ja">
 <head>
   <meta charset="UTF-8">
-  <title>背景画像テスト</title>
-  <style>
-    body {
-      margin: 0;
-      padding: 20px;
-      font-family: sans-serif;
-      text-align: center;
-      background-color: #222;
-      color: #fff;
-    }
-    canvas {
-      display: block;
-      margin: auto;
-      border: 2px solid white;
-    }
-  </style>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="style.css">
+  <title>HTMLで画像を表示する方法</title>
 </head>
 <body>
-
-  <h1>背景画像テスト</h1>
-  <canvas id="gameCanvas" width="600" height="400"></canvas>
-
-  <script>
-    let canvas, ctx;
-
-    // ✅ Google Drive の画像URLを適切な形式に変換
-    function convertGoogleDriveURL(url) {
-      let match = url.match(/(?:id=|\/d\/)([a-zA-Z0-9_-]+)/);
-      return match ? `https://lh3.googleusercontent.com/d/${match[1]}=s0` : url;
-    }
-
-    // 🎮 フィールド背景画像
-    let backgroundImg = new Image();
-    let backgroundURL = "https://drive.google.com/file/d/1jDckidA8IqAdhUncYX09kzOQd2IqanYQ/view?usp=sharing";
-    backgroundImg.src = convertGoogleDriveURL(backgroundURL);
-
-    function drawBackground() {
-      if (!ctx) {
-        console.error("❌ Canvas のコンテキストが取得できていません");
-        return;
-      }
-      console.log("✅ 背景画像を描画します");
-      ctx.drawImage(backgroundImg, 0, 0, canvas.width, canvas.height);
-    }
-
-    function initGame() {
-      canvas = document.getElementById("gameCanvas");
-      if (!canvas) {
-        console.error("❌ Canvas が見つかりません");
-        return;
-      }
-      ctx = canvas.getContext("2d");
-      if (!ctx) {
-        console.error("❌ Canvas のコンテキスト取得に失敗しました");
-        return;
-      }
-
-      console.log("✅ Canvas 初期化成功");
-
-      // 背景画像のロードが完了したら描画
-      backgroundImg.onload = function() {
-        console.log("✅ 背景画像ロード完了");
-        drawBackground();
-      };
-
-      backgroundImg.onerror = function() {
-        console.error("❌ 背景画像のロードに失敗:", backgroundImg.src);
-      };
-    }
-
-    window.onload = initGame;
-  </script>
-
+  https://drive.google.com/uc?export=view&id=1jDckidA8IqAdhUncYX09kzOQd2IqanYQ
 </body>
-</html>
+</html
