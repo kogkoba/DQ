@@ -2,7 +2,7 @@
 <html lang="ja">
 <head>
   <meta charset="UTF-8">
-  <title>バックグラウンド表示テスト</title>
+  <title>背景画像テスト</title>
   <style>
     body {
       margin: 0;
@@ -21,17 +21,28 @@
 </head>
 <body>
 
-  <h1>バックグラウンド表示テスト</h1>
+  <h1>背景画像テスト</h1>
   <canvas id="gameCanvas" width="600" height="400"></canvas>
 
   <script>
     let canvas, ctx;
 
+    // ✅ Google Drive の画像を直接描画する形式に変換
+    function convertGoogleDriveURL(url) {
+      let match = url.match(/(?:id=|\/d\/)([a-zA-Z0-9_-]+)/);
+      return match ? `https://lh3.googleusercontent.com/d/${match[1]}=s0` : url;
+    }
+
     // 🎮 フィールド背景画像
     let backgroundImg = new Image();
-    backgroundImg.src = "https://lh3.googleusercontent.com/d/1jDckidA8IqAdhUncYX09kzOQd2IqanYQ=s0";
+    backgroundImg.src = convertGoogleDriveURL("https://drive.google.com/file/d/1jDckidA8IqAdhUncYX09kzOQd2IqanYQ/view?usp=sharing");
 
     function drawBackground() {
+      if (!ctx) {
+        console.error("❌ Canvas のコンテキストが取得できていません");
+        return;
+      }
+      console.log("✅ 背景画像を描画します");
       ctx.drawImage(backgroundImg, 0, 0, canvas.width, canvas.height);
     }
 
