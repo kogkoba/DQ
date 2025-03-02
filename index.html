@@ -4,13 +4,6 @@
   <meta charset="UTF-8">
   <!-- モバイル対応のためのビューポート設定 -->
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  
-  
-  
-  
-  
-  
-  
   <title>ドラクエ風クイズRPG 統合サンプル</title>
   <style>
     /* ---------- 共通設定 ---------- */
@@ -70,48 +63,38 @@
       width: 30px;
       height: auto;
     }
-    
-    
-    
-    
-    
-    
-    
-    
-    
+
+    /* D-Pad全体の配置 */
     #dpad {
       position: absolute;
       bottom: 10px;
       right: 10px;
-      width: 100px;
-      height: 100px;
+      width: 150px;
+      height: 150px;
       display: grid;
       grid-template-areas:
         ".    up    ."
         "left center right"
         ".    down  .";
-      grid-gap: 5px;
+      grid-gap: 10px;
     }
-    
-    
-    
-    /* 画面右下の D-.dpad-button {
-  width: 50px;   /* 以前より大きく */
-  height: 50px;
-  background: rgba(0, 0, 0, 0.3);
-  border: 2px solid #fff;
-  border-radius: 5px;
-  cursor: pointer;
-  touch-action: none;   /* iOSでのタッチ操作を安定させる */
-  user-select: none;    /* テキスト選択を防ぐ */
-}
-    
-    
-    .up { grid-area: up; }
-    .down { grid-area: down; }
-    .left { grid-area: left; }
+    /* D-Padボタンを大きくする */
+    .dpad-button {
+      width: 50px;
+      height: 50px;
+      background: rgba(0,0,0,0.3);
+      border: 2px solid #fff;
+      border-radius: 5px;
+      cursor: pointer;
+      touch-action: none;   /* iOSでのタッチ操作を安定させる */
+      user-select: none;    /* テキスト選択を防ぐ */
+    }
+    .up    { grid-area: up; }
+    .down  { grid-area: down; }
+    .left  { grid-area: left; }
     .right { grid-area: right; }
-    .center { grid-area: center; }
+    .center{ grid-area: center; }
+
     /* ---------- 戦闘画面 ---------- */
     #battle-screen {
       display: none;
@@ -205,14 +188,22 @@
     .shake {
       animation: shake 0.5s;
     }
+
     /* ---------- レスポンシブ調整 ---------- */
     @media (max-width: 600px) {
       #status { font-size: 16px; padding: 10px; }
       #top-text-box { font-size: 14px; padding: 5px; }
       .choice-button { width: 120px; font-size: 14px; }
       #player { width: 25px; }
-      #dpad { width: 80px; height: 80px; }
-      .dpad-button { width: 25px; height: 25px; }
+      #dpad {
+        width: 120px;
+        height: 120px;
+        grid-gap: 5px;
+      }
+      .dpad-button {
+        width: 40px;
+        height: 40px;
+      }
     }
   </style>
 </head>
