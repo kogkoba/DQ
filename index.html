@@ -2,7 +2,7 @@
 <html lang="ja">
 <head>
   <meta charset="UTF-8">
-  <title>ドラクエ風クイズRPG（円拡大演出）</title>
+  <title>ドラクエ風クイズRPG（円拡大演出 + BGM）</title>
   <style>
     html, body {
       margin: 0;
@@ -23,17 +23,16 @@
     #gameArea {
       position: relative;
       width: 100%;
-      height: calc(100% - 60px); /* ステータス分の高さを除く */
+      height: calc(100% - 60px);
       background: url("https://lh3.googleusercontent.com/d/1jDckidA8IqAdhUncYX09kzOQd2IqanYQ") no-repeat center center;
       background-size: cover;
       overflow: hidden;
     }
-    /* 勇者画像：立ち姿(初期) / 右足前 / 左足前 */
+    /* 勇者画像 */
     #player {
       position: absolute;
-      width: 30px;   /* 1/4サイズの例 */
+      width: 30px;
       height: auto;
-      /* 初期位置はスクリプトの updatePlayerPosition() で設定 */
     }
     /* 画面右下の D-Pad */
     #dpad {
@@ -63,7 +62,7 @@
     .right { grid-area: right; }
     .center{ grid-area: center; }
 
-    /* 戦闘画面（エンカウント時に表示） */
+    /* 戦闘画面 */
     #battle-screen {
       display: none;
       position: absolute;
@@ -103,26 +102,24 @@
       left: 0;
       width: 100%;
       height: 100%;
-      overflow: hidden;    /* 円がはみ出さないようにする */
+      overflow: hidden;
       z-index: 200;
-      display: none;       /* 初期は非表示 */
-      pointer-events: none;/* クリック等を通さない */
+      display: none;
+      pointer-events: none;
     }
     /* 円本体 */
     #transition-circle {
       position: absolute;
-      /* 画面を十分に覆う大きさ (200vmax など) */
-      width: 200vmax;  
+      width: 200vmax;
       height: 200vmax;
       background: black;
       border-radius: 50%;
-      /* 中心に配置して縮小しておく */
       top: 50%;
       left: 50%;
       transform: translate(-50%, -50%) scale(0);
       transition: transform 0.8s ease-out;
     }
-    /* active クラスを付与すると円が拡大 */
+    /* active クラスで拡大 */
     #transition-circle.active {
       transform: translate(-50%, -50%) scale(1);
     }
@@ -134,9 +131,7 @@
 
   <!-- フィールド画面 -->
   <div id="gameArea">
-    <!-- 勇者画像 -->
     <img id="player" src="https://lh3.googleusercontent.com/d/1peHOi70oOmL8c9v3OQydE5N-9R0PB6vh" alt="hero">
-    <!-- 画面右下の D-Pad -->
     <div id="dpad">
       <div class="dpad-button up" onclick="movePlayer(0, -STEP)"></div>
       <div class="dpad-button left" onclick="movePlayer(-STEP, 0)"></div>
@@ -144,19 +139,26 @@
       <div class="dpad-button right" onclick="movePlayer(STEP, 0)"></div>
       <div class="dpad-button down" onclick="movePlayer(0, STEP)"></div>
     </div>
-    <!-- 円拡大演出用オーバーレイ -->
     <div id="transition-overlay">
       <div id="transition-circle"></div>
     </div>
   </div>
 
-  <!-- 戦闘画面（クイズ） -->
+  <!-- 戦闘画面 -->
   <div id="battle-screen">
     <div id="top-text-box">モンスターがあらわれた！</div>
     <img id="quiz-image" src="">
     <div id="choice-area"></div>
     <p id="explanation" style="display:none; color:yellow;"></p>
   </div>
+
+  <!-- BGM用オーディオタグ -->
+  <audio id="fieldBGM" loop preload="auto">
+    <source src="https://drive.google.com/uc?export=download&id=m2BiM5cKqgRl3KGkiv" type="audio/mpeg">
+  </audio>
+  <audio id="battleBGM" loop preload="auto">
+    <source src="https://drive.google.com/uc?export=download&id=1TlM8Ku0BsSw2e08RTb21qFxozwY7cyhh" type="audio/mpeg">
+  </audio>
 
   <!-- Google API のスクリプト -->
   <script async defer src="https://apis.google.com/js/api.js" onload="gapiLoaded()" onerror="console.error('❌ Google APIの読み込みに失敗しました');"></script>
@@ -212,33 +214,47 @@
       }
     }
 
-    /* --- 戦闘開始(エンカウント)時の円拡大演出 --- */
+    /* --- BGM管理 --- */
+    const fieldBGM = document.getElementById("fieldBGM");
+    const battleBGM = document.getElementById("battleBGM");
+
+    function playFieldBGM() {
+      fieldBGM.currentTime = 0;
+      fieldBGM.play().catch(err => console.warn("フィールドBGM再生エラー:", err));
+    }
+    function stopFieldBGM() {
+      fieldBGM.pause();
+    }
+    function playBattleBGM() {
+      battleBGM.currentTime = 0;
+      battleBGM.play().catch(err => console.warn("戦闘BGM再生エラー:", err));
+    }
+    function stopBattleBGM() {
+      battleBGM.pause();
+    }
+
+    /* --- 円拡大演出とエンカウント開始 --- */
     function startEncounter() {
       inBattle = true;
+      stopFieldBGM();
 
-      // 1) オーバーレイを表示
       const overlay = document.getElementById("transition-overlay");
       const circle = document.getElementById("transition-circle");
       overlay.style.display = "block";
 
-      // ブラウザの描画タイミングに合わせて .active を付与し、円を拡大
       requestAnimationFrame(() => {
         circle.classList.add("active");
       });
 
-      // 2) 円が画面を覆いきるであろう時刻に、画面切り替え
       setTimeout(() => {
-        // フィールドを隠し、戦闘画面を表示
         document.getElementById("gameArea").style.display = "none";
         document.getElementById("battle-screen").style.display = "block";
-
-        // 円拡大演出はここで完了したので、オーバーレイを非表示に
         overlay.style.display = "none";
         circle.classList.remove("active");
 
-        // クイズを表示
+        playBattleBGM();
         showQuiz();
-      }, 800);  // アニメーションと同じ 0.8s 後に実行
+      }, 800);
     }
 
     /* --- クイズ表示 --- */
@@ -269,26 +285,26 @@
     function handleAnswer(selected, correct, explanation) {
       if (selected === correct) {
         alert("✅ 正解！");
-        // 戦闘画面を閉じ、フィールドに戻る
         document.getElementById("battle-screen").style.display = "none";
         document.getElementById("gameArea").style.display = "block";
+
+        stopBattleBGM();
+        playFieldBGM();
+
         inBattle = false;
       } else {
         alert("❌ 不正解！\n" + explanation);
       }
     }
 
-    /* --- フィールド上で歩く勇者の設定 --- */
-    // 勇者画像：立ち姿、右足前、左足前
+    /* --- 勇者の移動設定 --- */
     const playerImages = [
       "https://lh3.googleusercontent.com/d/1peHOi70oOmL8c9v3OQydE5N-9R0PB6vh", // 立ち姿
       "https://lh3.googleusercontent.com/d/1iuVZiT6Eh9mp2Ta__Cpm5z28HZ2k0YA0", // 右足前
       "https://lh3.googleusercontent.com/d/1fCmul9iotoUh4MLa_qzHvaOUDYMvng8C"  // 左足前
     ];
     let currentImageIndex = 0;
-    // 1歩あたりの移動量（px）
     const STEP = 20;
-    // プレイヤーオブジェクト（初期位置は画面中央）
     let player = { 
       x: window.innerWidth / 2, 
       y: document.getElementById("gameArea").clientHeight / 2, 
@@ -296,37 +312,29 @@
       level: 1, 
       steps: 0 
     };
-    // 向き管理：true = 右向き、false = 左向き
     let facingRight = true;
     const playerElement = document.getElementById("player");
 
-    // プレイヤーの位置と向きを反映
     function updatePlayerPosition() {
       playerElement.style.left = player.x + "px";
       playerElement.style.top = player.y + "px";
-      // 中心に合わせる & 左右反転
       playerElement.style.transform = "translate(-50%, -50%) " + (facingRight ? "scaleX(1)" : "scaleX(-1)");
     }
 
-    // D-Pad での移動処理
     function movePlayer(dx, dy) {
-      if (inBattle) return; // 戦闘中は動けない
+      if (inBattle) return;
 
-      // 左右移動時に向きを変更
       if (dx < 0) {
         facingRight = false;
       } else if (dx > 0) {
         facingRight = true;
       }
-      // 歩行アニメーション：画像切替（循環）
       currentImageIndex = (currentImageIndex + 1) % playerImages.length;
       playerElement.src = playerImages[currentImageIndex];
 
-      // 位置更新
       player.x += dx;
       player.y += dy;
 
-      // 境界チェック（画面内に収める）
       const playerWidth = playerElement.offsetWidth;
       const playerHeight = playerElement.offsetHeight;
       const maxX = window.innerWidth - playerWidth;
@@ -336,24 +344,21 @@
       if (player.x > maxX) player.x = maxX;
       if (player.y > maxY) player.y = maxY;
 
-      // 反映
       updatePlayerPosition();
 
-      // 歩数更新
       player.steps++;
       document.getElementById("hp").textContent = player.hp;
       document.getElementById("level").textContent = player.level;
       console.log("歩数:", player.steps);
 
-      // 10歩ごとにエンカウント
       if (player.steps % 10 === 0) {
         startEncounter();
       }
     }
 
-    // 初期化
     function initGame() {
       updatePlayerPosition();
+      playFieldBGM();
     }
     window.onload = initGame;
     console.log("✅ スクリプト読み込み完了");
