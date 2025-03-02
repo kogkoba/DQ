@@ -465,8 +465,7 @@
     /* ---------- 回答処理 ---------- */
     function handleAnswer(selected, quiz) {
       const explanationElem = document.getElementById("explanation");
-      explanationElem.style.display = "none";
-      explanationElem.textContent = "";
+
       
       if (selected === quiz.correct) {
         correctCount++;
