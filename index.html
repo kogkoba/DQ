@@ -1,7 +1,6 @@
 <!DOCTYPE html>
 <html lang="ja">
 <head>
-  ３
   <meta charset="UTF-8">
   <title>ドラクエ風クイズRPG</title>
   <style>
@@ -63,6 +62,7 @@
       playerImg.src = playerImages[frameIndex]; // 歩行アニメ用のフレーム
 
       playerImg.onload = function() {
+        console.log("✅ 画像ロード成功:", playerImg.src);
         ctx.clearRect(0, 0, canvas.width, canvas.height); // 画面をクリア
         drawBackground(); // 背景を描画
         ctx.drawImage(playerImg, player.x - 32, player.y - 32, 64, 64); // プレイヤーを中央に
