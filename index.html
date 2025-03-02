@@ -43,47 +43,40 @@
 
     // 🎮 プレイヤー歩行アニメーション用の画像
     let playerImages = [
-      "https://drive.google.com/uc?export=view&id=1peHOi70oOmL8c9v3OQydE5N-9R0PB6vh", // 正面
-      "https://drive.google.com/uc?export=view&id=1iuVZiT6Eh9mp2Ta__Cpm5z28HZ2k0YA0", // 右足前
-      "https://drive.google.com/uc?export=view&id=1fCmul9iotoUh4MLa_qzHvaOUDYMvng8C"  // 左足前
+      convertGoogleDriveURL("https://drive.google.com/uc?export=view&id=1peHOi70oOmL8c9v3OQydE5N-9R0PB6vh"), // 正面
+      convertGoogleDriveURL("https://drive.google.com/uc?export=view&id=1iuVZiT6Eh9mp2Ta__Cpm5z28HZ2k0YA0"), // 右足前
+      convertGoogleDriveURL("https://drive.google.com/uc?export=view&id=1fCmul9iotoUh4MLa_qzHvaOUDYMvng8C")  // 左足前
     ];
     let frameIndex = 0;
 
     // 🎮 フィールド背景
     let backgroundImg = new Image();
-    backgroundImg.src = "https://drive.google.com/uc?export=view&id=1jDckidA8IqAdhUncYX09kzOQd2IqanYQ";
+    backgroundImg.src = convertGoogleDriveURL("https://drive.google.com/uc?export=view&id=1jDckidA8IqAdhUncYX09kzOQd2IqanYQ");
 
     function drawBackground() {
       ctx.drawImage(backgroundImg, 0, 0, canvas.width, canvas.height);
     }
 
+    function drawPlayer() {
+      let playerImg = new Image();
+      playerImg.src = playerImages[frameIndex]; // 歩行アニメ用のフレーム
 
-function drawPlayer() {
-    let playerImg = new Image();
-    playerImg.src = playerImages[frameIndex]; // 歩行アニメ用のフレーム
-
-    playerImg.onload = function() {
+      playerImg.onload = function() {
         ctx.clearRect(0, 0, canvas.width, canvas.height); // 画面をクリア
         drawBackground(); // 背景を描画
         ctx.drawImage(playerImg, player.x - 32, player.y - 32, 64, 64); // プレイヤーを中央に
-    };
+      };
 
-    playerImg.onerror = function() {
+      playerImg.onerror = function() {
         console.error("❌ プレイヤー画像のロードに失敗しました:", playerImg.src);
-    };
-}
-
-
+      };
+    }
 
     function convertGoogleDriveURL(url) {
-    if (!url.includes("drive.google.com")) return url; // 既に変換されているならそのまま
-    let match = url.match(/(?:id=|\/d\/)([a-zA-Z0-9_-]+)/);
-    return match ? `https://lh3.googleusercontent.com/d/${match[1]}=s0` : url;
-}
-
-
-
-  
+      if (!url.includes("drive.google.com")) return url; // 既に変換されているならそのまま
+      let match = url.match(/(?:id=|\/d\/)([a-zA-Z0-9_-]+)/);
+      return match ? `https://lh3.googleusercontent.com/d/${match[1]}=s0` : url;
+    }
 
     function updatePlayerAnimation() {
       frameIndex = (frameIndex + 1) % playerImages.length;
@@ -117,7 +110,10 @@ function drawPlayer() {
     function initGame() {
       canvas = document.getElementById("gameCanvas");
       ctx = canvas.getContext("2d");
-      backgroundImg.onload = drawPlayer;
+      backgroundImg.onload = () => {
+        drawBackground();
+        drawPlayer();
+      };
       canvas.addEventListener("mousedown", startDrag);
       canvas.addEventListener("mousemove", dragMove);
       canvas.addEventListener("mouseup", endDrag);
