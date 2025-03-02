@@ -194,6 +194,19 @@
   </div>
 
   <!-- BGM用オーディオタグ -->
+
+<!-- 例: 同じ階層に bgm_field.mp3 と bgm_battle.mp3 を置いた場合 -->
+<audio id="fieldBGM" loop preload="auto">
+  <source src="./kouyawoiku.mp3" type="audio/mpeg">
+</audio>
+<audio id="battleBGM" loop preload="auto">
+  <source src="./gypsydance.mp3" type="audio/mpeg">
+</audio>
+
+
+
+<!
+  
   <!-- ここを自分のGoogleドライブ直リンクに書き換えてください -->
   <audio id="fieldBGM" loop preload="auto">
     <source src="https://drive.google.com/uc?export=download&id=1TlM8Ku0BsSw2e08RTb21qFxozwY7cyhh" type="audio/mpeg">
@@ -201,7 +214,10 @@
   <audio id="battleBGM" loop preload="auto">
     <source src="https://drive.google.com/uc?export=download&id=1MzxmnuZ2YiavM-m2BiM5cKqgRl3KGkiv" type="audio/mpeg">
   </audio>
+-->
 
+
+  
   <!-- Google API のスクリプト -->
   <script async defer src="https://apis.google.com/js/api.js" 
           onload="gapiLoaded()" 
