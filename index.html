@@ -57,16 +57,25 @@
       ctx.drawImage(backgroundImg, 0, 0, canvas.width, canvas.height);
     }
 
-    function drawPlayer() {
-      let playerImg = new Image();
-      playerImg.src = playerImages[frameIndex];
 
-      playerImg.onload = function() {
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
-        drawBackground();
-        ctx.drawImage(playerImg, player.x - 32, player.y - 32, 64, 64); // 2倍のサイズで描画
-      };
-    }
+function drawPlayer() {
+    let playerImg = new Image();
+    playerImg.src = playerImages[frameIndex]; // 歩行アニメ用のフレーム
+
+    playerImg.onload = function() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height); // 画面をクリア
+        drawBackground(); // 背景を描画
+        ctx.drawImage(playerImg, player.x - 32, player.y - 32, 64, 64); // プレイヤーを中央に
+    };
+
+    playerImg.onerror = function() {
+        console.error("❌ プレイヤー画像のロードに失敗しました:", playerImg.src);
+    };
+}
+
+
+
+  
 
     function updatePlayerAnimation() {
       frameIndex = (frameIndex + 1) % playerImages.length;
