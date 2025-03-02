@@ -37,7 +37,11 @@
     let canvas, ctx;
 
     let encounterThreshold = getRandomEncounterSteps();
-    
+    backgroundImg.onload = function() {
+  console.log("背景画像ロード完了");
+  drawBackground();
+};
+
     function getRandomEncounterSteps() {
       return Math.floor(Math.random() * (30 - 5 + 1)) + 5;
     }
@@ -55,9 +59,13 @@
     backgroundImg.src = "https://lh3.googleusercontent.com/d/1jDckidA8IqAdhUncYX09kzOQd2IqanYQ=s0";
 
     function drawBackground() {
-      if (!ctx) return;
-      ctx.drawImage(backgroundImg, 0, 0, canvas.width, canvas.height);
-    }
+  if (backgroundImg.complete) {
+    ctx.drawImage(backgroundImg, 0, 0, canvas.width, canvas.height);
+  } else {
+    console.error("背景画像がまだ読み込まれていません");
+  }
+}
+
 
     function drawPlayer() {
       if (!ctx) return;
@@ -115,6 +123,14 @@
         console.error("❌ Canvas のコンテキスト取得に失敗しました");
         return;
       }
+console.log("背景画像ロード開始:", backgroundImg.src);
+backgroundImg.onload = function() {
+  console.log("背景画像ロード完了:", backgroundImg.src);
+  drawBackground();
+};
+backgroundImg.onerror = function() {
+  console.error("背景画像のロードに失敗:", backgroundImg.src);
+};
 
       console.log("✅ Canvas 初期化成功");
 
