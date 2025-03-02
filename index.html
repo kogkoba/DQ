@@ -311,6 +311,34 @@
         console.error("クイズデータ取得エラー:", err);
       }
     }
+ /* ---------- 画面の切り替わり ----------*/
+
+function startEncounter() {
+  inBattle = true;
+  stopFieldBGM();
+
+  const overlay = document.getElementById("transition-overlay");
+  const circle = document.getElementById("transition-circle");
+  
+  // オーバーレイを表示して円を拡大させる
+  overlay.style.display = "block";
+  requestAnimationFrame(() => {
+    circle.classList.add("active");
+  });
+  
+  // 0.8秒後に画面切り替え
+  setTimeout(() => {
+    document.getElementById("gameArea").style.display = "none";
+    document.getElementById("battle-screen").style.display = "block";
+    overlay.style.display = "none";
+    circle.classList.remove("active");
+    
+    playBattleBGM();
+    startBattle(); // 戦闘開始の残りの処理
+  }, 800);
+}
+
+    
 
     /* ---------- モンスターデータ取得 ----------
          ※A列：ID、B列：名前、C列：URL
