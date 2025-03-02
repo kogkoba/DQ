@@ -75,6 +75,14 @@ function drawPlayer() {
 
 
 
+    function convertGoogleDriveURL(url) {
+    if (!url.includes("drive.google.com")) return url; // 既に変換されているならそのまま
+    let match = url.match(/(?:id=|\/d\/)([a-zA-Z0-9_-]+)/);
+    return match ? `https://lh3.googleusercontent.com/d/${match[1]}=s0` : url;
+}
+
+
+
   
 
     function updatePlayerAnimation() {
