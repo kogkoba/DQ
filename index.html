@@ -11,6 +11,9 @@
       border: 2px solid white;
     }
     #status { font-size: 20px; margin: 10px; }
+    #battle-screen { display: none; background: black; padding: 20px; text-align: center; }
+    #top-text-box { border: 2px solid white; padding: 10px; margin-bottom: 10px; color: white; }
+    .choice-button { display: block; margin: 10px auto; padding: 10px; width: 200px; font-size: 18px; }
   </style>
 </head>
 <body>
@@ -19,21 +22,41 @@
   <div id="status">プレイヤーのHP: <span id="hp">100</span> / レベル: <span id="level">1</span></div>
   <canvas id="gameCanvas" width="600" height="400"></canvas>
 
+  <div id="battle-screen">
+    <div id="top-text-box">モンスターがあらわれた！</div>
+    <img id="quiz-image" src="" style="display: none; width: 200px; height: 200px; margin: 10px auto;">
+    <div id="choice-area"></div>
+    <p id="explanation" style="display:none; color:yellow;"></p>
+  </div>
+
   <script>
-    let player = { x: 300, y: 200, steps: 0 };
+    let player = { x: 300, y: 200, hp: 100, level: 1, steps: 0 };
+    let isDragging = false;
+    let inBattle = false;
     let canvas, ctx;
 
-    // Google Drive の画像URL（公開リンクにする）
-    let backgroundURL = "https://drive.google.com/uc?export=view&id=1jDckidA8IqAdhUncYX09kzOQd2IqanYQ";
+    let encounterThreshold = getRandomEncounterSteps();
+    
+    function getRandomEncounterSteps() {
+      return Math.floor(Math.random() * (30 - 5 + 1)) + 5;
+    }
+
+    // 🎮 プレイヤー歩行アニメーション用の画像
     let playerImages = [
-      "https://drive.google.com/uc?export=view&id=1peHOi70oOmL8c9v3OQydE5N-9R0PB6vh", // 正面
-      "https://drive.google.com/uc?export=view&id=1iuVZiT6Eh9mp2Ta__Cpm5z28HZ2k0YA0", // 右足前
-      "https://drive.google.com/uc?export=view&id=1fCmul9iotoUh4MLa_qzHvaOUDYMvng8C"  // 左足前
+      "https://lh3.googleusercontent.com/d/1peHOi70oOmL8c9v3OQydE5N-9R0PB6vh=s0", // 正面
+      "https://lh3.googleusercontent.com/d/1iuVZiT6Eh9mp2Ta__Cpm5z28HZ2k0YA0=s0", // 右足前
+      "https://lh3.googleusercontent.com/d/1fCmul9iotoUh4MLa_qzHvaOUDYMvng8C=s0"  // 左足前
     ];
     let frameIndex = 0;
 
+    // 🎮 フィールド背景
     let backgroundImg = new Image();
-    backgroundImg.src = backgroundURL;
+    backgroundImg.src = "https://lh3.googleusercontent.com/d/1jDckidA8IqAdhUncYX09kzOQd2IqanYQ=s0";
+    
+    backgroundImg.onload = function() {
+      console.log("✅ 背景画像ロード完了");
+      drawPlayer();
+    };
 
     function drawBackground() {
       ctx.drawImage(backgroundImg, 0, 0, canvas.width, canvas.height);
@@ -41,17 +64,16 @@
 
     function drawPlayer() {
       let playerImg = new Image();
-      playerImg.src = playerImages[frameIndex];
+      playerImg.src = playerImages[frameIndex]; // 歩行アニメ用のフレーム
 
       playerImg.onload = function() {
-        console.log("✅ 画像ロード成功:", playerImg.src);
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
-        drawBackground();
-        ctx.drawImage(playerImg, player.x - 32, player.y - 32, 64, 64);
+        ctx.clearRect(0, 0, canvas.width, canvas.height); // 画面をクリア
+        drawBackground(); // 背景を描画
+        ctx.drawImage(playerImg, player.x - 32, player.y - 32, 64, 64); // プレイヤーを中央に
       };
 
       playerImg.onerror = function() {
-        console.error("❌ 画像ロード失敗:", playerImg.src);
+        console.error("❌ プレイヤー画像のロードに失敗しました:", playerImg.src);
       };
     }
 
@@ -59,16 +81,38 @@
       frameIndex = (frameIndex + 1) % playerImages.length;
     }
 
+    function startDrag() { isDragging = true; }
+    
+    function dragMove(event) {
+      if (!isDragging) return;
+      let rect = canvas.getBoundingClientRect();
+      player.x = event.clientX - rect.left;
+      player.y = event.clientY - rect.top;
+      player.steps++;
+      updatePlayerAnimation();
+      drawPlayer();
+
+      if (player.steps >= encounterThreshold) {
+        startEncounter();
+        encounterThreshold = player.steps + getRandomEncounterSteps();
+      }
+    }
+
+    function endDrag() { isDragging = false; }
+
+    function startEncounter() {
+      inBattle = true;
+      document.getElementById("battle-screen").style.display = "block";
+      document.getElementById("gameCanvas").style.display = "none";
+    }
+
     function initGame() {
       canvas = document.getElementById("gameCanvas");
       ctx = canvas.getContext("2d");
-
-      backgroundImg.onload = function() {
-        drawBackground();
-        drawPlayer();
-      };
-
-      console.log("✅ 背景ロード開始:", backgroundImg.src);
+      backgroundImg.onload = drawPlayer;
+      canvas.addEventListener("mousedown", startDrag);
+      canvas.addEventListener("mousemove", dragMove);
+      canvas.addEventListener("mouseup", endDrag);
     }
 
     window.onload = initGame;
