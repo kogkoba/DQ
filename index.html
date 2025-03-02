@@ -19,133 +19,13 @@
 </head>
 <body>
 
-  <h1>ドラクエ風クイズRPG</h1>
-  <div id="status">プレイヤーのHP: <span id="hp">100</span> / レベル: <span id="level">1</span></div>
-  <canvas id="gameCanvas" width="600" height="400"></canvas>
-
-  <div id="battle-screen">
-    <div id="top-text-box">モンスターがあらわれた！</div>
-    <img id="quiz-image" src="" style="display: none; width: 200px; height: 200px; margin: 10px auto;">
-    <div id="choice-area"></div>
-    <p id="explanation" style="display:none; color:yellow;"></p>
-  </div>
-
-  <script>
-    let player = { x: 300, y: 200, hp: 100, level: 1, steps: 0 };
-    let isDragging = false;
-    let inBattle = false;
-    let canvas, ctx;
-
-    let encounterThreshold = getRandomEncounterSteps();
+ 
     backgroundImg.onload = function() {
   console.log("背景画像ロード完了");
   drawBackground();
 };
 
-    function getRandomEncounterSteps() {
-      return Math.floor(Math.random() * (30 - 5 + 1)) + 5;
-    }
-
-    // 🎮 プレイヤー歩行アニメーション用の画像
-    let playerImages = [
-      "https://lh3.googleusercontent.com/d/1peHOi70oOmL8c9v3OQydE5N-9R0PB6vh=s0", // 正面
-      "https://lh3.googleusercontent.com/d/1iuVZiT6Eh9mp2Ta__Cpm5z28HZ2k0YA0=s0", // 右足前
-      "https://lh3.googleusercontent.com/d/1fCmul9iotoUh4MLa_qzHvaOUDYMvng8C=s0"  // 左足前
-    ];
-    let frameIndex = 0;
-
-    // 🎮 フィールド背景
-    let backgroundImg = new Image();
-    backgroundImg.src = "https://lh3.googleusercontent.com/d/1jDckidA8IqAdhUncYX09kzOQd2IqanYQ=s0";
-
-    function drawBackground() {
-  if (backgroundImg.complete) {
-    ctx.drawImage(backgroundImg, 0, 0, canvas.width, canvas.height);
-  } else {
-    console.error("背景画像がまだ読み込まれていません");
-  }
-}
-
-
-    function drawPlayer() {
-      if (!ctx) return;
-      let playerImg = new Image();
-      playerImg.src = playerImages[frameIndex]; // 歩行アニメ用のフレーム
-
-      playerImg.onload = function() {
-        ctx.clearRect(0, 0, canvas.width, canvas.height); // 画面をクリア
-        drawBackground(); // 背景を描画
-        ctx.drawImage(playerImg, player.x - 32, player.y - 32, 64, 64); // プレイヤーを中央に
-      };
-
-      playerImg.onerror = function() {
-        console.error("❌ プレイヤー画像のロードに失敗しました:", playerImg.src);
-      };
-    }
-
-    function updatePlayerAnimation() {
-      frameIndex = (frameIndex + 1) % playerImages.length;
-    }
-
-    function startDrag() { isDragging = true; }
-    
-    function dragMove(event) {
-      if (!isDragging) return;
-      let rect = canvas.getBoundingClientRect();
-      player.x = event.clientX - rect.left;
-      player.y = event.clientY - rect.top;
-      player.steps++;
-      updatePlayerAnimation();
-      drawPlayer();
-
-      if (player.steps >= encounterThreshold) {
-        startEncounter();
-        encounterThreshold = player.steps + getRandomEncounterSteps();
-      }
-    }
-
-    function endDrag() { isDragging = false; }
-
-    function startEncounter() {
-      inBattle = true;
-      document.getElementById("battle-screen").style.display = "block";
-      document.getElementById("gameCanvas").style.display = "none";
-    }
-
-    function initGame() {
-      canvas = document.getElementById("gameCanvas");
-      if (!canvas) {
-        console.error("❌ Canvas が見つかりません");
-        return;
-      }
-      ctx = canvas.getContext("2d");
-      if (!ctx) {
-        console.error("❌ Canvas のコンテキスト取得に失敗しました");
-        return;
-      }
-console.log("背景画像ロード開始:", backgroundImg.src);
-backgroundImg.onload = function() {
-  console.log("背景画像ロード完了:", backgroundImg.src);
-  drawBackground();
-};
-backgroundImg.onerror = function() {
-  console.error("背景画像のロードに失敗:", backgroundImg.src);
-};
-
-      console.log("✅ Canvas 初期化成功");
-
-      // 背景がロードされてから描画する
-      backgroundImg.onload = function() {
-        console.log("✅ 背景画像ロード完了");
-        drawPlayer();
-      };
-
-      canvas.addEventListener("mousedown", startDrag);
-      canvas.addEventListener("mousemove", dragMove);
-      canvas.addEventListener("mouseup", endDrag);
-    }
-
-    window.onload = initGame;
+   
   </script>
 </body>
 </html>
