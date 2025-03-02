@@ -2,6 +2,8 @@
 <html lang="ja">
 <head>
   <meta charset="UTF-8">
+  <!-- モバイル対応のためのビューポート設定 -->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>ドラクエ風クイズRPG 統合サンプル</title>
   <style>
     /* ---------- 共通設定 ---------- */
@@ -41,16 +43,16 @@
     }
     /* ---------- ステータス表示 ---------- */
     #status {
-      padding: 20px;
+      padding: 10px;
       text-align: center;
-      font-size: 20px;
+      font-size: 18px;
       background-color: #111;
     }
     /* ---------- フィールド画面 ---------- */
     #gameArea {
       position: relative;
       width: 100%;
-      height: calc(100% - 60px);
+      height: calc(100% - 50px);
       background: url("https://lh3.googleusercontent.com/d/1jDckidA8IqAdhUncYX09kzOQd2IqanYQ") no-repeat center center;
       background-size: cover;
       overflow: hidden;
@@ -61,33 +63,38 @@
       width: 30px;
       height: auto;
     }
-    /* 画面右下の D-Pad */
+
+    /* D-Pad全体の配置 */
     #dpad {
       position: absolute;
-      bottom: 20px;
-      right: 20px;
-      width: 120px;
-      height: 120px;
+      bottom: 10px;
+      right: 10px;
+      width: 150px;
+      height: 150px;
       display: grid;
       grid-template-areas:
         ".    up    ."
         "left center right"
         ".    down  .";
-      grid-gap: 5px;
+      grid-gap: 10px;
     }
+    /* D-Padボタンを大きくする */
     .dpad-button {
-      width: 40px;
-      height: 40px;
+      width: 50px;
+      height: 50px;
       background: rgba(0,0,0,0.3);
       border: 2px solid #fff;
       border-radius: 5px;
       cursor: pointer;
+      touch-action: none;   /* iOSでのタッチ操作を安定させる */
+      user-select: none;    /* テキスト選択を防ぐ */
     }
-    .up { grid-area: up; }
-    .down { grid-area: down; }
-    .left { grid-area: left; }
+    .up    { grid-area: up; }
+    .down  { grid-area: down; }
+    .left  { grid-area: left; }
     .right { grid-area: right; }
-    .center { grid-area: center; }
+    .center{ grid-area: center; }
+
     /* ---------- 戦闘画面 ---------- */
     #battle-screen {
       display: none;
@@ -96,50 +103,52 @@
       width: 100%;
       height: 100%;
       background: black;
-      padding: 20px;
+      padding: 10px;
       text-align: center;
       z-index: 100;
     }
     #top-text-box {
       border: 2px solid white;
-      padding: 10px;
-      margin-bottom: 10px;
-      min-height: 50px;
+      padding: 5px;
+      margin-bottom: 5px;
+      min-height: 40px;
+      font-size: 16px;
     }
     #enemy-container {
       display: flex;
       justify-content: center;
-      gap: 10px;
-      margin-bottom: 10px;
+      gap: 5px;
+      margin-bottom: 5px;
     }
     .monster {
-      width: 60px;
-      height: 60px;
+      width: 50px;
+      height: 50px;
       object-fit: contain;
     }
     #quiz-image {
       display: none;
-      width: 200px;
-      height: 200px;
-      margin: 10px auto;
+      width: 150px;
+      height: 150px;
+      margin: 5px auto;
     }
     .choice-button {
       display: block;
-      margin: 10px auto;
-      padding: 10px;
-      width: 200px;
-      font-size: 18px;
+      margin: 5px auto;
+      padding: 5px;
+      width: 150px;
+      font-size: 16px;
     }
     #explanation {
       display: none;
       color: yellow;
-      margin: 10px;
+      margin: 5px;
+      font-size: 14px;
     }
     #zaorikuButton {
       display: none;
-      font-size: 20px;
-      padding: 10px 20px;
-      margin-top: 20px;
+      font-size: 18px;
+      padding: 5px 10px;
+      margin-top: 10px;
       cursor: pointer;
     }
     /* ---------- 円拡大演出用オーバーレイ ---------- */
@@ -179,38 +188,55 @@
     .shake {
       animation: shake 0.5s;
     }
+
+    /* ---------- レスポンシブ調整 ---------- */
+    @media (max-width: 600px) {
+      #status { font-size: 16px; padding: 10px; }
+      #top-text-box { font-size: 14px; padding: 5px; }
+      .choice-button { width: 120px; font-size: 14px; }
+      #player { width: 25px; }
+      #dpad {
+        width: 120px;
+        height: 120px;
+        grid-gap: 5px;
+      }
+      .dpad-button {
+        width: 40px;
+        height: 40px;
+      }
+    }
   </style>
 </head>
 <body>
-
-  <!-- ---------- タイトル画面 ---------- -->
+  <!-- タイトル画面 -->
   <div id="titleScreen">
     <h1>ドラクエ風クイズRPG</h1>
     <button id="startButton" onclick="startGame()">▶ ゲームスタート</button>
   </div>
 
-  <!-- ---------- ゲーム画面全体 ---------- -->
+  <!-- ゲーム画面全体 -->
   <div id="gameContainer">
     <!-- ステータス表示 -->
     <div id="status">
       プレイヤーのHP: <span id="hp">100</span> / レベル: <span id="level">1</span>
     </div>
-    <!-- ---------- フィールド画面 ---------- -->
+    <!-- フィールド画面 -->
     <div id="gameArea">
       <img id="player" src="https://lh3.googleusercontent.com/d/1peHOi70oOmL8c9v3OQydE5N-9R0PB6vh" alt="hero">
       <div id="dpad">
-        <div class="dpad-button up" onclick="movePlayer(0, -STEP)"></div>
-        <div class="dpad-button left" onclick="movePlayer(-STEP, 0)"></div>
+        <div class="dpad-button up"    onclick="movePlayer(0, -STEP)"></div>
+        <div class="dpad-button left"  onclick="movePlayer(-STEP, 0)"></div>
         <div class="dpad-button center"></div>
         <div class="dpad-button right" onclick="movePlayer(STEP, 0)"></div>
-        <div class="dpad-button down" onclick="movePlayer(0, STEP)"></div>
+        <div class="dpad-button down"  onclick="movePlayer(0, STEP)"></div>
       </div>
-      <!-- ---------- 円拡大演出用オーバーレイ ---------- -->
+      <!-- 円拡大演出用オーバーレイ -->
       <div id="transition-overlay">
         <div id="transition-circle"></div>
       </div>
     </div>
-    <!-- ---------- 戦闘画面 ---------- -->
+
+    <!-- 戦闘画面 -->
     <div id="battle-screen">
       <div id="top-text-box">モンスターがあらわれた！</div>
       <div id="enemy-container"></div>
@@ -220,6 +246,7 @@
       <button id="zaorikuButton" onclick="onZaoriku()">ザオリク</button>
     </div>
   </div>
+
 
   <!-- ---------- BGM用オーディオタグ ---------- -->
   <audio id="fieldBGM" loop preload="auto">
