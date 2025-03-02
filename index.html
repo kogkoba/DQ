@@ -111,17 +111,7 @@
       min-height: 40px;
       font-size: 16px;
     }
-    /* ハート表示用コンテナ */
-    #hearts-container {
-      display: flex;
-      justify-content: center;
-      gap: 10px;
-      margin-bottom: 10px;
-    }
-    .heart {
-      font-size: 24px;
-      color: red;
-    }
+    /* 敵表示 */
     #enemy-container {
       display: flex;
       justify-content: center;
@@ -133,18 +123,31 @@
       height: 50px;
       object-fit: contain;
     }
+    /* クイズ画像 */
     #quiz-image {
       display: none;
       width: 150px;
       height: 150px;
       margin: 5px auto;
     }
+    /* 選択肢 */
     .choice-button {
       display: block;
       margin: 5px auto;
       padding: 5px;
       width: 150px;
       font-size: 16px;
+    }
+    /* ハート表示用コンテナを選択肢の下に配置 */
+    #hearts-container {
+      display: flex;
+      justify-content: center;
+      gap: 10px;
+      margin-top: 10px;
+    }
+    .heart {
+      font-size: 24px;
+      color: red;
     }
     /* 解説は不要なので非表示 */
     #explanation {
@@ -209,9 +212,7 @@
         width: 40px;
         height: 40px;
       }
-      .heart {
-        font-size: 20px;
-      }
+      .heart { font-size: 20px; }
     }
   </style>
 </head>
@@ -243,14 +244,15 @@
         <div id="transition-circle"></div>
       </div>
     </div>
+
     <!-- ---------- 戦闘画面 ---------- -->
     <div id="battle-screen">
       <div id="top-text-box">モンスターがあらわれた！</div>
-      <!-- ハート表示用コンテナ -->
-      <div id="hearts-container"></div>
       <div id="enemy-container"></div>
       <img id="quiz-image" src="">
       <div id="choice-area"></div>
+      <!-- ハート表示用コンテナは選択肢ボックスの下に配置 -->
+      <div id="hearts-container"></div>
       <button id="zaorikuButton" onclick="onZaoriku()">ザオリク</button>
     </div>
   </div>
@@ -264,8 +266,8 @@
   </audio>
 
   <!-- ---------- Google API のスクリプト ---------- -->
-  <script async defer src="https://apis.google.com/js/api.js"
-          onload="gapiLoaded()"
+  <script async defer src="https://apis.google.com/js/api.js" 
+          onload="gapiLoaded()" 
           onerror="console.error('❌ Google APIの読み込みに失敗しました');"></script>
 
   <script>
@@ -362,7 +364,6 @@
     function initHearts() {
       const heartsContainer = document.getElementById("hearts-container");
       heartsContainer.innerHTML = "";
-      // テキストハートを4つ配置
       for (let i = 0; i < 4; i++) {
         const heart = document.createElement("span");
         heart.className = "heart";
@@ -389,12 +390,10 @@
 
       const overlay = document.getElementById("transition-overlay");
       const circle = document.getElementById("transition-circle");
-
       overlay.style.display = "block";
       requestAnimationFrame(() => {
         circle.classList.add("active");
       });
-
       setTimeout(() => {
         document.getElementById("gameArea").style.display = "none";
         document.getElementById("battle-screen").style.display = "block";
@@ -412,10 +411,8 @@
       document.getElementById("choice-area").innerHTML = "";
       document.getElementById("zaorikuButton").style.display = "none";
 
-      // ハート4つ配置
-      initHearts();
+      initHearts(); // ハート4つ配置
 
-      // モンスター4体表示
       currentMonsters = getRandomMonsters();
       showMonsters(currentMonsters);
 
@@ -441,7 +438,6 @@
       const quizImage = document.getElementById("quiz-image");
       quizImage.src = quiz.imageUrl;
       quizImage.style.display = quiz.imageUrl ? "block" : "none";
-
       const choiceArea = document.getElementById("choice-area");
       choiceArea.innerHTML = "";
       quiz.choices.forEach((choice, index) => {
@@ -464,7 +460,6 @@
         topTextBox.textContent = "❌ 不正解！";
         shakeAndRemoveHeart();
       }
-
       if (correctCount >= MAX_CORRECT) {
         setTimeout(() => {
           topTextBox.textContent = "4回正解！モンスターを倒した！";
@@ -542,12 +537,12 @@
       playerElement.style.transform = "translate(-50%, -50%) " + (facingRight ? "scaleX(1)" : "scaleX(-1)");
     }
     function movePlayer(dx, dy) {
-      if (inBattle) return;
+      if (inBattle) return; // 戦闘中は移動不可
       if (dx < 0) { facingRight = false; }
       else if (dx > 0) { facingRight = true; }
       currentImageIndex = (currentImageIndex + 1) % playerImages.length;
       playerElement.src = playerImages[currentImageIndex];
-      
+
       player.x += dx;
       player.y += dy;
       const pw = playerElement.offsetWidth;
@@ -559,7 +554,7 @@
       if (player.x > maxX) player.x = maxX;
       if (player.y > maxY) player.y = maxY;
       updatePlayerPosition();
-      
+
       player.steps++;
       document.getElementById("hp").textContent = player.hp;
       document.getElementById("level").textContent = player.level;
