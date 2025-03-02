@@ -27,7 +27,7 @@
   <script>
     let canvas, ctx;
 
-    // ✅ Google Drive の画像を直接描画する形式に変換
+    // ✅ Google Drive の画像URLを適切な形式に変換
     function convertGoogleDriveURL(url) {
       let match = url.match(/(?:id=|\/d\/)([a-zA-Z0-9_-]+)/);
       return match ? `https://lh3.googleusercontent.com/d/${match[1]}=s0` : url;
@@ -35,7 +35,8 @@
 
     // 🎮 フィールド背景画像
     let backgroundImg = new Image();
-    backgroundImg.src = convertGoogleDriveURL("https://drive.google.com/file/d/1jDckidA8IqAdhUncYX09kzOQd2IqanYQ/view?usp=sharing");
+    let backgroundURL = "https://drive.google.com/file/d/1jDckidA8IqAdhUncYX09kzOQd2IqanYQ/view?usp=sharing";
+    backgroundImg.src = convertGoogleDriveURL(backgroundURL);
 
     function drawBackground() {
       if (!ctx) {
