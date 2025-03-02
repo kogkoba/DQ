@@ -1,31 +1,67 @@
 <!DOCTYPE html>
 <html lang="ja">
 <head>
-  1
   <meta charset="UTF-8">
-  <title>ドラクエ風クイズRPG</title>
+  <title>バックグラウンド表示テスト</title>
   <style>
-    body { margin: 0; padding: 20px; font-family: sans-serif; text-align: center; background-color: #222; color: #fff; }
+    body {
+      margin: 0;
+      padding: 20px;
+      font-family: sans-serif;
+      text-align: center;
+      background-color: #222;
+      color: #fff;
+    }
     canvas {
       display: block;
       margin: auto;
       border: 2px solid white;
     }
-    #status { font-size: 20px; margin: 10px; }
-    #battle-screen { display: none; background: black; padding: 20px; text-align: center; }
-    #top-text-box { border: 2px solid white; padding: 10px; margin-bottom: 10px; color: white; }
-    .choice-button { display: block; margin: 10px auto; padding: 10px; width: 200px; font-size: 18px; }
   </style>
 </head>
 <body>
 
- 
-    backgroundImg.onload = function() {
-  console.log("背景画像ロード完了");
-  drawBackground();
-};
+  <h1>バックグラウンド表示テスト</h1>
+  <canvas id="gameCanvas" width="600" height="400"></canvas>
 
-   
+  <script>
+    let canvas, ctx;
+
+    // 🎮 フィールド背景画像
+    let backgroundImg = new Image();
+    backgroundImg.src = "https://lh3.googleusercontent.com/d/1jDckidA8IqAdhUncYX09kzOQd2IqanYQ=s0";
+
+    function drawBackground() {
+      ctx.drawImage(backgroundImg, 0, 0, canvas.width, canvas.height);
+    }
+
+    function initGame() {
+      canvas = document.getElementById("gameCanvas");
+      if (!canvas) {
+        console.error("❌ Canvas が見つかりません");
+        return;
+      }
+      ctx = canvas.getContext("2d");
+      if (!ctx) {
+        console.error("❌ Canvas のコンテキスト取得に失敗しました");
+        return;
+      }
+
+      console.log("✅ Canvas 初期化成功");
+
+      // 背景画像のロードが完了したら描画
+      backgroundImg.onload = function() {
+        console.log("✅ 背景画像ロード完了");
+        drawBackground();
+      };
+
+      backgroundImg.onerror = function() {
+        console.error("❌ 背景画像のロードに失敗:", backgroundImg.src);
+      };
+    }
+
+    window.onload = initGame;
   </script>
+
 </body>
 </html>
