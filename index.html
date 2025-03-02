@@ -329,14 +329,6 @@
     }
  /* ---------- 画面の切り替わり ----------
 
-function startEncounter() {
-  inBattle = true;
-  stopFieldBGM();
-
-  */
-
-  const overlay = document.getElementById("transition-overlay");
-  const circle = document.getElementById("transition-circle");
   
   // オーバーレイを表示して円を拡大させる
   overlay.style.display = "block";
@@ -570,7 +562,7 @@ function startEncounter() {
       "https://lh3.googleusercontent.com/d/1fCmul9iotoUh4MLa_qzHvaOUDYMvng8C"   // 左足前
     ];
     let currentImageIndex = 0;
-    const STEP = 20;
+ 
     let player = { x: 0, y: 0, hp: 100, level: 1, steps: 0 };
     let facingRight = true;
     const playerElement = document.getElementById("player");
