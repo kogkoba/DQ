@@ -2,7 +2,7 @@
 <html lang="ja">
 <head>
   <meta charset="UTF-8">
-  <title>ドラクエ風クイズRPG（円拡大演出 + BGM）</title>
+  <title>ドラクエ風クイズRPG（スタートボタン付き）</title>
   <style>
     html, body {
       margin: 0;
@@ -13,27 +13,58 @@
       background-color: #222;
       color: #fff;
     }
+    /* タイトル画面 */
+    #titleScreen {
+      display: flex;            /* 中央寄せのためにflexを使う */
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      width: 100%;
+      height: 100%;
+      background: black;
+    }
+    #startButton {
+      font-size: 24px;
+      padding: 10px 20px;
+      cursor: pointer;
+      border: 2px solid #fff;
+      background: #444;
+      color: #fff;
+      border-radius: 5px;
+    }
+
+    /* ゲーム画面全体 */
+    #gameContainer {
+      display: none; /* スタート前は非表示にしておく */
+      width: 100%;
+      height: 100%;
+    }
+
     /* ステータス表示 */
     #status {
       padding: 20px;
       text-align: center;
       font-size: 20px;
+      background-color: #111;
     }
+
     /* フィールド画面 */
     #gameArea {
       position: relative;
       width: 100%;
-      height: calc(100% - 60px);
+      height: calc(100% - 60px); /* ステータス分の高さを除く */
       background: url("https://lh3.googleusercontent.com/d/1jDckidA8IqAdhUncYX09kzOQd2IqanYQ") no-repeat center center;
       background-size: cover;
       overflow: hidden;
     }
+
     /* 勇者画像 */
     #player {
       position: absolute;
-      width: 30px;
+      width: 30px; /* 1/4サイズの例 */
       height: auto;
     }
+
     /* 画面右下の D-Pad */
     #dpad {
       position: absolute;
@@ -107,7 +138,6 @@
       display: none;
       pointer-events: none;
     }
-    /* 円本体 */
     #transition-circle {
       position: absolute;
       width: 200vmax;
@@ -119,40 +149,52 @@
       transform: translate(-50%, -50%) scale(0);
       transition: transform 0.8s ease-out;
     }
-    /* active クラスで拡大 */
     #transition-circle.active {
       transform: translate(-50%, -50%) scale(1);
     }
   </style>
 </head>
 <body>
-  <h1 style="text-align:center; margin:10px 0;">ドラクエ風クイズRPG</h1>
-  <div id="status">プレイヤーのHP: <span id="hp">100</span> / レベル: <span id="level">1</span></div>
 
-  <!-- フィールド画面 -->
-  <div id="gameArea">
-    <img id="player" src="https://lh3.googleusercontent.com/d/1peHOi70oOmL8c9v3OQydE5N-9R0PB6vh" alt="hero">
-    <div id="dpad">
-      <div class="dpad-button up" onclick="movePlayer(0, -STEP)"></div>
-      <div class="dpad-button left" onclick="movePlayer(-STEP, 0)"></div>
-      <div class="dpad-button center"></div>
-      <div class="dpad-button right" onclick="movePlayer(STEP, 0)"></div>
-      <div class="dpad-button down" onclick="movePlayer(0, STEP)"></div>
-    </div>
-    <div id="transition-overlay">
-      <div id="transition-circle"></div>
-    </div>
+  <!-- タイトル画面 -->
+  <div id="titleScreen">
+    <h1>ドラクエ風クイズRPG</h1>
+    <button id="startButton" onclick="startGame()">▶ ゲームスタート</button>
   </div>
 
-  <!-- 戦闘画面 -->
-  <div id="battle-screen">
-    <div id="top-text-box">モンスターがあらわれた！</div>
-    <img id="quiz-image" src="">
-    <div id="choice-area"></div>
-    <p id="explanation" style="display:none; color:yellow;"></p>
+  <!-- ゲーム画面全体 -->
+  <div id="gameContainer">
+    <!-- ステータス表示 -->
+    <div id="status">
+      プレイヤーのHP: <span id="hp">100</span> / レベル: <span id="level">1</span>
+    </div>
+    <!-- フィールド画面 -->
+    <div id="gameArea">
+      <img id="player" src="https://lh3.googleusercontent.com/d/1peHOi70oOmL8c9v3OQydE5N-9R0PB6vh" alt="hero">
+      <div id="dpad">
+        <div class="dpad-button up" onclick="movePlayer(0, -STEP)"></div>
+        <div class="dpad-button left" onclick="movePlayer(-STEP, 0)"></div>
+        <div class="dpad-button center"></div>
+        <div class="dpad-button right" onclick="movePlayer(STEP, 0)"></div>
+        <div class="dpad-button down" onclick="movePlayer(0, STEP)"></div>
+      </div>
+      <!-- 円拡大演出用オーバーレイ -->
+      <div id="transition-overlay">
+        <div id="transition-circle"></div>
+      </div>
+    </div>
+
+    <!-- 戦闘画面 -->
+    <div id="battle-screen">
+      <div id="top-text-box">モンスターがあらわれた！</div>
+      <img id="quiz-image" src="">
+      <div id="choice-area"></div>
+      <p id="explanation" style="display:none; color:yellow;"></p>
+    </div>
   </div>
 
   <!-- BGM用オーディオタグ -->
+  <!-- ここを自分のGoogleドライブ直リンクに書き換えてください -->
   <audio id="fieldBGM" loop preload="auto">
     <source src="https://drive.google.com/uc?export=download&id=1TlM8Ku0BsSw2e08RTb21qFxozwY7cyhh" type="audio/mpeg">
   </audio>
@@ -160,11 +202,10 @@
     <source src="https://drive.google.com/uc?export=download&id=1MzxmnuZ2YiavM-m2BiM5cKqgRl3KGkiv" type="audio/mpeg">
   </audio>
 
-  <button onclick="document.getElementById('fieldBGM').play()">BGM再生テスト</button>
-
-
   <!-- Google API のスクリプト -->
-  <script async defer src="https://apis.google.com/js/api.js" onload="gapiLoaded()" onerror="console.error('❌ Google APIの読み込みに失敗しました');"></script>
+  <script async defer src="https://apis.google.com/js/api.js" 
+          onload="gapiLoaded()" 
+          onerror="console.error('❌ Google APIの読み込みに失敗しました');"></script>
 
   <script>
     /* --- Google Sheets & クイズ用の設定 --- */
@@ -234,6 +275,20 @@
     }
     function stopBattleBGM() {
       battleBGM.pause();
+    }
+
+    /* --- ゲーム開始（スタートボタンを押した時） --- */
+    function startGame() {
+      // タイトル画面を非表示
+      document.getElementById("titleScreen").style.display = "none";
+      // ゲーム画面を表示
+      document.getElementById("gameContainer").style.display = "block";
+
+      // ゲーム初期化
+      initGame();
+
+      // ここでフィールドBGMを再生（ユーザー操作後なのでブロックされにくい）
+      playFieldBGM();
     }
 
     /* --- 円拡大演出とエンカウント開始 --- */
@@ -309,8 +364,8 @@
     let currentImageIndex = 0;
     const STEP = 20;
     let player = { 
-      x: window.innerWidth / 2, 
-      y: document.getElementById("gameArea").clientHeight / 2, 
+      x: 0, 
+      y: 0,
       hp: 100, 
       level: 1, 
       steps: 0 
@@ -327,11 +382,13 @@
     function movePlayer(dx, dy) {
       if (inBattle) return;
 
+      // 向き
       if (dx < 0) {
         facingRight = false;
       } else if (dx > 0) {
         facingRight = true;
       }
+      // 歩行アニメ
       currentImageIndex = (currentImageIndex + 1) % playerImages.length;
       playerElement.src = playerImages[currentImageIndex];
 
@@ -359,12 +416,13 @@
       }
     }
 
+    /* --- ゲーム初期化 --- */
     function initGame() {
+      // プレイヤーの初期位置を画面中央に
+      player.x = window.innerWidth / 2;
+      player.y = document.getElementById("gameArea").clientHeight / 2;
       updatePlayerPosition();
-      playFieldBGM();
     }
-    window.onload = initGame;
-    console.log("✅ スクリプト読み込み完了");
   </script>
 </body>
 </html>
