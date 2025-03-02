@@ -151,6 +151,48 @@
       margin-top: 10px;
       cursor: pointer;
     }
+    
+/* ハートを横並びに表示するコンテナ */
+#hearts-container {
+  display: flex;
+  justify-content: center; /* 中央寄せ */
+  gap: 10px;               /* ハート同士の間隔 */
+  margin-bottom: 10px;     /* 下余白 */
+}
+
+/* ハート画像のサイズ */
+.heart {
+  width: 30px;
+  height: 30px;
+  object-fit: contain;
+}
+
+/* シェイクアニメーション */
+@keyframes shake {
+  0%   { transform: translate(0, 0); }
+  20%  { transform: translate(-5px, 0); }
+  40%  { transform: translate(5px, 0); }
+  60%  { transform: translate(-5px, 0); }
+  80%  { transform: translate(5px, 0); }
+  100% { transform: translate(0, 0); }
+}
+.shake {
+  animation: shake 0.5s;
+}
+
+@keyframes shake {
+  0% { transform: translate(0, 0); }
+  20% { transform: translate(-5px, 0); }
+  40% { transform: translate(5px, 0); }
+  60% { transform: translate(-5px, 0); }
+  80% { transform: translate(5px, 0); }
+  100% { transform: translate(0, 0); }
+}
+    
+    
+    
+    
+    
     /* ---------- 円拡大演出用オーバーレイ ---------- */
     #transition-overlay {
       position: absolute;
@@ -251,6 +293,7 @@
     <!-- ---------- 戦闘画面 ---------- -->
     <div id="battle-screen">
       <div id="top-text-box">モンスターがあらわれた！</div>
+      <div id="hearts-container"></div>
       <div id="enemy-container"></div>
       <img id="quiz-image" src="">
       <div id="choice-area"></div>
@@ -258,6 +301,9 @@
       <button id="zaorikuButton" onclick="onZaoriku()">ザオリク</button>
     </div>
   </div>
+  
+
+  
 
   <!-- ---------- BGM用オーディオタグ ---------- -->
   <audio id="fieldBGM" loop preload="auto">
@@ -385,6 +431,41 @@
         container.appendChild(img);
       });
     }
+    
+    <span class="heart">♡</span>
+    function initHearts() {
+  const heartsContainer = document.getElementById("hearts-container");
+  heartsContainer.innerHTML = ""; // いったんクリア
+  
+  // 4つのハートを作成
+  for (let i = 0; i < 4; i++) {
+    const heart = document.createElement("img");
+    heart.className = "heart";
+    // 文字のハート "♡" を使う場合は innerHTML でもOKですが、
+    // ここではアイコン画像を例示
+    heart.src = "https://example.com/heart.png"; 
+    heartsContainer.appendChild(heart);
+  }
+  
+  function shakeAndRemoveHeart() {
+  const heartsContainer = document.getElementById("hearts-container");
+  if (heartsContainer.children.length > 0) {
+    // 左端(先頭)のハートを取得
+    const firstHeart = heartsContainer.children[0];
+    // シェイククラスを付与
+    firstHeart.classList.add("shake");
+    // 0.5秒後(アニメーション終了後)に削除
+    setTimeout(() => {
+      if (heartsContainer.contains(firstHeart)) {
+        heartsContainer.removeChild(firstHeart);
+      }
+    }, 500);
+  }
+}
+}
+    
+    
+    
   
     /* ---------- 円拡大演出を含むエンカウント開始 ---------- */
     function startEncounter() {
