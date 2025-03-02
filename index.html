@@ -2,7 +2,7 @@
 <html lang="ja">
 <head>
   <meta charset="UTF-8">
-  <title>ドラクエ風クイズRPG</title>
+  <title>ドラクエ風クイズRPG（円拡大演出）</title>
   <style>
     html, body {
       margin: 0;
@@ -28,12 +28,12 @@
       background-size: cover;
       overflow: hidden;
     }
-    /* 勇者画像（初期は立ち姿）。四分の一サイズ（例：幅30px）に縮小 */
+    /* 勇者画像：立ち姿(初期) / 右足前 / 左足前 */
     #player {
       position: absolute;
-      width: 30px;
+      width: 30px;   /* 1/4サイズの例 */
       height: auto;
-      /* 初期位置は updatePlayerPosition() で設定 */
+      /* 初期位置はスクリプトの updatePlayerPosition() で設定 */
     }
     /* 画面右下の D-Pad */
     #dpad {
@@ -62,6 +62,7 @@
     .left  { grid-area: left; }
     .right { grid-area: right; }
     .center{ grid-area: center; }
+
     /* 戦闘画面（エンカウント時に表示） */
     #battle-screen {
       display: none;
@@ -81,11 +82,6 @@
       margin-bottom: 10px;
       color: white;
     }
-    #enemy-container img {
-      width: 80px;
-      height: 80px;
-      margin: 5px;
-    }
     #quiz-image {
       display: none;
       width: 200px;
@@ -99,21 +95,36 @@
       width: 200px;
       font-size: 18px;
     }
-    /* フェード演出用オーバーレイ */
+
+    /* 円拡大演出用オーバーレイ */
     #transition-overlay {
       position: absolute;
-      top: 0;
+      top: 0; 
       left: 0;
       width: 100%;
       height: 100%;
-      background: black;
-      opacity: 0;
-      pointer-events: none;
-      transition: opacity 0.5s;
+      overflow: hidden;    /* 円がはみ出さないようにする */
       z-index: 200;
+      display: none;       /* 初期は非表示 */
+      pointer-events: none;/* クリック等を通さない */
     }
-    #transition-overlay.active {
-      opacity: 1;
+    /* 円本体 */
+    #transition-circle {
+      position: absolute;
+      /* 画面を十分に覆う大きさ (200vmax など) */
+      width: 200vmax;  
+      height: 200vmax;
+      background: black;
+      border-radius: 50%;
+      /* 中心に配置して縮小しておく */
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%) scale(0);
+      transition: transform 0.8s ease-out;
+    }
+    /* active クラスを付与すると円が拡大 */
+    #transition-circle.active {
+      transform: translate(-50%, -50%) scale(1);
     }
   </style>
 </head>
@@ -123,7 +134,7 @@
 
   <!-- フィールド画面 -->
   <div id="gameArea">
-    <!-- 勇者画像：初期は立ち姿 -->
+    <!-- 勇者画像 -->
     <img id="player" src="https://lh3.googleusercontent.com/d/1peHOi70oOmL8c9v3OQydE5N-9R0PB6vh" alt="hero">
     <!-- 画面右下の D-Pad -->
     <div id="dpad">
@@ -133,14 +144,15 @@
       <div class="dpad-button right" onclick="movePlayer(STEP, 0)"></div>
       <div class="dpad-button down" onclick="movePlayer(0, STEP)"></div>
     </div>
-    <!-- フェード用オーバーレイ -->
-    <div id="transition-overlay"></div>
+    <!-- 円拡大演出用オーバーレイ -->
+    <div id="transition-overlay">
+      <div id="transition-circle"></div>
+    </div>
   </div>
 
-  <!-- 戦闘画面（エンカウント時に表示） -->
+  <!-- 戦闘画面（クイズ） -->
   <div id="battle-screen">
     <div id="top-text-box">モンスターがあらわれた！</div>
-    <div id="enemy-container"></div>
     <img id="quiz-image" src="">
     <div id="choice-area"></div>
     <p id="explanation" style="display:none; color:yellow;"></p>
@@ -150,7 +162,7 @@
   <script async defer src="https://apis.google.com/js/api.js" onload="gapiLoaded()" onerror="console.error('❌ Google APIの読み込みに失敗しました');"></script>
 
   <script>
-    /* Google Sheets とクイズ用の設定 */
+    /* --- Google Sheets & クイズ用の設定 --- */
     const QUESTION_SHEET_ID = "1GyKDfVQCNrBlkxjsrQDv_ouIio9yjO3mVQy6Ds5uQzg";
     const SHEET_NAME = "sheet1";
     const API_KEY = "AIzaSyBszPu-BQ2_Aq9C3lhAiW--kyenM5vQsjs";
@@ -200,20 +212,36 @@
       }
     }
 
-    // エンカウント時のフェードアウト／フェードイン演出を実装
+    /* --- 戦闘開始(エンカウント)時の円拡大演出 --- */
     function startEncounter() {
       inBattle = true;
+
+      // 1) オーバーレイを表示
       const overlay = document.getElementById("transition-overlay");
-      overlay.classList.add("active");  // 画面を黒くフェード
+      const circle = document.getElementById("transition-circle");
+      overlay.style.display = "block";
+
+      // ブラウザの描画タイミングに合わせて .active を付与し、円を拡大
+      requestAnimationFrame(() => {
+        circle.classList.add("active");
+      });
+
+      // 2) 円が画面を覆いきるであろう時刻に、画面切り替え
       setTimeout(() => {
-        // フィールド画面を非表示、戦闘画面を表示
+        // フィールドを隠し、戦闘画面を表示
         document.getElementById("gameArea").style.display = "none";
         document.getElementById("battle-screen").style.display = "block";
-        // フェードアウト（オーバーレイを戻す）
-        overlay.classList.remove("active");
-      }, 500);  // 0.5秒後に切り替え
+
+        // 円拡大演出はここで完了したので、オーバーレイを非表示に
+        overlay.style.display = "none";
+        circle.classList.remove("active");
+
+        // クイズを表示
+        showQuiz();
+      }, 800);  // アニメーションと同じ 0.8s 後に実行
     }
 
+    /* --- クイズ表示 --- */
     function showQuiz() {
       if (!quizData || quizData.length === 0) {
         document.getElementById("top-text-box").textContent = "クイズデータがありません";
@@ -222,9 +250,11 @@
       let currentQuiz = quizData[Math.floor(Math.random() * quizData.length)];
       console.log("選択されたクイズ:", currentQuiz);
       document.getElementById("top-text-box").textContent = currentQuiz.question;
+
       let quizImage = document.getElementById("quiz-image");
       quizImage.src = currentQuiz.imageUrl;
-      quizImage.style.display = "block";
+      quizImage.style.display = currentQuiz.imageUrl ? "block" : "none";
+
       let choiceArea = document.getElementById("choice-area");
       choiceArea.innerHTML = "";
       currentQuiz.choices.forEach((choice, index) => {
@@ -248,7 +278,7 @@
       }
     }
 
-    /* フィールド上で歩く勇者の設定 */
+    /* --- フィールド上で歩く勇者の設定 --- */
     // 勇者画像：立ち姿、右足前、左足前
     const playerImages = [
       "https://lh3.googleusercontent.com/d/1peHOi70oOmL8c9v3OQydE5N-9R0PB6vh", // 立ち姿
@@ -274,12 +304,15 @@
     function updatePlayerPosition() {
       playerElement.style.left = player.x + "px";
       playerElement.style.top = player.y + "px";
+      // 中心に合わせる & 左右反転
       playerElement.style.transform = "translate(-50%, -50%) " + (facingRight ? "scaleX(1)" : "scaleX(-1)");
     }
 
     // D-Pad での移動処理
     function movePlayer(dx, dy) {
       if (inBattle) return; // 戦闘中は動けない
+
+      // 左右移動時に向きを変更
       if (dx < 0) {
         facingRight = false;
       } else if (dx > 0) {
@@ -288,9 +321,11 @@
       // 歩行アニメーション：画像切替（循環）
       currentImageIndex = (currentImageIndex + 1) % playerImages.length;
       playerElement.src = playerImages[currentImageIndex];
+
       // 位置更新
       player.x += dx;
       player.y += dy;
+
       // 境界チェック（画面内に収める）
       const playerWidth = playerElement.offsetWidth;
       const playerHeight = playerElement.offsetHeight;
@@ -300,23 +335,26 @@
       if (player.y < 0) player.y = 0;
       if (player.x > maxX) player.x = maxX;
       if (player.y > maxY) player.y = maxY;
+
+      // 反映
       updatePlayerPosition();
-      // 歩数更新＆ステータス反映
+
+      // 歩数更新
       player.steps++;
       document.getElementById("hp").textContent = player.hp;
       document.getElementById("level").textContent = player.level;
       console.log("歩数:", player.steps);
-      // 10歩ごとにエンカウント開始
+
+      // 10歩ごとにエンカウント
       if (player.steps % 10 === 0) {
         startEncounter();
       }
     }
 
-    // 初期状態の設定
+    // 初期化
     function initGame() {
       updatePlayerPosition();
     }
-
     window.onload = initGame;
     console.log("✅ スクリプト読み込み完了");
   </script>
