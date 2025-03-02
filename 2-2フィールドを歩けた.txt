@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <title>プレイヤーを歩かせる例</title>
+  <style>
+    html, body {
+      margin: 0;
+      padding: 0;
+      width: 100%;
+      height: 100%;
+    }
+    /* フィールド背景 */
+    #gameArea {
+      position: relative;
+      width: 100%;
+      height: 100%;
+      background: url("https://lh3.googleusercontent.com/d/1jDckidA8IqAdhUncYX09kzOQd2IqanYQ") no-repeat center center / cover;
+      overflow: hidden;
+    }
+    /* プレイヤー（初期は立ち姿） */
+/* プレイヤーの大きさを四分の一に設定（例：幅30px） */
+    #player {
+      position: absolute;
+      width: 30px;
+      left: 50%;
+      top: 50%;
+      transform: translate(-50%, -50%); /* 初期は反転なし */
+    }
+    /* 右下に配置するD-Pad */
+    #dpad {
+      position: absolute;
+      bottom: 20px;
+      right: 20px;
+      width: 120px;
+      height: 120px;
+      display: grid;
+      grid-template-areas:
+        ".    up    ."
+        "left center right"
+        ".    down  .";
+      grid-gap: 5px;
+    }
+    .dpad-button {
+      width: 40px;
+      height: 40px;
+      background: rgba(0, 0, 0, 0.3);
+      border: 2px solid #fff;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+    .up    { grid-area: up; }
+    .down  { grid-area: down; }
+    .left  { grid-area: left; }
+    .right { grid-area: right; }
+    .center{ grid-area: center; }
+  </style>
+</head>
+<body>
+  <div id="gameArea">
+    <!-- プレイヤー：初期は立ち姿 -->
+    <img id="player" src="https://lh3.googleusercontent.com/d/1peHOi70oOmL8c9v3OQydE5N-9R0PB6vh" alt="player">
+    
+    <!-- D-Pad -->
+    <div id="dpad">
+      <div class="dpad-button up" onclick="movePlayer(0, -STEP)"></div>
+      <div class="dpad-button left" onclick="movePlayer(-STEP, 0)"></div>
+      <div class="dpad-button center"></div>
+      <div class="dpad-button right" onclick="movePlayer(STEP, 0)"></div>
+      <div class="dpad-button down" onclick="movePlayer(0, STEP)"></div>
+    </div>
+  </div>
+
+  <script>
+    // プレイヤーの画像：立ち姿、右足前、左足前
+    const playerImages = [
+      "https://lh3.googleusercontent.com/d/1peHOi70oOmL8c9v3OQydE5N-9R0PB6vh", // 立ち姿
+      "https://lh3.googleusercontent.com/d/1iuVZiT6Eh9mp2Ta__Cpm5z28HZ2k0YA0", // 右足前
+      "https://lh3.googleusercontent.com/d/1fCmul9iotoUh4MLa_qzHvaOUDYMvng8C"  // 左足前
+    ];
+    let currentImageIndex = 0;  // 現在の画像インデックス
+
+    // 1歩あたりの移動量(px)
+    const STEP = 20;
+    const player = document.getElementById("player");
+
+    // プレイヤーの初期位置（中央）
+    let playerX = window.innerWidth  / 2;
+    let playerY = window.innerHeight / 2;
+    
+    // 向きを管理：true=右向き、false=左向き
+    let facingRight = true;
+    
+    // プレイヤーを移動させ、歩行アニメーションと向きの反転を行う関数
+    function movePlayer(dx, dy) {
+      // 移動方向が水平の場合は向きを更新
+      if (dx < 0) {
+        facingRight = false;
+      } else if (dx > 0) {
+        facingRight = true;
+      }
+      
+      // 歩行アニメーション：画像を切り替える（循環）
+      currentImageIndex = (currentImageIndex + 1) % playerImages.length;
+      player.src = playerImages[currentImageIndex];
+      
+      // 位置を更新
+      playerX += dx;
+      playerY += dy;
+      
+      // プレイヤー画像の実際のサイズを取得
+      const playerWidth  = player.offsetWidth;
+      const playerHeight = player.offsetHeight;
+      const maxX = window.innerWidth  - playerWidth;
+      const maxY = window.innerHeight - playerHeight;
+      
+      // 境界チェック
+      if (playerX < 0) playerX = 0;
+      if (playerY < 0) playerY = 0;
+      if (playerX > maxX) playerX = maxX;
+      if (playerY > maxY) playerY = maxY;
+      
+      // 移動後の位置と向きを反映
+      // translate(-50%, -50%)で中央揃えしつつ、左右の向きをscaleXで反転
+      player.style.left = playerX + "px";
+      player.style.top  = playerY + "px";
+      player.style.transform = "translate(-50%, -50%) " + (facingRight ? "scaleX(1)" : "scaleX(-1)");
+    }
+  </script>
+</body>
+</html>
