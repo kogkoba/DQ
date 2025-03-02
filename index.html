@@ -49,6 +49,29 @@
     let quizData = [];
     let canvas, ctx;
 
+    let encounterThreshold = getRandomEncounterSteps(); // 5～30のランダム値を初期化
+
+function getRandomEncounterSteps() {
+  return Math.floor(Math.random() * (30 - 5 + 1)) + 5; // 5～30のランダムな歩数
+}
+
+function dragMove(event) {
+  if (!isDragging) return;
+  let rect = canvas.getBoundingClientRect();
+  player.x = event.clientX - rect.left;
+  player.y = event.clientY - rect.top;
+  player.steps++;
+  console.log("歩数:", player.steps);
+  drawPlayer();
+
+  if (player.steps >= encounterThreshold) {
+    startEncounter();
+    encounterThreshold = player.steps + getRandomEncounterSteps(); // 次のエンカウントを設定
+    console.log(`次のエンカウントまで: ${encounterThreshold - player.steps}歩`);
+  }
+}
+
+
     function gapiLoaded() {
       console.log("✅ Google API 読み込み完了");
       gapi.load("client", async () => {
