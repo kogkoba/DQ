@@ -19,7 +19,7 @@
       text-align: center;
       font-size: 20px;
     }
-    /* フィールド：背景画像と全画面 */
+    /* フィールド画面 */
     #gameArea {
       position: relative;
       width: 100%;
@@ -62,7 +62,7 @@
     .left  { grid-area: left; }
     .right { grid-area: right; }
     .center{ grid-area: center; }
-    /* 戦闘画面（エンカウント時） */
+    /* 戦闘画面（エンカウント時に表示） */
     #battle-screen {
       display: none;
       position: absolute;
@@ -99,6 +99,22 @@
       width: 200px;
       font-size: 18px;
     }
+    /* フェード演出用オーバーレイ */
+    #transition-overlay {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: black;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.5s;
+      z-index: 200;
+    }
+    #transition-overlay.active {
+      opacity: 1;
+    }
   </style>
 </head>
 <body>
@@ -117,6 +133,8 @@
       <div class="dpad-button right" onclick="movePlayer(STEP, 0)"></div>
       <div class="dpad-button down" onclick="movePlayer(0, STEP)"></div>
     </div>
+    <!-- フェード用オーバーレイ -->
+    <div id="transition-overlay"></div>
   </div>
 
   <!-- 戦闘画面（エンカウント時に表示） -->
@@ -182,11 +200,18 @@
       }
     }
 
+    // エンカウント時のフェードアウト／フェードイン演出を実装
     function startEncounter() {
       inBattle = true;
-      document.getElementById("battle-screen").style.display = "block";
-      document.getElementById("gameArea").style.display = "none";
-      showQuiz();
+      const overlay = document.getElementById("transition-overlay");
+      overlay.classList.add("active");  // 画面を黒くフェード
+      setTimeout(() => {
+        // フィールド画面を非表示、戦闘画面を表示
+        document.getElementById("gameArea").style.display = "none";
+        document.getElementById("battle-screen").style.display = "block";
+        // フェードアウト（オーバーレイを戻す）
+        overlay.classList.remove("active");
+      }, 500);  // 0.5秒後に切り替え
     }
 
     function showQuiz() {
@@ -224,7 +249,7 @@
     }
 
     /* フィールド上で歩く勇者の設定 */
-    // プレイヤー画像：立ち姿、右足前、左足前
+    // 勇者画像：立ち姿、右足前、左足前
     const playerImages = [
       "https://lh3.googleusercontent.com/d/1peHOi70oOmL8c9v3OQydE5N-9R0PB6vh", // 立ち姿
       "https://lh3.googleusercontent.com/d/1iuVZiT6Eh9mp2Ta__Cpm5z28HZ2k0YA0", // 右足前
@@ -236,7 +261,7 @@
     // プレイヤーオブジェクト（初期位置は画面中央）
     let player = { 
       x: window.innerWidth / 2, 
-      y: (document.getElementById("gameArea").clientHeight) / 2, 
+      y: document.getElementById("gameArea").clientHeight / 2, 
       hp: 100, 
       level: 1, 
       steps: 0 
