@@ -2,32 +2,40 @@
 <html lang="ja">
 <head>
   <meta charset="UTF-8">
-  <title>プレイヤーを歩かせる例</title>
+  <title>ドラクエ風クイズRPG</title>
   <style>
     html, body {
       margin: 0;
       padding: 0;
       width: 100%;
       height: 100%;
+      font-family: sans-serif;
+      background-color: #222;
+      color: #fff;
     }
-    /* フィールド背景 */
+    /* ステータス表示 */
+    #status {
+      padding: 20px;
+      text-align: center;
+      font-size: 20px;
+    }
+    /* フィールド：背景画像と全画面 */
     #gameArea {
       position: relative;
       width: 100%;
-      height: 100%;
-      background: url("https://lh3.googleusercontent.com/d/1jDckidA8IqAdhUncYX09kzOQd2IqanYQ") no-repeat center center / cover;
+      height: calc(100% - 60px); /* ステータス分の高さを除く */
+      background: url("https://lh3.googleusercontent.com/d/1jDckidA8IqAdhUncYX09kzOQd2IqanYQ") no-repeat center center;
+      background-size: cover;
       overflow: hidden;
     }
-    /* プレイヤー（初期は立ち姿） */
-/* プレイヤーの大きさを四分の一に設定（例：幅30px） */
+    /* 勇者画像（初期は立ち姿）。四分の一サイズ（例：幅30px）に縮小 */
     #player {
       position: absolute;
       width: 30px;
-      left: 50%;
-      top: 50%;
-      transform: translate(-50%, -50%); /* 初期は反転なし */
+      height: auto;
+      /* 初期位置は updatePlayerPosition() で設定 */
     }
-    /* 右下に配置するD-Pad */
+    /* 画面右下の D-Pad */
     #dpad {
       position: absolute;
       bottom: 20px;
@@ -54,14 +62,54 @@
     .left  { grid-area: left; }
     .right { grid-area: right; }
     .center{ grid-area: center; }
+    /* 戦闘画面（エンカウント時） */
+    #battle-screen {
+      display: none;
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: black;
+      padding: 20px;
+      text-align: center;
+      z-index: 100;
+    }
+    #top-text-box {
+      border: 2px solid white;
+      padding: 10px;
+      margin-bottom: 10px;
+      color: white;
+    }
+    #enemy-container img {
+      width: 80px;
+      height: 80px;
+      margin: 5px;
+    }
+    #quiz-image {
+      display: none;
+      width: 200px;
+      height: 200px;
+      margin: 10px auto;
+    }
+    .choice-button {
+      display: block;
+      margin: 10px auto;
+      padding: 10px;
+      width: 200px;
+      font-size: 18px;
+    }
   </style>
 </head>
 <body>
+  <h1 style="text-align:center; margin:10px 0;">ドラクエ風クイズRPG</h1>
+  <div id="status">プレイヤーのHP: <span id="hp">100</span> / レベル: <span id="level">1</span></div>
+
+  <!-- フィールド画面 -->
   <div id="gameArea">
-    <!-- プレイヤー：初期は立ち姿 -->
-    <img id="player" src="https://lh3.googleusercontent.com/d/1peHOi70oOmL8c9v3OQydE5N-9R0PB6vh" alt="player">
-    
-    <!-- D-Pad -->
+    <!-- 勇者画像：初期は立ち姿 -->
+    <img id="player" src="https://lh3.googleusercontent.com/d/1peHOi70oOmL8c9v3OQydE5N-9R0PB6vh" alt="hero">
+    <!-- 画面右下の D-Pad -->
     <div id="dpad">
       <div class="dpad-button up" onclick="movePlayer(0, -STEP)"></div>
       <div class="dpad-button left" onclick="movePlayer(-STEP, 0)"></div>
@@ -71,61 +119,181 @@
     </div>
   </div>
 
+  <!-- 戦闘画面（エンカウント時に表示） -->
+  <div id="battle-screen">
+    <div id="top-text-box">モンスターがあらわれた！</div>
+    <div id="enemy-container"></div>
+    <img id="quiz-image" src="">
+    <div id="choice-area"></div>
+    <p id="explanation" style="display:none; color:yellow;"></p>
+  </div>
+
+  <!-- Google API のスクリプト -->
+  <script async defer src="https://apis.google.com/js/api.js" onload="gapiLoaded()" onerror="console.error('❌ Google APIの読み込みに失敗しました');"></script>
+
   <script>
-    // プレイヤーの画像：立ち姿、右足前、左足前
+    /* Google Sheets とクイズ用の設定 */
+    const QUESTION_SHEET_ID = "1GyKDfVQCNrBlkxjsrQDv_ouIio9yjO3mVQy6Ds5uQzg";
+    const SHEET_NAME = "sheet1";
+    const API_KEY = "AIzaSyBszPu-BQ2_Aq9C3lhAiW--kyenM5vQsjs";
+
+    let quizData = [];
+    let inBattle = false;
+
+    function gapiLoaded() {
+      console.log("✅ gapiLoaded 関数が呼ばれました");
+      gapi.load("client", async () => {
+        try {
+          await gapi.client.init({ 
+            apiKey: API_KEY, 
+            discoveryDocs: ["https://sheets.googleapis.com/$discovery/rest?version=v4"] 
+          });
+          console.log("✅ GAPI 初期化完了");
+          loadQuizData();
+        } catch (err) {
+          console.error("⛔ GAPI 初期化エラー:", err);
+        }
+      });
+    }
+
+    function convertGoogleDriveURL(url) {
+      if (!url || typeof url !== "string") return "";
+      let match = url.match(/(?:id=|\/d\/)([a-zA-Z0-9_-]+)/);
+      return match ? `https://lh3.googleusercontent.com/d/${match[1]}=s0` : url;
+    }
+
+    async function loadQuizData() {
+      try {
+        const resp = await gapi.client.sheets.spreadsheets.values.get({
+          spreadsheetId: QUESTION_SHEET_ID,
+          range: `${SHEET_NAME}!A2:K1000`
+        });
+        console.log("取得データ:", resp.result.values);
+        quizData = resp.result.values.map(row => ({
+          question: row[1] || "",
+          imageUrl: convertGoogleDriveURL(row[2]) || "",
+          choices: [row[3], row[4], row[5], row[6]],
+          correct: parseInt(row[7] || "1", 10),
+          explanation: row[10] || ""
+        }));
+        console.log("✅ クイズデータ取得成功:", quizData);
+      } catch (err) {
+        console.error("⛔ クイズデータ取得エラー:", err);
+      }
+    }
+
+    function startEncounter() {
+      inBattle = true;
+      document.getElementById("battle-screen").style.display = "block";
+      document.getElementById("gameArea").style.display = "none";
+      showQuiz();
+    }
+
+    function showQuiz() {
+      if (!quizData || quizData.length === 0) {
+        document.getElementById("top-text-box").textContent = "クイズデータがありません";
+        return;
+      }
+      let currentQuiz = quizData[Math.floor(Math.random() * quizData.length)];
+      console.log("選択されたクイズ:", currentQuiz);
+      document.getElementById("top-text-box").textContent = currentQuiz.question;
+      let quizImage = document.getElementById("quiz-image");
+      quizImage.src = currentQuiz.imageUrl;
+      quizImage.style.display = "block";
+      let choiceArea = document.getElementById("choice-area");
+      choiceArea.innerHTML = "";
+      currentQuiz.choices.forEach((choice, index) => {
+        let btn = document.createElement("button");
+        btn.className = "choice-button";
+        btn.textContent = `▶ ${choice}`;
+        btn.onclick = () => handleAnswer(index + 1, currentQuiz.correct, currentQuiz.explanation);
+        choiceArea.appendChild(btn);
+      });
+    }
+
+    function handleAnswer(selected, correct, explanation) {
+      if (selected === correct) {
+        alert("✅ 正解！");
+        // 戦闘画面を閉じ、フィールドに戻る
+        document.getElementById("battle-screen").style.display = "none";
+        document.getElementById("gameArea").style.display = "block";
+        inBattle = false;
+      } else {
+        alert("❌ 不正解！\n" + explanation);
+      }
+    }
+
+    /* フィールド上で歩く勇者の設定 */
+    // プレイヤー画像：立ち姿、右足前、左足前
     const playerImages = [
       "https://lh3.googleusercontent.com/d/1peHOi70oOmL8c9v3OQydE5N-9R0PB6vh", // 立ち姿
       "https://lh3.googleusercontent.com/d/1iuVZiT6Eh9mp2Ta__Cpm5z28HZ2k0YA0", // 右足前
       "https://lh3.googleusercontent.com/d/1fCmul9iotoUh4MLa_qzHvaOUDYMvng8C"  // 左足前
     ];
-    let currentImageIndex = 0;  // 現在の画像インデックス
-
-    // 1歩あたりの移動量(px)
+    let currentImageIndex = 0;
+    // 1歩あたりの移動量（px）
     const STEP = 20;
-    const player = document.getElementById("player");
-
-    // プレイヤーの初期位置（中央）
-    let playerX = window.innerWidth  / 2;
-    let playerY = window.innerHeight / 2;
-    
-    // 向きを管理：true=右向き、false=左向き
+    // プレイヤーオブジェクト（初期位置は画面中央）
+    let player = { 
+      x: window.innerWidth / 2, 
+      y: (document.getElementById("gameArea").clientHeight) / 2, 
+      hp: 100, 
+      level: 1, 
+      steps: 0 
+    };
+    // 向き管理：true = 右向き、false = 左向き
     let facingRight = true;
-    
-    // プレイヤーを移動させ、歩行アニメーションと向きの反転を行う関数
+    const playerElement = document.getElementById("player");
+
+    // プレイヤーの位置と向きを反映
+    function updatePlayerPosition() {
+      playerElement.style.left = player.x + "px";
+      playerElement.style.top = player.y + "px";
+      playerElement.style.transform = "translate(-50%, -50%) " + (facingRight ? "scaleX(1)" : "scaleX(-1)");
+    }
+
+    // D-Pad での移動処理
     function movePlayer(dx, dy) {
-      // 移動方向が水平の場合は向きを更新
+      if (inBattle) return; // 戦闘中は動けない
       if (dx < 0) {
         facingRight = false;
       } else if (dx > 0) {
         facingRight = true;
       }
-      
-      // 歩行アニメーション：画像を切り替える（循環）
+      // 歩行アニメーション：画像切替（循環）
       currentImageIndex = (currentImageIndex + 1) % playerImages.length;
-      player.src = playerImages[currentImageIndex];
-      
-      // 位置を更新
-      playerX += dx;
-      playerY += dy;
-      
-      // プレイヤー画像の実際のサイズを取得
-      const playerWidth  = player.offsetWidth;
-      const playerHeight = player.offsetHeight;
-      const maxX = window.innerWidth  - playerWidth;
-      const maxY = window.innerHeight - playerHeight;
-      
-      // 境界チェック
-      if (playerX < 0) playerX = 0;
-      if (playerY < 0) playerY = 0;
-      if (playerX > maxX) playerX = maxX;
-      if (playerY > maxY) playerY = maxY;
-      
-      // 移動後の位置と向きを反映
-      // translate(-50%, -50%)で中央揃えしつつ、左右の向きをscaleXで反転
-      player.style.left = playerX + "px";
-      player.style.top  = playerY + "px";
-      player.style.transform = "translate(-50%, -50%) " + (facingRight ? "scaleX(1)" : "scaleX(-1)");
+      playerElement.src = playerImages[currentImageIndex];
+      // 位置更新
+      player.x += dx;
+      player.y += dy;
+      // 境界チェック（画面内に収める）
+      const playerWidth = playerElement.offsetWidth;
+      const playerHeight = playerElement.offsetHeight;
+      const maxX = window.innerWidth - playerWidth;
+      const maxY = document.getElementById("gameArea").clientHeight - playerHeight;
+      if (player.x < 0) player.x = 0;
+      if (player.y < 0) player.y = 0;
+      if (player.x > maxX) player.x = maxX;
+      if (player.y > maxY) player.y = maxY;
+      updatePlayerPosition();
+      // 歩数更新＆ステータス反映
+      player.steps++;
+      document.getElementById("hp").textContent = player.hp;
+      document.getElementById("level").textContent = player.level;
+      console.log("歩数:", player.steps);
+      // 10歩ごとにエンカウント開始
+      if (player.steps % 10 === 0) {
+        startEncounter();
+      }
     }
+
+    // 初期状態の設定
+    function initGame() {
+      updatePlayerPosition();
+    }
+
+    window.onload = initGame;
+    console.log("✅ スクリプト読み込み完了");
   </script>
 </body>
 </html>
