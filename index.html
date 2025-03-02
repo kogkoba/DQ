@@ -1,8 +1,7 @@
 <!DOCTYPE html>
 <html lang="ja">
-
-  １
 <head>
+  ２
   <meta charset="UTF-8">
   <title>ドラクエ風クイズRPG</title>
   <style>
@@ -45,15 +44,15 @@
 
     // 🎮 プレイヤー歩行アニメーション用の画像
     let playerImages = [
-      convertGoogleDriveURL("https://drive.google.com/uc?export=view&id=1peHOi70oOmL8c9v3OQydE5N-9R0PB6vh"), // 正面
-      convertGoogleDriveURL("https://drive.google.com/uc?export=view&id=1iuVZiT6Eh9mp2Ta__Cpm5z28HZ2k0YA0"), // 右足前
-      convertGoogleDriveURL("https://drive.google.com/uc?export=view&id=1fCmul9iotoUh4MLa_qzHvaOUDYMvng8C")  // 左足前
+      convertGoogleDriveURL("1peHOi70oOmL8c9v3OQydE5N-9R0PB6vh"), // 正面
+      convertGoogleDriveURL("1iuVZiT6Eh9mp2Ta__Cpm5z28HZ2k0YA0"), // 右足前
+      convertGoogleDriveURL("1fCmul9iotoUh4MLa_qzHvaOUDYMvng8C")  // 左足前
     ];
     let frameIndex = 0;
 
     // 🎮 フィールド背景
     let backgroundImg = new Image();
-    backgroundImg.src = convertGoogleDriveURL("https://drive.google.com/uc?export=view&id=1jDckidA8IqAdhUncYX09kzOQd2IqanYQ");
+    backgroundImg.src = convertGoogleDriveURL("1jDckidA8IqAdhUncYX09kzOQd2IqanYQ");
 
     function drawBackground() {
       ctx.drawImage(backgroundImg, 0, 0, canvas.width, canvas.height);
@@ -74,10 +73,8 @@
       };
     }
 
-    function convertGoogleDriveURL(url) {
-      if (!url.includes("drive.google.com")) return url; // 既に変換されているならそのまま
-      let match = url.match(/(?:id=|\/d\/)([a-zA-Z0-9_-]+)/);
-      return match ? `https://lh3.googleusercontent.com/d/${match[1]}=s0` : url;
+    function convertGoogleDriveURL(fileId) {
+      return `https://drive.google.com/thumbnail?id=${fileId}&sz=w1000`;
     }
 
     function updatePlayerAnimation() {
