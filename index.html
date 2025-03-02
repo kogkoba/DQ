@@ -2,15 +2,36 @@
 <html lang="ja">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <link rel="stylesheet" href="style.css">
-  <title>HTMLで画像を表示する方法</title>
+  <title>画像配置例</title>
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      /* 背景画像の設定 */
+      background-image: url("https://drive.google.com/uc?export=view&id=1jDckidA8IqAdhUncYX09kzOQd2IqanYQ");
+      background-size: cover;
+      background-position: center;
+      background-repeat: no-repeat;
+    }
+    /* 画像を中央に横並びに配置 */
+    .container {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+    }
+    .container img {
+      margin: 10px;
+      max-width: 30%;
+      height: auto;
+    }
+  </style>
 </head>
 <body>
-
-document.write('<img src=" https://drive.google.com/uc?export=view&id=1jDckidA8IqAdhUncYX09kzOQd2IqanYQ" alt="画像の解説文">')
-
-  
-  https://drive.google.com/uc?export=view&id=1jDckidA8IqAdhUncYX09kzOQd2IqanYQ
+  <div class="container">
+    <img src="https://drive.google.com/uc?export=view&id=1peHOi70oOmL8c9v3OQydE5N-9R0PB6vh" alt="画像1">
+    <img src="https://drive.google.com/uc?export=view&id=1iuVZiT6Eh9mp2Ta__Cpm5z28HZ2k0YA0" alt="画像2">
+    <img src="https://drive.google.com/uc?export=view&id=1fCmul9iotoUh4MLa_qzHvaOUDYMvng8C" alt="画像3">
+  </div>
 </body>
-</html
+</html>
