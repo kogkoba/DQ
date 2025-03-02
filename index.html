@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="ja">
 <head>
-  ２
+  ３
   <meta charset="UTF-8">
   <title>ドラクエ風クイズRPG</title>
   <style>
@@ -109,7 +109,7 @@
     function initGame() {
       canvas = document.getElementById("gameCanvas");
       ctx = canvas.getContext("2d");
-      backgroundImg.onload = () => {
+      backgroundImg.onload = function() {
         drawBackground();
         drawPlayer();
       };
