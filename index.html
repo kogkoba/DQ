@@ -266,33 +266,35 @@
     <source src="./gypsydance.mp3" type="audio/mpeg">
   </audio>
 
-  <!-- ---------- Google API のスクリプト ---------- -->
+ <!-- Google API のスクリプト -->
 <script async defer src="https://apis.google.com/js/api.js"></script>
 
-window.onload = function() {
-  document.getElementById("startButton").onclick = startGame;
-  gapi.load("client", gapiLoaded);
-};
+<script>
+  window.onload = function() {
+    document.getElementById("startButton").onclick = startGame;
+    gapi.load("client", gapiLoaded);
+  };
 
-function gapiLoaded() {
-  console.log("✅ gapiLoaded");
-  gapi.load("client", initClient);
-}
-
-async function initClient() {
-  try {
-    await gapi.client.init({
-      apiKey: API_KEY,
-      discoveryDocs: ["https://sheets.googleapis.com/$discovery/rest?version=v4"]
-    });
-    console.log("✅ GAPI Initialized");
-    await loadQuizData();
-    await loadMonsterData();
-    console.log("✅ Data Loaded");
-  } catch (err) {
-    console.error("⛔ GAPI Init Error:", err);
+  function gapiLoaded() {
+    console.log("✅ gapiLoaded");
+    gapi.load("client", initClient);
   }
-}
+
+  async function initClient() {
+    try {
+      await gapi.client.init({
+        apiKey: API_KEY,
+        discoveryDocs: ["https://sheets.googleapis.com/$discovery/rest?version=v4"]
+      });
+      console.log("✅ GAPI Initialized");
+      await loadQuizData();
+      await loadMonsterData();
+      console.log("✅ Data Loaded");
+    } catch (err) {
+      console.error("⛔ GAPI Init Error:", err);
+    }
+  }
+</script>  <!-- ✅ ここに閉じタグを追加 -->
 
 
 
