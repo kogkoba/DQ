@@ -15,7 +15,6 @@
       background-color: #222;
       color: #fff;
     }
-
     /* ログイン画面 */
     #loginScreen {
       display: flex;
@@ -26,7 +25,6 @@
       height: 100%;
       background: black;
     }
-
     /* タイトル画面 */
     #titleScreen {
       display: none;
@@ -37,24 +35,20 @@
       height: 100%;
       background: black;
     }
-
-    #startButton {
-      font-size: 24px;
-      padding: 10px 20px;
-      cursor: pointer;
-      border: 2px solid #fff;
-      background: #444;
-      color: #fff;
-      border-radius: 5px;
-    }
-
     /* ゲーム画面 */
     #gameContainer {
       display: none;
       width: 100%;
       height: 100%;
     }
-
+    /* ステータス */
+    #status {
+      padding: 10px;
+      text-align: center;
+      font-size: 18px;
+      background-color: #111;
+    }
+    /* フィールド */
     #gameArea {
       position: relative;
       width: 100%;
@@ -63,93 +57,121 @@
       background-size: cover;
       overflow: hidden;
     }
-
+    /* プレイヤー */
     #player {
       position: absolute;
       width: 30px;
-      height: auto;
+    }
+    /* 戦闘画面 */
+    #battleScreen {
+      display: none;
+      width: 100%;
+      height: 100%;
+      background: black;
+      text-align: center;
+      z-index: 100;
+    }
+    /* クイズ選択肢 */
+    .choice-button {
+      display: block;
+      margin: 5px auto;
+      padding: 5px;
+      width: 150px;
+      font-size: 16px;
     }
   </style>
 </head>
 <body>
 
-  <!-- ログイン画面 -->
-  <div id="loginScreen">
-    <h2>プレイヤー名を入力してください</h2>
-    <input type="text" id="playerNameInput" placeholder="名前を入力">
-    <button id="loginButton">ログイン</button>
+<!-- ログイン画面 -->
+<div id="loginScreen">
+  <h2>プレイヤー名を入力してください</h2>
+  <input type="text" id="playerNameInput" placeholder="名前を入力">
+  <button id="loginButton">ログイン</button>
+</div>
+
+<!-- タイトル画面 -->
+<div id="titleScreen">
+  <h1>ドラクエ風クイズRPG</h1>
+  <button id="startButton">▶ ゲームスタート</button>
+</div>
+
+<!-- ゲーム画面 -->
+<div id="gameContainer">
+  <div id="status">
+    プレイヤーのHP: <span id="hp">100</span> / レベル: <span id="level">1</span>
   </div>
-
-  <!-- タイトル画面 -->
-  <div id="titleScreen">
-    <h1>ドラクエ風クイズRPG</h1>
-    <button id="startButton">▶ ゲームスタート</button>
+  <div id="gameArea">
+    <img id="player" src="https://lh3.googleusercontent.com/d/1peHOi70oOmL8c9v3OQydE5N-9R0PB6vh" alt="hero">
   </div>
+</div>
 
-  <!-- ゲーム画面 -->
-  <div id="gameContainer">
-    <div id="gameArea">
-      <img id="player" src="https://lh3.googleusercontent.com/d/1peHOi70oOmL8c9v3OQydE5N-9R0PB6vh" alt="hero">
-    </div>
-  </div>
+<!-- 戦闘画面 -->
+<div id="battleScreen">
+  <h2>敵が現れた！</h2>
+  <div id="quizContainer"></div>
+  <button id="endBattle">戦闘終了</button>
+</div>
 
-  <script>
-    // プレイヤーデータ
-    let player = {
-      name: "",
-      level: 1,
-      exp: 0,
-      g: 0,
-      x: 0,
-      y: 0,
-      hp: 100,
-      steps: 0
-    };
-
-    document.addEventListener("DOMContentLoaded", function () {
-      // ログインボタンの処理
-      document.getElementById("loginButton").addEventListener("click", function () {
-        let enteredName = document.getElementById("playerNameInput").value.trim();
-        if (enteredName === "") {
-          alert("名前を入力してください！");
-          return;
-        }
-
-        // 名前を保存
-        localStorage.setItem("playerName", enteredName);
-        player.name = enteredName;
-
-        // ログイン画面を非表示にしてタイトル画面を表示
-        document.getElementById("loginScreen").style.display = "none";
-        document.getElementById("titleScreen").style.display = "flex";
-      });
-
-      // 以前のプレイヤー名を取得
-      let savedName = localStorage.getItem("playerName");
-      if (savedName) {
-        document.getElementById("playerNameInput").value = savedName;
-      }
-
-      // スタートボタンの処理
-      document.getElementById("startButton").addEventListener("click", function () {
-        document.getElementById("titleScreen").style.display = "none";
-        document.getElementById("gameContainer").style.display = "block";
-        initGame();
-      });
+<script>
+  let playerData = { name: "", level: 1, hp: 100, steps: 0 };
+  let inBattle = false;
+  
+  document.addEventListener("DOMContentLoaded", () => {
+    document.getElementById("loginButton").addEventListener("click", () => {
+      let name = document.getElementById("playerNameInput").value.trim();
+      if (name === "") return alert("名前を入力してください！");
+      localStorage.setItem("playerName", name);
+      playerData.name = name;
+      document.getElementById("loginScreen").style.display = "none";
+      document.getElementById("titleScreen").style.display = "flex";
     });
 
-    function initGame() {
-      player.x = window.innerWidth / 2;
-      player.y = document.getElementById("gameArea").clientHeight / 2;
-      updatePlayerPosition();
-    }
+    document.getElementById("startButton").addEventListener("click", () => {
+      document.getElementById("titleScreen").style.display = "none";
+      document.getElementById("gameContainer").style.display = "block";
+    });
 
-    function updatePlayerPosition() {
-      let playerElement = document.getElementById("player");
-      playerElement.style.left = player.x + "px";
-      playerElement.style.top = player.y + "px";
+    document.getElementById("endBattle").addEventListener("click", () => {
+      document.getElementById("battleScreen").style.display = "none";
+      document.getElementById("gameContainer").style.display = "block";
+      inBattle = false;
+    });
+
+    setInterval(() => {
+      if (!inBattle && Math.random() < 0.1) {
+        startBattle();
+      }
+    }, 2000);
+  });
+
+  function startBattle() {
+    inBattle = true;
+    document.getElementById("gameContainer").style.display = "none";
+    document.getElementById("battleScreen").style.display = "block";
+    showQuiz();
+  }
+
+  function showQuiz() {
+    const quizContainer = document.getElementById("quizContainer");
+    quizContainer.innerHTML = `
+      <p>2 + 2 = ?</p>
+      <button class="choice-button" onclick="checkAnswer(4)">4</button>
+      <button class="choice-button" onclick="checkAnswer(5)">5</button>
+    `;
+  }
+
+  function checkAnswer(answer) {
+    if (answer === 4) {
+      alert("正解！");
+      document.getElementById("battleScreen").style.display = "none";
+      document.getElementById("gameContainer").style.display = "block";
+      inBattle = false;
+    } else {
+      alert("不正解！");
     }
-  </script>
+  }
+</script>
 
 </body>
 </html>
