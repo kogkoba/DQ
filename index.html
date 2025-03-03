@@ -56,25 +56,6 @@
       width: 100%;
       height: 100%;
     }
-     /* ---------- 音のオンオフボタン ---------- */
-    
-    #bgmToggleContainer {
-    text-align: center;
-    margin-top: 5px;
-    }
-
-    #bgmToggleButton {
-    font-size: 16px;
-    padding: 5px 10px;
-    border: 2px solid #fff;
-    background: #444;
-    color: #fff;
-    border-radius: 5px;
-    cursor: pointer;
-    }
-    
-    
-    
     /* ---------- ステータス表示 ---------- */
     #status {
       padding: 10px;
@@ -269,13 +250,9 @@
   <!-- ---------- ゲーム画面全体 ---------- -->
   <div id="gameContainer">
     <!-- ステータス表示 -->
-  <div id="status">
-  プレイヤーのHP: <span id="hp">10</span> 
-         レベル: <span id="level">1</span>
-        
-  <div id="bgmToggleContainer">
-    <button id="bgmToggleButton" onclick="toggleBGM()">🎵 BGM OFF</button>
-      </div>
+    <div id="status">
+      プレイヤーのHP: <span id="hp">100</span> / レベル: <span id="level">1</span>
+    </div>
     <!-- ---------- フィールド画面 ---------- -->
     <div id="gameArea">
       <img id="player" src="https://lh3.googleusercontent.com/d/1peHOi70oOmL8c9v3OQydE5N-9R0PB6vh" alt="hero">
@@ -607,71 +584,15 @@
     function stopBattleBGM() {
       battleBGM.pause();
     }
-    
-    //音のオンオフスイッチ
-    
-    let isBgmPlaying = false ; // BGMの初期状態はoff
-
-function toggleBGM() {
-  isBgmPlaying = !isBgmPlaying;
-  const bgmButton = document.getElementById("bgmToggleButton");
-  if (isBgmPlaying) {
-    playFieldBGM();
-    bgmButton.textContent = "🎵 BGM OFF";
-  } else {
-    stopFieldBGM();
-    stopBattleBGM();
-    bgmButton.textContent = "🎵 BGM ON";
-  }
-}
-
-// フィールドBGMを再生
-function playFieldBGM() {
-  if (isBgmPlaying) {
-    fieldBGM.currentTime = 0;
-    fieldBGM.play().catch(err => console.warn("フィールドBGM再生エラー:", err));
-  }
-}
-
-// フィールドBGMを停止
-function stopFieldBGM() {
-  fieldBGM.pause();
-}
-
-// 戦闘BGMを再生
-function playBattleBGM() {
-  if (isBgmPlaying) {
-    battleBGM.currentTime = 0;
-    battleBGM.play().catch(err => console.warn("戦闘BGM再生エラー:", err));
-  }
-}
-
-// 戦闘BGMを停止
-function stopBattleBGM() {
-  battleBGM.pause();
-}
-    
-    
-    
-    
-    
-    
-    
     /* ========= タイトルからゲーム開始 ========= */
     function startGame() {
-  document.getElementById("titleScreen").style.display = "none";
-  document.getElementById("gameContainer").style.display = "block";
-  initGame();
-  lastEncounterSteps = player.steps;
-  encounterThreshold = getRandomEncounterThreshold();
-  
-  // BGMは初期状態でオフなので、自動で再生しない
-}
-  // BGMの初期状態がONならフィールドBGMを再生
-  if (isBgmPlaying) {
-    playFieldBGM();
-  }
-}
+      document.getElementById("titleScreen").style.display = "none";
+      document.getElementById("gameContainer").style.display = "block";
+      initGame();
+      lastEncounterSteps = player.steps;
+      encounterThreshold = getRandomEncounterThreshold();
+      playFieldBGM();
+    }
     /* ========= フィールドでの勇者移動 ========= */
     const playerImages = [
       "https://lh3.googleusercontent.com/d/1peHOi70oOmL8c9v3OQydE5N-9R0PB6vh", // 立ち姿
