@@ -219,7 +219,7 @@
 <body>
   <!-- ---------- タイトル画面 ---------- -->
   <div id="titleScreen">
-    <h1>ドラクエ風クイズRPG１</h1>
+    <h1>ドラクエ風クイズRPG</h1>
     <button id="startButton" onclick="startGame()">▶ ゲームスタート</button>
   </div>
 
@@ -268,7 +268,6 @@
   <audio id="dqDownAudio" preload="auto">
     <source src="./DQ down long.mp3" type="audio/mpeg">
   </audio>
-
 
   <!-- ---------- Google API のスクリプト ---------- -->
   <script async defer src="https://apis.google.com/js/api.js" 
@@ -443,7 +442,6 @@
       currentMonsters = getRandomMonsters();
       showMonsters(currentMonsters);
 
-      const monsterNames = currentMonsters.map(m => m.name).join("、");
       const topTextBox = document.getElementById("top-text-box");
       topTextBox.textContent = "mamがあらわれた！";
 
@@ -520,6 +518,10 @@
       }
     }
     function onZaoriku() {
+      // ザオリクが押されたらDQ downの音を即座に停止
+      const dqAudio = document.getElementById("dqDownAudio");
+      dqAudio.pause();
+      dqAudio.currentTime = 0;
       document.getElementById("top-text-box").textContent = "ザオリクが唱えられた！";
       setTimeout(() => { endBattle(); }, 1000);
     }
