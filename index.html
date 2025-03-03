@@ -16,6 +16,24 @@
       background-color: #222;
       color: #fff;
     }
+    
+    /* ▼ BGMオンオフボタンのデザイン追加 */
+    #bgmToggleContainer {
+      text-align: center;
+      margin-top: 10px;
+    }
+
+    #bgmToggleButton {
+      font-size: 16px;
+      padding: 5px 10px;
+      border: 2px solid #fff;
+      background: #444;
+      color: #fff;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+    /* ▲ BGMオンオフボタンのデザイン追加 */
+    
     /* ---------- ログイン画面 ---------- */
     #loginScreen {
       display: flex;
@@ -250,9 +268,20 @@
   <!-- ---------- ゲーム画面全体 ---------- -->
   <div id="gameContainer">
     <!-- ステータス表示 -->
-    <div id="status">
-      プレイヤーのHP: <span id="hp">100</span> / レベル: <span id="level">1</span>
+   <!-- ▼ ステータス表示エリア -->
+  <div id="status">
+    プレイヤーのHP: <span id="hp">100</span> / レベル: <span id="level">1</span>
+    
+    <!-- ▼ ここにBGMオンオフボタンを追加 -->
+    <div id="bgmToggleContainer">
+      <button id="bgmToggleButton" onclick="toggleBGM()">🎵 BGM ON</button>
     </div>
+    <!-- ▲ ここにBGMオンオフボタンを追加 -->
+  </div>
+  <!-- ▲ ステータス表示エリア -->
+  
+  
+  
     <!-- ---------- フィールド画面 ---------- -->
     <div id="gameArea">
       <img id="player" src="https://lh3.googleusercontent.com/d/1peHOi70oOmL8c9v3OQydE5N-9R0PB6vh" alt="hero">
@@ -281,12 +310,15 @@
   </div>
 
   <!-- ---------- BGM用オーディオタグ ---------- -->
+<!-- ▼ BGM用オーディオタグ -->
   <audio id="fieldBGM" loop preload="auto">
     <source src="./kouyawoiku.mp3" type="audio/mpeg">
   </audio>
   <audio id="battleBGM" loop preload="auto">
     <source src="./gypsydance.mp3" type="audio/mpeg">
   </audio>
+  <!-- ▲ BGM用オーディオタグ -->
+
   <!-- DQ down用オーディオタグ -->
   <audio id="dqDownAudio" preload="auto">
     <source src="./DQ down long.mp3" type="audio/mpeg">
@@ -349,7 +381,88 @@
     let missCount = 0;
     const MAX_CORRECT = 4;
     const MAX_MISS = 4;
+        /* ▼ BGM管理 */
+    let isBgmPlaying = false; // 初期状態はBGMオフ
 
+    function toggleBGM() {
+      isBgmPlaying = !isBgmPlaying;
+      const bgmButton = document.getElementById("bgmToggleButton");
+
+      if (isBgmPlaying) {
+        playFieldBGM();
+        bgmButton.textContent = "🎵 BGM OFF";
+      } else {
+        stopFieldBGM();
+        stopBattleBGM();
+        bgmButton.textContent = "🎵 BGM ON";
+      }
+    }
+
+    function playFieldBGM() {
+      if (!isBgmPlaying) return;
+      try {
+        fieldBGM.currentTime = 0;
+        fieldBGM.play();
+      } catch (err) {
+        console.warn("フィールドBGM再生エラー:", err);
+      }
+    }
+
+    function stopFieldBGM() {
+      fieldBGM.pause();
+    }
+
+    function playBattleBGM() {
+      if (!isBgmPlaying) return;
+      try {
+        battleBGM.currentTime = 0;
+        battleBGM.play();
+      } catch (err) {
+        console.warn("戦闘BGM再生エラー:", err);
+      }
+    }
+
+    function stopBattleBGM() {
+      battleBGM.pause();
+    }
+    /* ▲ BGM管理 */
+
+    /* ▼ 戦闘開始時の処理 */
+    function startEncounter() {
+      inBattle = true;
+      stopFieldBGM();
+      lastEncounterSteps = player.steps;
+      encounterThreshold = getRandomEncounterThreshold();
+
+      setTimeout(() => {
+        document.getElementById("gameArea").style.display = "none";
+        document.getElementById("battle-screen").style.display = "block";
+
+        // ▼ ここでプレイヤーのBGM設定を維持したまま戦闘BGMを再生
+        if (isBgmPlaying) {
+          playBattleBGM();
+        }
+        // ▲ ここでプレイヤーのBGM設定を維持したまま戦闘BGMを再生
+      }, 800);
+    }
+    /* ▲ 戦闘開始時の処理 */
+
+    /* ▼ 戦闘終了時の処理 */
+    function endBattle() {
+      stopBattleBGM();
+      document.getElementById("battle-screen").style.display = "none";
+      document.getElementById("gameArea").style.display = "block";
+      inBattle = false;
+      
+      setTimeout(() => {
+        // ▼ ここでプレイヤーのBGM設定を維持したままフィールドBGMを再生
+        if (isBgmPlaying) {
+          playFieldBGM();
+        }
+        // ▲ ここでプレイヤーのBGM設定を維持したままフィールドBGMを再生
+      }, 1000);
+    }
+    /* ▲ 戦闘終了時の処理 */
     /* ========= Google API 初期化 ========= */
     function gapiLoaded() {
       console.log("✅ gapiLoaded");
