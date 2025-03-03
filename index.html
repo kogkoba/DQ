@@ -225,6 +225,36 @@
   <input type="text" id="playerNameInput" placeholder="名前を入力">
   <button id="loginButton">ログイン</button>
 </div>
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+  document.getElementById("loginButton").addEventListener("click", function () {
+    let enteredName = document.getElementById("playerNameInput").value.trim();
+
+    if (enteredName === "") {
+      alert("名前を入力してください！");
+      return;
+    }
+
+    // 名前を保存（ブラウザの記憶機能を利用）
+    localStorage.setItem("playerName", enteredName);
+
+    // プレイヤーデータに設定
+    playerData.name = enteredName;
+
+    // ログイン画面を消してゲーム開始
+    document.getElementById("loginScreen").style.display = "none";
+    document.getElementById("titleScreen").style.display = "block";
+  });
+
+  // 以前のプレイヤー名があれば自動入力
+  let savedName = localStorage.getItem("playerName");
+  if (savedName) {
+    document.getElementById("playerNameInput").value = savedName;
+  }
+});
+</script>
+
 document.addEventListener("DOMContentLoaded", function () {
   // ログインボタンにクリックイベントを追加
   document.getElementById("loginButton").addEventListener("click", function () {
