@@ -310,7 +310,6 @@ document.addEventListener("DOMContentLoaded", function () {
   <script async defer src="https://apis.google.com/js/api.js" 
           onload="gapiLoaded()" 
           onerror="console.error('❌ Google APIの読み込みに失敗しました');"></script>
-
   <script>
     // グローバル変数
     let inBattle = false;
@@ -657,14 +656,12 @@ function showMaxLevelEffect() {
     }
     // ========== タイトルからゲーム開始 ==========
     function startGame() {
-      document.getElementById("titleScreen").style.display = "none";
-      document.getElementById("gameContainer").style.display = "block";
-      initGame();
-      // 初期位置でのエンカウント判定用の歩数を設定
-      lastEncounterSteps = player.steps;
-      encounterThreshold = getRandomEncounterThreshold();
-      playFieldBGM();
-    }
+  document.getElementById("titleScreen").style.display = "none";
+  document.getElementById("gameContainer").style.display = "block";
+  initGame();
+  playFieldBGM();
+}
+
     // ========== フィールドでの勇者移動 ==========
     const playerImages = [
       "https://lh3.googleusercontent.com/d/1peHOi70oOmL8c9v3OQydE5N-9R0PB6vh", // 立ち姿
@@ -672,7 +669,7 @@ function showMaxLevelEffect() {
       "https://lh3.googleusercontent.com/d/1fCmul9iotoUh4MLa_qzHvaOUDYMvng8C"  // 左足前
     ];
     let currentImageIndex = 0;
-    let playerSprite = = { x: 0, y: 0, hp: 100, level: 1, steps: 0 };
+    let playerSprite = { x: 0, y: 0, hp: 100, level: 1, steps: 0 };
     let facingRight = true;
     const playerElement = document.getElementById("player");
     function updatePlayerPosition() {
@@ -708,6 +705,12 @@ function showMaxLevelEffect() {
         startEncounter();
       }
     }
+    
+    function gapiLoaded() {
+  console.log("✅ gapiLoaded");
+  gapi.load("client", initClient);
+}
+
     function initGame() {
       player.x = window.innerWidth / 2;
       player.y = document.getElementById("gameArea").clientHeight / 2;
