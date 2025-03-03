@@ -468,10 +468,10 @@ function showMonsters(monsters) {
 
       const monsterNames = currentMonsters.map(m => m.name).join("、");
       const topTextBox = document.getElementById("top-text-box");
-      topTextBox.textContent = monsterNames + "があらわれた！";
+      topTextBox.textContent =  "MAMがあらわれた！";
 
       setTimeout(() => { topTextBox.textContent = ""; }, 2000);
-      setTimeout(() => { topTextBox.textContent = monsterNames + "の攻撃！"; }, 3000);
+      setTimeout(() => { topTextBox.textContent =  "MOMの復讐攻撃！"; }, 3000);
       setTimeout(() => {
         topTextBox.textContent = "クイズ開始！";
         showQuiz();
@@ -512,14 +512,14 @@ function showMonsters(monsters) {
       }
       if (correctCount >= MAX_CORRECT) {
         setTimeout(() => {
-          topTextBox.textContent = "4回正解！モンスターを倒した！";
+          topTextBox.textContent = "MAM は安心して去っていった！";
           endBattle();
         }, 1000);
         return;
       }
       if (missCount >= MAX_MISS) {
         setTimeout(() => {
-          topTextBox.textContent = "4回ミス...。";
+          topTextBox.textContent = "MAMは　復習を求めた...。";
           document.getElementById("zaorikuButton").style.display = "inline-block";
         }, 1000);
         return;
