@@ -408,7 +408,173 @@
       const shuffled = [...monsterData].sort(() => Math.random() - 0.5);
       return shuffled.slice(0, 4);
     }
+ // ========== ハート管理 ==========
+    function initHearts() {
+      const heartsContainer = document.getElementById("hearts-container");
+      heartsContainer.innerHTML = "";
+      for (let i = 0; i < 4; i++) {
+        const heart = document.createElement("span");
+        heart.className = "heart";
+        heart.textContent = "♡";
+        heartsContainer.appendChild(heart);
+      }
+    }
+    function shakeAndRemoveHeart() {
+      const heartsContainer = document.getElementById("hearts-container");
+      if (heartsContainer.children.length > 0) {
+        const firstHeart = heartsContainer.children[0];
+        firstHeart.classList.add("shake");
+        setTimeout(() => {
+          if (heartsContainer.contains(firstHeart)) {
+            heartsContainer.removeChild(firstHeart);
+          }
+        }, 500);
+      }
+    }
+      // ========== 戦闘関連 ==========
+    function startEncounter() {
+      inBattle = true;
+      // 戦闘開始時、フィールドBGMを停止
+      stopFieldBGM();
 
+      // エンカウント発生位置を記録し、次の閾値をランダムに設定
+      lastEncounterSteps = player.steps;
+      encounterThreshold = getRandomEncounterThreshold();
+
+      const overlay = document.getElementById("transition-overlay");
+      const circle = document.getElementById("transition-circle");
+      overlay.style.display = "block";
+      requestAnimationFrame(() => {
+        circle.classList.add("active");
+      });
+      setTimeout(() => {
+        document.getElementById("gameArea").style.display = "none";
+        document.getElementById("battle-screen").style.display = "block";
+        overlay.style.display = "none";
+        circle.classList.remove("active");
+
+        playBattleBGM();
+        startBattle();
+      }, 800);
+    }
+
+    function showMonsters(monsters) {
+      console.log("📢 モンスターを表示:", monsters);
+      const container = document.getElementById("enemy-container");
+      container.innerHTML = "";
+
+      if (!monsters || monsters.length === 0) {
+        console.error("⛔ モンスターが取得できませんでした");
+        return;
+      }
+
+      monsters.forEach(monster => {
+        const img = document.createElement("img");
+        img.className = "monster";
+        img.src = monster.url;
+        img.alt = monster.name;
+        container.appendChild(img);
+      });
+
+      console.log("✅ モンスター表示完了");
+    }
+
+    function startBattle() {
+      correctCount = 0;
+      missCount = 0;
+      document.getElementById("quiz-image").style.display = "none";
+      document.getElementById("choice-area").innerHTML = "";
+      document.getElementById("zaorikuButton").style.display = "none";
+
+      initHearts(); // ハート4つ配置（下部固定）
+
+      currentMonsters = getRandomMonsters();
+      showMonsters(currentMonsters);
+
+      const topTextBox = document.getElementById("top-text-box");
+      topTextBox.textContent = "mamがあらわれた！";
+
+      setTimeout(() => { topTextBox.textContent = ""; }, 2000);
+      setTimeout(() => { topTextBox.textContent = "mamの復習攻撃！"; }, 3000);
+      setTimeout(() => {
+        topTextBox.textContent = "クイズ開始！";
+        showQuiz();
+      }, 5000);
+    }
+    function showQuiz() {
+      const quiz = getRandomQuiz();
+      const topTextBox = document.getElementById("top-text-box");
+      if (!quiz) {
+        topTextBox.textContent = "クイズデータがありません";
+        return;
+      }
+      topTextBox.textContent = quiz.question;
+      const quizImage = document.getElementById("quiz-image");
+      quizImage.src = quiz.imageUrl;
+      quizImage.style.display = quiz.imageUrl ? "block" : "none";
+      const choiceArea = document.getElementById("choice-area");
+      choiceArea.innerHTML = "";
+      quiz.choices.forEach((choice, index) => {
+        let btn = document.createElement("button");
+        btn.className = "choice-button";
+        btn.textContent = `▶ ${choice}`;
+        btn.onclick = () => handleAnswer(index + 1, quiz);
+        choiceArea.appendChild(btn);
+      });
+    }
+    function handleAnswer(selected, quiz) {
+      const topTextBox = document.getElementById("top-text-box");
+
+      if (selected === quiz.correct) {
+        correctCount++;
+        topTextBox.textContent = "✅ 正解！ " + quiz.explanation;
+        shakeAndRemoveMonster();
+      } else {
+        missCount++;
+        topTextBox.textContent = "❌ 不正解！ " + quiz.explanation;
+        shakeAndRemoveHeart();
+      }
+      if (correctCount >= MAX_CORRECT) {
+        setTimeout(() => {
+          topTextBox.textContent = "mamは安心して去っていった！";
+          endBattle();
+        }, 3000);
+        return;
+      }
+      if (missCount >= MAX_MISS) {
+        setTimeout(() => {
+          topTextBox.textContent = "mamは復習を求めた。";
+          document.getElementById("zaorikuButton").style.display = "inline-block";
+          stopBattleBGM();
+          const dqAudio = document.getElementById("dqDownAudio");
+          dqAudio.currentTime = 0;
+          dqAudio.play().catch(err => console.warn("DQ Down Audio play error:", err));
+        }, 3000);
+        return;
+      }
+      setTimeout(() => { showQuiz(); }, 3000);
+    }
+    function shakeAndRemoveMonster() {
+      const container = document.getElementById("enemy-container");
+      if (container.children.length > 0) {
+        const firstMonster = container.children[0];
+        firstMonster.classList.add("shake");
+        setTimeout(() => {
+          if (container.contains(firstMonster)) {
+            container.removeChild(firstMonster);
+          }
+        }, 500);
+      }
+    }
+    function onZaoriku() {
+      // ザオリクが押されたらDQ downの音を即座に停止
+      const dqAudio = document.getElementById("dqDownAudio");
+      dqAudio.pause();
+      dqAudio.currentTime = 0;
+      document.getElementById("top-text-box").textContent = "ザオリクが唱えられた！";
+      setTimeout(() => { endBattle(); }, 1000);
+    }
+    
 
 
      // ========== タイトルからゲーム開始 ==========
@@ -416,6 +582,9 @@
       document.getElementById("titleScreen").style.display = "none";
       document.getElementById("gameContainer").style.display = "block";
       initGame();
+      // 初期位置でのエンカウント判定用の歩数を設定
+      lastEncounterSteps = player.steps;
+      encounterThreshold = getRandomEncounterThreshold();
       playFieldBGM();
     }
 
@@ -552,20 +721,6 @@
       document.getElementById("gameArea").style.display = "block";
       inBattle = false;
       setTimeout(playFieldBGM, 1000);
-    }
-
-    // --------------------------------
-    // ハートやモンスター表示
-    // --------------------------------
-    function initHearts() {
-      const hc = document.getElementById("hearts-container");
-      hc.innerHTML = "";
-      for (let i = 0; i < 4; i++) {
-        const heart = document.createElement("span");
-        heart.className = "heart";
-        heart.textContent = "♡";
-        hc.appendChild(heart);
-      }
     }
 
     // --------------------------------
