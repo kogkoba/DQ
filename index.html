@@ -68,6 +68,23 @@
 <body>
 
   <!-- ログイン画面 -->
+  fetch(GAS_URL + "?name=" + encodeURIComponent(enteredName), {
+  method: "GET",
+  mode: "no-cors" // ✅ CORS のエラー回避
+})
+.then(response => response.json())
+.then(data => {
+  console.log("データ取得成功:", data);
+  playerData.name = enteredName;
+  playerData.level = parseInt(data.level);
+  playerData.exp = parseInt(data.exp);
+  playerData.g = parseInt(data.g);
+
+  document.getElementById("loginScreen").style.display = "none";
+  document.getElementById("gameContainer").style.display = "block";
+})
+.catch(error => console.error("データ取得エラー:", error));
+
   <div id="loginScreen">
     <h2>プレイヤー名を入力してください</h2>
     <input type="text" id="playerNameInput" placeholder="名前を入力">
