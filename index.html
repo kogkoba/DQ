@@ -568,18 +568,19 @@ function endBattle() {
     }
 
 
+// ======== BGMの管理 ========
+
 // フィールドBGMの再生
 function playFieldBGM() {
   fieldBGM.currentTime = 0;
   fieldBGM.play().catch(err => console.warn("フィールドBGM再生エラー:", err));
 }
-    
+
 // 戦闘BGMの再生
 function playBattleBGM() {
   battleBGM.currentTime = 0;
   battleBGM.play().catch(err => console.warn("戦闘BGM再生エラー:", err));
 }
-
 
 // 戦闘BGMを止める
 function stopBattleBGM() {
@@ -599,12 +600,13 @@ function stopBattleBGM() {
   }, 5000); // 5秒間待つ（テキストが読めるように）
 }
 
+// ======== 戦闘終了処理 ========
 function endBattle() {
   setTimeout(() => {
     document.getElementById("battle-screen").style.display = "none";
     document.getElementById("gameArea").style.display = "block";
-    
-    stopBattleBGM(); // 戦闘BGMを止める
+
+    stopBattleBGM(); // バトルBGMを停止
     playFieldBGM();  // フィールドBGMを再生
 
     inBattle = false;
