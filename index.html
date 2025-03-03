@@ -3,71 +3,18 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>ドラクエ風クイズRPG</title>
+  <title>クイズRPG</title>
   <style>
-    /* 共通設定 */
-    html, body {
-      margin: 0;
-      padding: 0;
-      width: 100%;
-      height: 100%;
-      font-family: sans-serif;
+    body {
+      font-family: Arial, sans-serif;
+      text-align: center;
       background-color: #222;
       color: #fff;
     }
-
-    /* ログイン画面 */
-    #loginScreen {
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
-      align-items: center;
-      width: 100%;
-      height: 100%;
-      background: black;
-    }
-
-    /* タイトル画面 */
-    #titleScreen {
-      display: none;
-      flex-direction: column;
-      justify-content: center;
-      align-items: center;
-      width: 100%;
-      height: 100%;
-      background: black;
-    }
-
-    #startButton {
-      font-size: 24px;
-      padding: 10px 20px;
-      cursor: pointer;
-      border: 2px solid #fff;
-      background: #444;
-      color: #fff;
-      border-radius: 5px;
-    }
-
-    /* ゲーム画面 */
-    #gameContainer {
-      display: none;
-      width: 100%;
-      height: 100%;
-    }
-
-    #gameArea {
-      position: relative;
-      width: 100%;
-      height: calc(100% - 50px);
-      background: url("https://lh3.googleusercontent.com/d/1jDckidA8IqAdhUncYX09kzOQd2IqanYQ") no-repeat center center;
-      background-size: cover;
-      overflow: hidden;
-    }
-
-    #player {
-      position: absolute;
-      width: 30px;
-      height: auto;
+    input, button {
+      font-size: 18px;
+      padding: 5px;
+      margin: 10px;
     }
   </style>
 </head>
@@ -78,74 +25,107 @@
     <h2>プレイヤー名を入力してください</h2>
     <input type="text" id="playerNameInput" placeholder="名前を入力">
     <button id="loginButton">ログイン</button>
+    <p id="errorMessage" style="color: red;"></p>
   </div>
 
-  <!-- タイトル画面 -->
-  <div id="titleScreen">
-    <h1>ドラクエ風クイズRPG</h1>
-    <button id="startButton">▶ ゲームスタート</button>
-  </div>
-
-  <!-- ゲーム画面 -->
-  <div id="gameContainer">
-    <div id="gameArea">
-      <img id="player" src="https://lh3.googleusercontent.com/d/1peHOi70oOmL8c9v3OQydE5N-9R0PB6vh" alt="hero">
-    </div>
+  <!-- クイズ画面 -->
+  <div id="quizScreen" style="display:none;">
+    <h2 id="questionText">問題がここに表示されます</h2>
+    <button class="choiceButton"></button>
+    <button class="choiceButton"></button>
+    <button class="choiceButton"></button>
+    <button class="choiceButton"></button>
+    <p>正解数: <span id="correctCount">0</span> / 4</p>
+    <p>EXP: <span id="expCount">0</span></p>
+    <p>G: <span id="goldCount">0</span></p>
   </div>
 
   <script>
-    // プレイヤーデータ
-    let playerData = {
-      name: "",
-      level: 1,
-      exp: 0,
-      g: 0
-    };
+    const GAS_URL = "あなたのGASのウェブアプリURL"; 
 
-    let playerSprite = { x: 0, y: 0, hp: 100, steps: 0 };
+    let playerData = { name: "", level: 1, exp: 0, g: 0 };
+    let correctCount = 0;
+    
+    const quizData = [
+      { question: "1 + 2 =", choices: ["1", "2", "3", "4"], correct: 2 },
+      { question: "2 + 3 =", choices: ["4", "5", "6", "7"], correct: 1 },
+      { question: "5 - 2 =", choices: ["1", "2", "3", "4"], correct: 2 },
+      { question: "10 - 5 =", choices: ["2", "3", "4", "5"], correct: 3 }
+    ];
 
     document.addEventListener("DOMContentLoaded", function () {
-      // ログインボタンの処理
       document.getElementById("loginButton").addEventListener("click", function () {
         let enteredName = document.getElementById("playerNameInput").value.trim();
         if (enteredName === "") {
-          alert("名前を入力してください！");
+          document.getElementById("errorMessage").textContent = "名前を入力してください！";
           return;
         }
 
-        // 名前を保存
-        localStorage.setItem("playerName", enteredName);
-        playerData.name = enteredName;
+        fetch(GAS_URL + "?name=" + encodeURIComponent(enteredName))
+          .then(response => response.json())
+          .then(data => {
+            playerData.name = enteredName;
+            playerData.level = parseInt(data.level);
+            playerData.exp = parseInt(data.exp);
+            playerData.g = parseInt(data.g);
 
-        // ログイン画面を非表示にしてタイトル画面を表示
-        document.getElementById("loginScreen").style.display = "none";
-        document.getElementById("titleScreen").style.display = "flex";
-      });
+            document.getElementById("loginScreen").style.display = "none";
+            document.getElementById("quizScreen").style.display = "block";
 
-      // 以前のプレイヤー名を取得
-      let savedName = localStorage.getItem("playerName");
-      if (savedName) {
-        document.getElementById("playerNameInput").value = savedName;
-      }
-
-      // スタートボタンの処理
-      document.getElementById("startButton").addEventListener("click", function () {
-        document.getElementById("titleScreen").style.display = "none";
-        document.getElementById("gameContainer").style.display = "block";
-        initGame();
+            startQuiz();
+          })
+          .catch(error => console.error("データ取得エラー:", error));
       });
     });
 
-    function initGame() {
-      playerSprite.x = window.innerWidth / 2;
-      playerSprite.y = document.getElementById("gameArea").clientHeight / 2;
-      updatePlayerPosition();
+    function startQuiz() {
+      let index = 0;
+      loadQuestion(index);
+
+      document.querySelectorAll(".choiceButton").forEach((button, i) => {
+        button.addEventListener("click", () => {
+          if (i === quizData[index].correct) {
+            correctCount++;
+            playerData.exp += 10;
+            document.getElementById("correctCount").textContent = correctCount;
+            document.getElementById("expCount").textContent = playerData.exp;
+          }
+
+          index++;
+          if (index < quizData.length) {
+            loadQuestion(index);
+          } else {
+            endQuiz();
+          }
+        });
+      });
     }
 
-    function updatePlayerPosition() {
-      let playerElement = document.getElementById("player");
-      playerElement.style.left = playerSprite.x + "px";
-      playerElement.style.top = playerSprite.y + "px";
+    function loadQuestion(index) {
+      document.getElementById("questionText").textContent = quizData[index].question;
+      document.querySelectorAll(".choiceButton").forEach((button, i) => {
+        button.textContent = quizData[index].choices[i];
+      });
+    }
+
+    function endQuiz() {
+      if (correctCount === 4) {
+        playerData.g += 100;
+      }
+
+      document.getElementById("goldCount").textContent = playerData.g;
+      saveData();
+    }
+
+    function saveData() {
+      fetch(GAS_URL, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(playerData)
+      })
+      .then(response => response.text())
+      .then(result => console.log("保存結果:", result))
+      .catch(error => console.error("保存エラー:", error));
     }
   </script>
 
