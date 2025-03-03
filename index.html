@@ -268,8 +268,13 @@
 
   <!-- ---------- Google API のスクリプト ---------- -->
   <script async defer src="https://apis.google.com/js/api.js" 
+    window.onload = function() {
+  document.getElementById("startButton").onclick = startGame;
+  gapi.load("client", gapiLoaded);
           onload="gapiLoaded()" 
           onerror="console.error('❌ Google APIの読み込みに失敗しました');"></script>
+
+};
 
   <script>
     // グローバル変数
