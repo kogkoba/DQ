@@ -219,7 +219,7 @@
 <body>
   <!-- ---------- タイトル画面 ---------- -->
   <div id="titleScreen">
-    <h1>ドラクエ風クイズRPG</h1>
+    <h1>ドラクエ風クイズRPG１</h1>
     <button id="startButton" onclick="startGame()">▶ ゲームスタート</button>
   </div>
 
@@ -264,6 +264,11 @@
   <audio id="battleBGM" loop preload="auto">
     <source src="./gypsydance.mp3" type="audio/mpeg">
   </audio>
+  <!-- DQ down用のオーディオタグ（ループなしで１度だけ再生） -->
+  <audio id="dqDownAudio" preload="auto">
+    <source src="./DQ down long.mp3" type="audio/mpeg">
+  </audio>
+
 
   <!-- ---------- Google API のスクリプト ---------- -->
   <script async defer src="https://apis.google.com/js/api.js" 
@@ -493,6 +498,10 @@
         setTimeout(() => {
           topTextBox.textContent = "mamは復習を求めた。";
           document.getElementById("zaorikuButton").style.display = "inline-block";
+          // ４問間違えた場合、DQ downの音を再生（１度だけ）
+          const dqAudio = document.getElementById("dqDownAudio");
+          dqAudio.currentTime = 0;
+          dqAudio.play().catch(err => console.warn("DQ Down Audio play error:", err));
         }, 1000);
         return;
       }
