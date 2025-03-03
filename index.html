@@ -219,6 +219,41 @@
   </style>
 </head>
 <body>
+  <!-- ログイン画面 -->
+<div id="loginScreen">
+  <h2>プレイヤー名を入力してください</h2>
+  <input type="text" id="playerNameInput" placeholder="名前を入力">
+  <button id="loginButton">ログイン</button>
+</div>
+document.addEventListener("DOMContentLoaded", function () {
+  // ログインボタンにクリックイベントを追加
+  document.getElementById("loginButton").addEventListener("click", function () {
+    let enteredName = document.getElementById("playerNameInput").value.trim();
+    
+    if (enteredName === "") {
+      alert("名前を入力してください！");
+      return;
+    }
+
+    // 名前を保存（ブラウザの記憶機能を利用）
+    localStorage.setItem("playerName", enteredName);
+
+    // プレイヤーデータに設定
+    playerData.name = enteredName;
+
+    // ログイン画面を消してゲーム開始
+    document.getElementById("loginScreen").style.display = "none";
+    document.getElementById("titleScreen").style.display = "block";
+  });
+
+  // 以前のプレイヤー名があれば自動入力
+  let savedName = localStorage.getItem("playerName");
+  if (savedName) {
+    document.getElementById("playerNameInput").value = savedName;
+  }
+});
+
+
   <!-- ---------- タイトル画面 ---------- -->
   <div id="titleScreen">
     <h1>ドラクエ風クイズRPG</h1>
@@ -490,7 +525,7 @@
     }
 
 // ユーザーの現在のデータ
-let player = {
+let playerDate = {
   name: "正和", // ユーザー名（スプレッドシートと対応）
   level: 1,
   exp: 0,
@@ -637,7 +672,7 @@ function showMaxLevelEffect() {
       "https://lh3.googleusercontent.com/d/1fCmul9iotoUh4MLa_qzHvaOUDYMvng8C"  // 左足前
     ];
     let currentImageIndex = 0;
-    let player = { x: 0, y: 0, hp: 100, level: 1, steps: 0 };
+    let playerSprite = = { x: 0, y: 0, hp: 100, level: 1, steps: 0 };
     let facingRight = true;
     const playerElement = document.getElementById("player");
     function updatePlayerPosition() {
