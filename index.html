@@ -16,9 +16,24 @@
       background-color: #222;
       color: #fff;
     }
+    /* ---------- ログイン画面 ---------- */
+    #loginScreen {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      width: 100%;
+      height: 100%;
+      background: black;
+    }
+    #loginScreen input, #loginScreen button {
+      font-size: 18px;
+      padding: 5px;
+      margin: 10px;
+    }
     /* ---------- タイトル画面 ---------- */
     #titleScreen {
-      display: flex;
+      display: none; /* ログイン後に表示 */
       flex-direction: column;
       justify-content: center;
       align-items: center;
@@ -138,7 +153,7 @@
       width: 150px;
       font-size: 16px;
     }
-    /* ハート表示用コンテナ：戦闘画面下部中央に固定 */
+    /* ハート表示用コンテナ */
     #hearts-container {
       position: absolute;
       bottom: 10px;
@@ -151,7 +166,7 @@
       font-size: 24px;
       color: red;
     }
-    /* 解説は不要なので非表示 */
+    /* 解説は不要 */
     #explanation {
       display: none;
     }
@@ -219,6 +234,13 @@
   </style>
 </head>
 <body>
+  <!-- ---------- ログイン画面 ---------- -->
+  <div id="loginScreen">
+    <h2>プレイヤー名を入力してください</h2>
+    <input type="text" id="playerNameInput" placeholder="名前を入力">
+    <button id="loginButton">ログイン</button>
+  </div>
+
   <!-- ---------- タイトル画面 ---------- -->
   <div id="titleScreen">
     <h1>ドラクエ風クイズRPG</h1>
@@ -246,7 +268,6 @@
         <div id="transition-circle"></div>
       </div>
     </div>
-
     <!-- ---------- 戦闘画面 ---------- -->
     <div id="battle-screen">
       <div id="top-text-box">mamがあらわれた！</div>
@@ -266,7 +287,7 @@
   <audio id="battleBGM" loop preload="auto">
     <source src="./gypsydance.mp3" type="audio/mpeg">
   </audio>
-  <!-- DQ down用のオーディオタグ（ループなしで１度だけ再生） -->
+  <!-- DQ down用オーディオタグ -->
   <audio id="dqDownAudio" preload="auto">
     <source src="./DQ down long.mp3" type="audio/mpeg">
   </audio>
@@ -277,15 +298,40 @@
           onerror="console.error('❌ Google APIの読み込みに失敗しました');"></script>
 
   <script>
-    // グローバル変数
+    /* ========= ログイン処理 ========= */
+    const GAS_URL = "https://script.google.com/macros/s/AKfycbyUcopm6q6lU0eFyzP9DtukTZ5bkNUXYT_JsFRn0I1L1dv4d9VewWRKlVpzmnkXUx0D4w/exec";
+    let playerData = { name: "", level: 1, exp: 0, g: 0 };
+
+    document.getElementById("loginButton").addEventListener("click", function () {
+        let enteredName = document.getElementById("playerNameInput").value.trim();
+        if (enteredName === "") {
+            alert("名前を入力してください！");
+            return;
+        }
+        fetch(GAS_URL + "?name=" + encodeURIComponent(enteredName), {
+            method: "GET"
+        })
+        .then(response => response.json())
+        .then(data => {
+            console.log("データ取得成功:", data);
+            playerData.name = enteredName;
+            playerData.level = parseInt(data.level, 10);
+            playerData.exp = parseInt(data.exp, 10);
+            playerData.g = parseInt(data.g, 10);
+            console.log("取得したプレイヤーデータ:", playerData);
+            // ログイン後、ログイン画面を隠してタイトル画面を表示
+            document.getElementById("loginScreen").style.display = "none";
+            document.getElementById("titleScreen").style.display = "flex";
+        })
+        .catch(error => console.error("データ取得エラー:", error));
+    });
+
+    /* ========= ゲーム用グローバル変数 ========= */
     let inBattle = false;
     const STEP = 20;
-
-    /* エンカウント歩数のランダム化用グローバル変数 */
     let lastEncounterSteps = 0;
     let encounterThreshold = getRandomEncounterThreshold();
     function getRandomEncounterThreshold() {
-      // 5〜15歩のランダムな整数
       return Math.floor(Math.random() * 11) + 5;
     }
 
@@ -295,17 +341,15 @@
     const MONSTER_SHEET_ID = "1t08cjUMrug0nvIpredcxjuoxejDRazqqzLTqjVraJhw";
     const SHEET_NAME_QUIZ = "sheet1";
     const SHEET_NAME_MONSTER = "sheet1";
-
     let quizData = [];
     let monsterData = [];
     let currentMonsters = [];
-
     let correctCount = 0;
     let missCount = 0;
     const MAX_CORRECT = 4;
     const MAX_MISS = 4;
 
-    // ========== Google API 初期化 ==========
+    /* ========= Google API 初期化 ========= */
     function gapiLoaded() {
       console.log("✅ gapiLoaded");
       gapi.load("client", initClient);
@@ -324,7 +368,6 @@
         console.error("⛔ GAPI Init Error:", err);
       }
     }
-    // ========== クイズデータ取得 ==========
     async function loadQuizData() {
       try {
         const resp = await gapi.client.sheets.spreadsheets.values.get({
@@ -336,14 +379,13 @@
           imageUrl: row[2] || "",
           choices: [row[3], row[4], row[5], row[6]],
           correct: parseInt(row[7] || "1", 10),
-          explanation: row[9] || ""  // J列から解説を取得（index 9）
+          explanation: row[9] || ""
         }));
         console.log("Quiz Data:", quizData);
       } catch (err) {
         console.error("Quiz Data Error:", err);
       }
     }
-    // ========== モンスターデータ取得 ==========
     async function loadMonsterData() {
       try {
         const resp = await gapi.client.sheets.spreadsheets.values.get({
@@ -360,7 +402,6 @@
         console.error("Monster Data Error:", err);
       }
     }
-    // ========== ランダム取得 ==========
     function getRandomQuiz() {
       if (!quizData || quizData.length === 0) return null;
       const idx = Math.floor(Math.random() * quizData.length);
@@ -374,7 +415,6 @@
       const shuffled = [...monsterData].sort(() => Math.random() - 0.5);
       return shuffled.slice(0, 4);
     }
-    // ========== ハート管理 ==========
     function initHearts() {
       const heartsContainer = document.getElementById("hearts-container");
       heartsContainer.innerHTML = "";
@@ -397,16 +437,12 @@
         }, 500);
       }
     }
-    // ========== 戦闘関連 ==========
+    /* ========= 戦闘関連 ========= */
     function startEncounter() {
       inBattle = true;
-      // 戦闘開始時、フィールドBGMを停止
       stopFieldBGM();
-
-      // エンカウント発生位置を記録し、次の閾値をランダムに設定
       lastEncounterSteps = player.steps;
       encounterThreshold = getRandomEncounterThreshold();
-
       const overlay = document.getElementById("transition-overlay");
       const circle = document.getElementById("transition-circle");
       overlay.style.display = "block";
@@ -418,22 +454,18 @@
         document.getElementById("battle-screen").style.display = "block";
         overlay.style.display = "none";
         circle.classList.remove("active");
-
         playBattleBGM();
         startBattle();
       }, 800);
     }
-
     function showMonsters(monsters) {
       console.log("📢 モンスターを表示:", monsters);
       const container = document.getElementById("enemy-container");
       container.innerHTML = "";
-
       if (!monsters || monsters.length === 0) {
         console.error("⛔ モンスターが取得できませんでした");
         return;
       }
-
       monsters.forEach(monster => {
         const img = document.createElement("img");
         img.className = "monster";
@@ -441,25 +473,19 @@
         img.alt = monster.name;
         container.appendChild(img);
       });
-
       console.log("✅ モンスター表示完了");
     }
-
     function startBattle() {
       correctCount = 0;
       missCount = 0;
       document.getElementById("quiz-image").style.display = "none";
       document.getElementById("choice-area").innerHTML = "";
       document.getElementById("zaorikuButton").style.display = "none";
-
-      initHearts(); // ハート4つ配置（下部固定）
-
+      initHearts();
       currentMonsters = getRandomMonsters();
       showMonsters(currentMonsters);
-
       const topTextBox = document.getElementById("top-text-box");
       topTextBox.textContent = "mamがあらわれた！";
-
       setTimeout(() => { topTextBox.textContent = ""; }, 2000);
       setTimeout(() => { topTextBox.textContent = "mamの復習攻撃！"; }, 3000);
       setTimeout(() => {
@@ -490,7 +516,6 @@
     }
     function handleAnswer(selected, quiz) {
       const topTextBox = document.getElementById("top-text-box");
-
       if (selected === quiz.correct) {
         correctCount++;
         topTextBox.textContent = "✅ 正解！ " + quiz.explanation;
@@ -533,14 +558,13 @@
       }
     }
     function onZaoriku() {
-      // ザオリクが押されたらDQ downの音を即座に停止
       const dqAudio = document.getElementById("dqDownAudio");
       dqAudio.pause();
       dqAudio.currentTime = 0;
       document.getElementById("top-text-box").textContent = "ザオリクが唱えられた！";
       setTimeout(() => { endBattle(); }, 1000);
     }
-    // ========== BGM管理 ==========
+    /* ========= BGM管理 ========= */
     const fieldBGM = document.getElementById("fieldBGM");
     const battleBGM = document.getElementById("battleBGM");
     function playFieldBGM() {
@@ -557,17 +581,16 @@
     function stopBattleBGM() {
       battleBGM.pause();
     }
-    // ========== タイトルからゲーム開始 ==========
+    /* ========= タイトルからゲーム開始 ========= */
     function startGame() {
       document.getElementById("titleScreen").style.display = "none";
       document.getElementById("gameContainer").style.display = "block";
       initGame();
-      // 初期位置でのエンカウント判定用の歩数を設定
       lastEncounterSteps = player.steps;
       encounterThreshold = getRandomEncounterThreshold();
       playFieldBGM();
     }
-    // ========== フィールドでの勇者移動 ==========
+    /* ========= フィールドでの勇者移動 ========= */
     const playerImages = [
       "https://lh3.googleusercontent.com/d/1peHOi70oOmL8c9v3OQydE5N-9R0PB6vh", // 立ち姿
       "https://lh3.googleusercontent.com/d/1iuVZiT6Eh9mp2Ta__Cpm5z28HZ2k0YA0", // 右足前
@@ -583,12 +606,11 @@
       playerElement.style.transform = "translate(-50%, -50%) " + (facingRight ? "scaleX(1)" : "scaleX(-1)");
     }
     function movePlayer(dx, dy) {
-      if (inBattle) return; // 戦闘中は移動不可
+      if (inBattle) return;
       if (dx < 0) { facingRight = false; }
       else if (dx > 0) { facingRight = true; }
       currentImageIndex = (currentImageIndex + 1) % playerImages.length;
       playerElement.src = playerImages[currentImageIndex];
-
       player.x += dx;
       player.y += dy;
       const pw = playerElement.offsetWidth;
@@ -600,12 +622,10 @@
       if (player.x > maxX) player.x = maxX;
       if (player.y > maxY) player.y = maxY;
       updatePlayerPosition();
-
       player.steps++;
       document.getElementById("hp").textContent = player.hp;
       document.getElementById("level").textContent = player.level;
       console.log("歩数:", player.steps);
-      // 現在の歩数から、最後のエンカウント時からの歩数が閾値を超えたらエンカウント開始
       if (player.steps - lastEncounterSteps >= encounterThreshold) {
         startEncounter();
       }
@@ -615,15 +635,12 @@
       player.y = document.getElementById("gameArea").clientHeight / 2;
       updatePlayerPosition();
     }
-
-    // ========== 戦闘終了時の処理 ==========
+    /* ========= 戦闘終了時の処理 ========= */
     function endBattle() {
-      stopBattleBGM();    // 戦闘BGMを停止
-      // クイズ終了直後は無音にするため、ここではフィールドBGMは再生しない
+      stopBattleBGM();
       document.getElementById("battle-screen").style.display = "none";
       document.getElementById("gameArea").style.display = "block";
       inBattle = false;
-      // フィールドに戻った後、1秒後にフィールドBGMを再生
       setTimeout(() => {
         playFieldBGM();
       }, 1000);
