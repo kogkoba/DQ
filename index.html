@@ -1,7 +1,6 @@
 <!DOCTYPE html>
 <html lang="ja">
 <head>
-  １
   <meta charset="UTF-8">
   <!-- モバイル対応のためのビューポート設定 -->
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -95,7 +94,6 @@
     .center{ grid-area: center; }
     /* ---------- 戦闘画面 ---------- */
     #battle-screen {
-      
       display: none;
       position: absolute;
       top: 0; left: 0;
@@ -142,37 +140,15 @@
     }
     /* ハート表示用コンテナを選択肢の下に配置 */
     #hearts-container {
-      position: absolute; /* 絶対位置指定 */
-  bottom: 80px; /* 適宜調整（選択肢の下にくるように） */
-  left: 50%;
-  transform: translateX(-50%);
       display: flex;
       justify-content: center;
       gap: 10px;
       margin-top: 10px;
-       width: 100%;
     }
     .heart {
       font-size: 24px;
       color: red;
     }
-
-/* ハートをクイズの下に常に表示する */
-#hearts-container {
-  position: absolute; /* 絶対位置指定 */
-  bottom: 80px; /* 適宜調整（選択肢の下にくるように） */
-  left: 50%;
-  transform: translateX(-50%);
-  display: flex;
-  justify-content: center;
-  gap: 10px;
-  width: 100%;
-}
-
-
-
-
-    
     /* 解説は不要なので非表示 */
     #explanation {
       display: none;
@@ -404,7 +380,7 @@
           if (heartsContainer.contains(firstHeart)) {
             heartsContainer.removeChild(firstHeart);
           }
-        }, 5000);
+        }, 500);
       }
     }
     // ========== 戦闘関連 ==========
@@ -469,10 +445,10 @@ function showMonsters(monsters) {
 
       const monsterNames = currentMonsters.map(m => m.name).join("、");
       const topTextBox = document.getElementById("top-text-box");
-      topTextBox.textContent =  "MAMがあらわれた！";
+      topTextBox.textContent = "mamがあらわれた！";
 
       setTimeout(() => { topTextBox.textContent = ""; }, 2000);
-      setTimeout(() => { topTextBox.textContent =  "MOMの復讐攻撃！"; }, 3000);
+      setTimeout(() => { topTextBox.textContent =  ”mamの復讐問題攻撃！"; }, 3000);
       setTimeout(() => {
         topTextBox.textContent = "クイズ開始！";
         showQuiz();
@@ -513,14 +489,14 @@ function showMonsters(monsters) {
       }
       if (correctCount >= MAX_CORRECT) {
         setTimeout(() => {
-          topTextBox.textContent = "MAM は安心して去っていった！";
+          topTextBox.textContent = "mamは満足して去っていった！";
           endBattle();
         }, 1000);
         return;
       }
       if (missCount >= MAX_MISS) {
         setTimeout(() => {
-          topTextBox.textContent = "MAMは　復習を求めた...。";
+          topTextBox.textContent = "mamはもう一度プレイしろと願った...。";
           document.getElementById("zaorikuButton").style.display = "inline-block";
         }, 1000);
         return;
@@ -543,84 +519,35 @@ function showMonsters(monsters) {
       document.getElementById("top-text-box").textContent = "ザオリクが唱えられた！";
       setTimeout(() => { endBattle(); }, 1000);
     }
-
-    // ======== 戦闘終了処理 ========
-function endBattle() {
-  setTimeout(() => {
-    document.getElementById("battle-screen").style.display = "none";
-    document.getElementById("gameArea").style.display = "block";
-
-    stopBattleBGM(); // バトルBGMを停止
-    playFieldBGM();  // フィールドBGMを再生
-
-    inBattle = false;
-  }, 5000); // 5秒間待つ（テキストが読めるように）
-}
-
-
-
-    
+    function endBattle() {
+      document.getElementById("battle-screen").style.display = "none";
+      document.getElementById("gameArea").style.display = "block";
+      inBattle = false;
+    }
     // ========== BGM管理 ==========
     const fieldBGM = document.getElementById("fieldBGM");
     const battleBGM = document.getElementById("battleBGM");
-    fieldBGM.currentTime = 0;
-    fieldBGM.play().catch(err => console.warn("フィールドBGM再生エラー:", err));
+    function playFieldBGM() {
+      fieldBGM.currentTime = 0;
+      fieldBGM.play().catch(err => console.warn("フィールドBGM再生エラー:", err));
     }
-
-
-// ======== BGMの管理 ========
-
-// フィールドBGMの再生
-function playFieldBGM() {
-  fieldBGM.currentTime = 0;
-  fieldBGM.play().catch(err => console.warn("フィールドBGM再生エラー:", err));
-}
-
-// 戦闘BGMの再生
-function playBattleBGM() {
-  battleBGM.currentTime = 0;
-  battleBGM.play().catch(err => console.warn("戦闘BGM再生エラー:", err));
-}
-
-// 戦闘BGMを止める
-function stopBattleBGM() {
-  battleBGM.pause();
-  battleBGM.currentTime = 0; // 曲の開始位置に戻す
-}
-
-
-    function endBattle() {
-  setTimeout(() => {
-    document.getElementById("battle-screen").style.display = "none";
-    document.getElementById("gameArea").style.display = "block";
-    
-   
-
-    inBattle = false;
-  }, 5000); // 5秒間待つ（テキストが読めるように）
-}
-
-// ======== 戦闘終了処理 ========
-function endBattle() {
-  setTimeout(() => {
-    document.getElementById("battle-screen").style.display = "none";
-    document.getElementById("gameArea").style.display = "block";
-
-    stopBattleBGM(); // バトルBGMを停止
-    playFieldBGM();  // フィールドBGMを再生
-
-    inBattle = false;
-  }, 5000); // 5秒間待つ（テキストが読めるように）
-}
-
-// ======== タイトルからゲーム開始 ========
-function startGame() {
-  document.getElementById("titleScreen").style.display = "none";
-  document.getElementById("gameContainer").style.display = "block";
-  initGame();
-  playFieldBGM();
-}
- 
+    function stopFieldBGM() {
+      fieldBGM.pause();
+    }
+    function playBattleBGM() {
+      battleBGM.currentTime = 0;
+      battleBGM.play().catch(err => console.warn("戦闘BGM再生エラー:", err));
+    }
+    function stopBattleBGM() {
+      battleBGM.pause();
+    }
+    // ========== タイトルからゲーム開始 ==========
+    function startGame() {
+      document.getElementById("titleScreen").style.display = "none";
+      document.getElementById("gameContainer").style.display = "block";
+      initGame();
+      playFieldBGM();
+    }
     // ========== フィールドでの勇者移動 ==========
     const playerImages = [
       "https://lh3.googleusercontent.com/d/1peHOi70oOmL8c9v3OQydE5N-9R0PB6vh", // 立ち姿
