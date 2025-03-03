@@ -488,6 +488,69 @@
         choiceArea.appendChild(btn);
       });
     }
+
+// ユーザーの現在のデータ
+let player = {
+  name: "正和", // ユーザー名（スプレッドシートと対応）
+  level: 1,
+  exp: 0,
+  g: 0
+};
+
+const MAX_LEVEL = 100; // レベル上限
+
+// クイズ正解時の処理
+function correctAnswer() {
+  if (player.level < MAX_LEVEL) {
+    player.exp += 10; // 1問正解ごとに+10EXP
+
+    if (player.exp >= 100) { // 100EXPでレベルアップ
+      player.exp -= 100;
+      player.level++;
+      player.g += 10; // レベルアップごとに+10G
+
+      if (player.level === MAX_LEVEL) {
+        player.g += 500; // 100レベル到達で500Gボーナス
+        showMaxLevelEffect(); // 特別演出（仮）
+      }
+    }
+
+    updateUI(); // UIを更新
+    saveDataToSheet(); // スプレッドシートに保存
+  }
+}
+
+// クイズ全問正解時のボーナス
+function fullCorrectBonus() {
+  player.exp += 10; // 全問正解で+10EXP
+  correctAnswer(); // 通常の正解処理も実行
+}
+
+// UIの更新
+function updateUI() {
+  document.getElementById("level").textContent = player.level;
+  document.getElementById("exp").textContent = player.exp;
+  document.getElementById("g").textContent = player.g;
+}
+
+// スプレッドシートにデータを保存
+function saveDataToSheet() {
+  fetch("https://script.google.com/macros/s/YOUR_GAS_SCRIPT_ID/exec", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(player)
+  })
+  .then(response => response.json())
+  .then(data => console.log("✅ データ保存成功:", data))
+  .catch(error => console.error("⛔ データ保存エラー:", error));
+}
+
+// MAXレベル到達時の演出（仮）
+function showMaxLevelEffect() {
+  alert("🎉 おめでとう！100レベル達成！500Gのボーナスをゲット！");
+}
+
+    // ========== クイズの解答処理 ==========
     function handleAnswer(selected, quiz) {
       const topTextBox = document.getElementById("top-text-box");
 
@@ -501,7 +564,7 @@
         shakeAndRemoveHeart();
       }
       if (correctCount >= MAX_CORRECT) {
-        setTimeout(() => {
+        setTimeout(() => {// ========== クイズの解答処理 ==========
           topTextBox.textContent = "mamは安心して去っていった！";
           endBattle();
         }, 3000);
