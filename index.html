@@ -89,38 +89,33 @@
   </div>
 
   <script>
-    const GAS_URL = "https://script.google.com/macros/s/AKfycbzmeM45YT5gunL1lt3UKc_-mtMGtDTRyealo7poKtri2isvgoCcn-C3JPFQkxqTLxls/exec"; // 修正後のURL
 
-    let playerData = { name: "", level: 1, exp: 0, g: 0 };
-    let playerSprite = { x: 100, y: 100 }; // 🔥 修正
+const GAS_URL = "https://script.google.com/macros/s/AKfycbzmeM45YT5gunL1lt3UKc_-mtMGtDTRyealo7poKtri2isvgoCcn-C3JPFQkxqTLxls/exec";
 
-    document.addEventListener("DOMContentLoaded", function () {
-      document.getElementById("loginButton").addEventListener("click", function () {
-        let enteredName = document.getElementById("playerNameInput").value.trim();
-        if (enteredName === "") {
-          alert("名前を入力してください！");
-          return;
-        }
+document.getElementById("loginButton").addEventListener("click", function () {
+  let enteredName = document.getElementById("playerNameInput").value.trim();
+  if (enteredName === "") {
+    alert("名前を入力してください！");
+    return;
+  }
 
-        // 🔥 修正: fetchの書き方
-        fetch(GAS_URL + "?name=" + encodeURIComponent(enteredName), {
-          method: "GET",
-          mode: "cors"
-        })
-        .then(response => response.json())
-        .then(data => {
-          playerData.name = enteredName;
-          playerData.level = parseInt(data.level);
-          playerData.exp = parseInt(data.exp);
-          playerData.g = parseInt(data.g);
+  fetch(GAS_URL + "?name=" + encodeURIComponent(enteredName), {
+    method: "GET"
+  })
+  .then(response => response.json())
+  .then(data => {
+    console.log("データ取得成功:", data);
+    playerData.name = enteredName;
+    playerData.level = parseInt(data.level);
+    playerData.exp = parseInt(data.exp);
+    playerData.g = parseInt(data.g);
 
-          document.getElementById("loginScreen").style.display = "none";
-          document.getElementById("gameContainer").style.display = "block";
-          updatePlayerPosition();
-        })
-        .catch(error => console.error("データ取得エラー:", error));
-      });
-    });
+    document.getElementById("loginScreen").style.display = "none";
+    document.getElementById("gameContainer").style.display = "block";
+  })
+  .catch(error => console.error("データ取得エラー:", error));
+});
+
 
     function movePlayer(dx, dy) {
       playerSprite.x += dx;
