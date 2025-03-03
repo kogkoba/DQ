@@ -496,7 +496,8 @@
         setTimeout(() => {
           topTextBox.textContent = "mamは復習を求めた。";
           document.getElementById("zaorikuButton").style.display = "inline-block";
-          // ４問間違えた場合、DQ downの音を再生（１度だけ）
+          // クイズBGM（戦闘BGM）を停止してからDQ downの音を再生
+          stopBattleBGM();
           const dqAudio = document.getElementById("dqDownAudio");
           dqAudio.currentTime = 0;
           dqAudio.play().catch(err => console.warn("DQ Down Audio play error:", err));
