@@ -102,18 +102,11 @@
           return;
         }
 
-        fetch(GAS_URL + "?name=" + encodeURIComponent(enteredName))
-          .then(response => response.json())
-          .then(data => {
-            playerData.name = enteredName;
-            playerData.level = parseInt(data.level);
-            playerData.exp = parseInt(data.exp);
-            playerData.g = parseInt(data.g);
+        fetch(GAS_URL + "?name=" + encodeURIComponent(enteredName), {
+          method: "GET",
+          mode: "cors"
+        })
 
-            document.getElementById("loginScreen").style.display = "none";
-            document.getElementById("gameContainer").style.display = "block";
-            updatePlayerPosition();
-          })
           .catch(error => console.error("データ取得エラー:", error));
       });
     });
