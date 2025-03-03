@@ -68,6 +68,11 @@
 <body>
 
   <!-- ログイン画面 -->
+
+
+
+
+  
   <div id="loginScreen">
     <h2>プレイヤー名を入力してください</h2>
     <input type="text" id="playerNameInput" placeholder="名前を入力">
@@ -93,35 +98,31 @@
     const GAS_URL = "https://script.google.com/macros/s/https://script.google.com/macros/s/AKfycbzZCP75M7RM4su-5DH13V70WaZ6iR0nLRrR9anDcePLNJRbWyPu4UaYM83ysbz4Z2B1Nw/exec/exec";
 
     document.getElementById("loginButton").addEventListener("click", function () {
-      let enteredName = document.getElementById("playerNameInput").value.trim();
-      if (enteredName === "") {
+    let enteredName = document.getElementById("playerNameInput").value.trim(); // ここで定義
+    if (enteredName === "") {
         alert("名前を入力してください！");
         return;
-      }
+    }
 
-      fetch(GAS_URL + "?name=" + encodeURIComponent(enteredName), {
-        method: "GET",
-        mode: "no-cors" // ✅ CORS のエラー回避
-      })
-      .then(response => response.json())
-      .then(data => {
+    fetch(GAS_URL + "?name=" + encodeURIComponent(enteredName), {
+        method: "GET"
+    })
+    .then(response => response.json())
+    .then(data => {
         console.log("データ取得成功:", data);
+        playerData = {
+            name: enteredName,
+            level: parseInt(data.level, 10),
+            exp: parseInt(data.exp, 10),
+            g: parseInt(data.g, 10)
+        };
 
-        // プレイヤーデータを更新
-        playerData.name = enteredName;
-        playerData.level = parseInt(data.level);
-        playerData.exp = parseInt(data.exp);
-        playerData.g = parseInt(data.g);
-
-        // ログイン画面を非表示にし、ゲーム画面を表示
         document.getElementById("loginScreen").style.display = "none";
         document.getElementById("gameContainer").style.display = "block";
-      })
-      .catch(error => {
-        console.error("データ取得エラー:", error);
-        alert("プレイヤーデータの取得に失敗しました。");
-      });
-    });
+    })
+    .catch(error => console.error("データ取得エラー:", error));
+});
+
 
     let playerData = { name: "", level: 1, exp: 0, g: 0 };
     let playerSprite = { x: 100, y: 100 };
