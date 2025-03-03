@@ -1,1 +1,125 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>クイズRPG</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      text-align: center;
+      background-color: #222;
+      color: #fff;
+    }
+    input, button {
+      font-size: 18px;
+      padding: 5px;
+      margin: 10px;
+    }
+    #gameContainer {
+      display: none;
+      width: 100%;
+      height: 100vh;
+      position: relative;
+      background: url("https://lh3.googleusercontent.com/d/1jDckidA8IqAdhUncYX09kzOQd2IqanYQ") no-repeat center center;
+      background-size: cover;
+    }
+    #player {
+      position: absolute;
+      width: 30px;
+      height: auto;
+    }
+    #dpad {
+      position: absolute;
+      bottom: 10px;
+      right: 10px;
+      width: 150px;
+      height: 150px;
+      display: grid;
+      grid-template-areas:
+        ".    up    ."
+        "left center right"
+        ".    down  .";
+      grid-gap: 10px;
+    }
+    .dpad-button {
+      width: 50px;
+      height: 50px;
+      background: rgba(0, 0, 0, 0.5);
+      border: 2px solid #fff;
+      border-radius: 5px;
+      cursor: pointer;
+      user-select: none;
+    }
+    .up    { grid-area: up; }
+    .down  { grid-area: down; }
+    .left  { grid-area: left; }
+    .right { grid-area: right; }
+    .center{ grid-area: center; }
+  </style>
+</head>
+<body>
 
+  <div id="loginScreen">
+    <h2>プレイヤー名を入力してください</h2>
+    <input type="text" id="playerNameInput" placeholder="名前を入力">
+    <button id="loginButton">ログイン</button>
+  </div>
+
+  <div id="gameContainer">
+    <img id="player" src="https://lh3.googleusercontent.com/d/1peHOi70oOmL8c9v3OQydE5N-9R0PB6vh" alt="hero">
+    <div id="dpad">
+      <div class="dpad-button up" onclick="movePlayer(0, -20)"></div>
+      <div class="dpad-button left" onclick="movePlayer(-20, 0)"></div>
+      <div class="dpad-button center"></div>
+      <div class="dpad-button right" onclick="movePlayer(20, 0)"></div>
+      <div class="dpad-button down" onclick="movePlayer(0, 20)"></div>
+    </div>
+  </div>
+  
+
+  <script>
+    const GAS_URL = "https://script.google.com/macros/s/AKfycbyUcopm6q6lU0eFyzP9DtukTZ5bkNUXYT_JsFRn0I1L1dv4d9VewWRKlVpzmnkXUx0D4w/exec";
+    let playerData = { name: "", level: 1, exp: 0, g: 0 };
+
+    document.getElementById("loginButton").addEventListener("click", function () {
+        let enteredName = document.getElementById("playerNameInput").value.trim();
+        if (enteredName === "") {
+            alert("名前を入力してください！");
+            return;
+        }
+
+        fetch(GAS_URL + "?name=" + encodeURIComponent(enteredName), {
+            method: "GET"
+        })
+        .then(response => response.json())
+        .then(data => {
+            console.log("データ取得成功:", data);
+            playerData.name = enteredName;
+            playerData.level = parseInt(data.level, 10);
+            playerData.exp = parseInt(data.exp, 10);
+            playerData.g = parseInt(data.g, 10);
+
+            console.log("取得したプレイヤーデータ:", playerData);
+
+            document.getElementById("loginScreen").style.display = "none";
+            document.getElementById("gameContainer").style.display = "block";
+        })
+        .catch(error => console.error("データ取得エラー:", error));
+    });
+
+    let playerSprite = { x: 100, y: 100 };
+    function movePlayer(dx, dy) {
+        playerSprite.x += dx;
+        playerSprite.y += dy;
+        updatePlayerPosition();
+    }
+    function updatePlayerPosition() {
+        let playerElement = document.getElementById("player");
+        playerElement.style.left = playerSprite.x + "px";
+        playerElement.style.top = playerSprite.y + "px";
+    }
+  </script>
+
+</body>
+</html>
