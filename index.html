@@ -490,7 +490,14 @@ function showMonsters(monsters) {
       if (correctCount >= MAX_CORRECT) {
         setTimeout(() => {
           topTextBox.textContent = "mamは安心して去っていった！";
-          endBattle();
+         function endBattle() {
+  stopBattleBGM();    // 戦闘BGMを停止
+  playFieldBGM();     // フィールドBGMを再生
+  document.getElementById("battle-screen").style.display = "none";
+  document.getElementById("gameArea").style.display = "block";
+  inBattle = false;
+}
+
         }, 1000);
         return;
       }
