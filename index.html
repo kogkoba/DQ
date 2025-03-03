@@ -542,24 +542,19 @@ function showMonsters(monsters) {
       document.getElementById("top-text-box").textContent = "ザオリクが唱えられた！";
       setTimeout(() => { endBattle(); }, 1000);
     }
-    function endBattle() {
-      document.getElementById("battle-screen").style.display = "none";
-      document.getElementById("gameArea").style.display = "block";
-      inBattle = false;
-    }
 
-// ======== BGMの管理 ========
+    // ======== 戦闘終了処理 ========
+function endBattle() {
+  setTimeout(() => {
+    document.getElementById("battle-screen").style.display = "none";
+    document.getElementById("gameArea").style.display = "block";
 
+    stopBattleBGM(); // バトルBGMを停止
+    playFieldBGM();  // フィールドBGMを再生
 
-
-
-
-
-
-
-
-
-
+    inBattle = false;
+  }, 5000); // 5秒間待つ（テキストが読めるように）
+}
 
 
 
@@ -615,16 +610,14 @@ function endBattle() {
   }, 5000); // 5秒間待つ（テキストが読めるように）
 }
 
-
-   
-      
-    // ========== タイトルからゲーム開始 ==========
-    function startGame() {
-      document.getElementById("titleScreen").style.display = "none";
-      document.getElementById("gameContainer").style.display = "block";
-      initGame();
-      playFieldBGM();
-    }
+// ======== タイトルからゲーム開始 ========
+function startGame() {
+  document.getElementById("titleScreen").style.display = "none";
+  document.getElementById("gameContainer").style.display = "block";
+  initGame();
+  playFieldBGM();
+}
+ 
     // ========== フィールドでの勇者移動 ==========
     const playerImages = [
       "https://lh3.googleusercontent.com/d/1peHOi70oOmL8c9v3OQydE5N-9R0PB6vh", // 立ち姿
