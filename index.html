@@ -89,10 +89,18 @@
   </div>
 
   <script>
-    const GAS_URL = "https://script.google.com/macros/s/AKfycbzmeM45YT5gunL1lt3UKc_-mtMGtDTRyealo7poKtri2isvgoCcn-C3JPFQkxqTLxls/exec";
+    const GAS_URL = "https://script.google.com/macros/s/AKfycbzmeM45YT5gunL1lt3UKc..."; // 修正後のURLに変更
 
-    let playerData = { name: "", level: 1, exp: 0, g: 0 };
-    let playerSprite = { x: 100, y: 100 };
+fetch(GAS_URL + "?name=" + encodeURIComponent(playerName), {
+  method: "GET",
+  mode: "cors" // CORSを許可する
+})
+.then(response => response.json())
+.then(data => {
+  console.log("データ取得成功:", data);
+})
+.catch(error => console.error("データ取得エラー:", error));
+
 
     document.addEventListener("DOMContentLoaded", function () {
       document.getElementById("loginButton").addEventListener("click", function () {
