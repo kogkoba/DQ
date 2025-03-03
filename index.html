@@ -347,11 +347,20 @@
       }
     }
     // ========== ランダム取得 ==========
-    function getRandomQuiz() {
-      if (!quizData || quizData.length === 0) return null;
-      const idx = Math.floor(Math.random() * quizData.length);
-      return quizData[idx];
-    }
+function getRandomQuiz() {
+  if (!quizData || quizData.length === 0) {
+    return {
+      question: "データがありません。再読み込みしてください。",
+      imageUrl: "",
+      choices: ["OK"],
+      correct: 1
+    };
+  }
+  const idx = Math.floor(Math.random() * quizData.length);
+  return quizData[idx];
+}
+
+
     function getRandomMonsters() {
       if (monsterData.length < 4) {
         console.warn("Not enough monsters");
@@ -406,7 +415,7 @@
     }
 
 function showMonsters(monsters) {
-  console.log("📢 モンスターを表示:", monsters); // ログを出して確認
+  console.log("📢 モンスターを表示:", monsters);
   const container = document.getElementById("enemy-container");
   container.innerHTML = "";
 
@@ -414,6 +423,19 @@ function showMonsters(monsters) {
     console.error("⛔ モンスターが取得できませんでした");
     return;
   }
+
+  monsters.forEach(monster => {
+    if (!monster.url) return; // 🛠 修正: 画像URLがない場合スキップ
+    const img = document.createElement("img");
+    img.className = "monster";
+    img.src = monster.url;
+    img.alt = monster.name;
+    container.appendChild(img);
+  });
+
+  console.log("✅ モンスター表示完了");
+}
+
 
   monsters.forEach(monster => {
     const img = document.createElement("img");
@@ -448,7 +470,7 @@ function showMonsters(monsters) {
       topTextBox.textContent = "mamがあらわれた！";
 
       setTimeout(() => { topTextBox.textContent = ""; }, 2000);
-      setTimeout(() => { topTextBox.textContent =  ”mamの復讐問題攻撃！"; }, 3000);
+      setTimeout(() => { topTextBox.textContent =  "mamの復習問題攻撃！"; }, 3000);
       setTimeout(() => {
         topTextBox.textContent = "クイズ開始！";
         showQuiz();
@@ -522,7 +544,15 @@ function showMonsters(monsters) {
     function endBattle() {
       document.getElementById("battle-screen").style.display = "none";
       document.getElementById("gameArea").style.display = "block";
+      stopBattleBGM();
+      playFieldBGM(); // 🛠 修正: フィールドBGMを再開
       inBattle = false;
+
+
+
+
+
+      
     }
     // ========== BGM管理 ==========
     const fieldBGM = document.getElementById("fieldBGM");
@@ -532,7 +562,8 @@ function showMonsters(monsters) {
       fieldBGM.play().catch(err => console.warn("フィールドBGM再生エラー:", err));
     }
     function stopFieldBGM() {
-      fieldBGM.pause();
+        fieldBGM.pause();
+      fieldBGM.currentTime = 0;
     }
     function playBattleBGM() {
       battleBGM.currentTime = 0;
@@ -542,12 +573,13 @@ function showMonsters(monsters) {
       battleBGM.pause();
     }
     // ========== タイトルからゲーム開始 ==========
-    function startGame() {
-      document.getElementById("titleScreen").style.display = "none";
-      document.getElementById("gameContainer").style.display = "block";
-      initGame();
-      playFieldBGM();
-    }
+
+function startGame() {
+  document.getElementById("titleScreen").style.display = "none";
+  document.getElementById("gameContainer").style.display = "block";
+  initGame(); // 🛠 修正: 位置をリセット
+  playFieldBGM();
+}
     // ========== フィールドでの勇者移動 ==========
     const playerImages = [
       "https://lh3.googleusercontent.com/d/1peHOi70oOmL8c9v3OQydE5N-9R0PB6vh", // 立ち姿
