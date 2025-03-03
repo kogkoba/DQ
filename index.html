@@ -404,6 +404,33 @@
         startBattle();
       }, 800);
     }
+
+function showMonsters(monsters) {
+  console.log("📢 モンスターを表示:", monsters); // ログを出して確認
+  const container = document.getElementById("enemy-container");
+  container.innerHTML = "";
+
+  if (!monsters || monsters.length === 0) {
+    console.error("⛔ モンスターが取得できませんでした");
+    return;
+  }
+
+  monsters.forEach(monster => {
+    const img = document.createElement("img");
+    img.className = "monster";
+    img.src = monster.url;
+    img.alt = monster.name;
+    container.appendChild(img);
+  });
+
+  console.log("✅ モンスター表示完了");
+}
+
+
+
+
+
+    
     function startBattle() {
       correctCount = 0;
       missCount = 0;
