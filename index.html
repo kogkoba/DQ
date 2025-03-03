@@ -16,8 +16,6 @@
       padding: 5px;
       margin: 10px;
     }
-
-    /* フィールド画面 */
     #gameContainer {
       display: none;
       width: 100%;
@@ -26,14 +24,11 @@
       background: url("https://lh3.googleusercontent.com/d/1jDckidA8IqAdhUncYX09kzOQd2IqanYQ") no-repeat center center;
       background-size: cover;
     }
-
     #player {
       position: absolute;
       width: 30px;
       height: auto;
     }
-
-    /* 十字キー */
     #dpad {
       position: absolute;
       bottom: 10px;
@@ -47,7 +42,6 @@
         ".    down  .";
       grid-gap: 10px;
     }
-
     .dpad-button {
       width: 50px;
       height: 50px;
@@ -57,7 +51,6 @@
       cursor: pointer;
       user-select: none;
     }
-
     .up    { grid-area: up; }
     .down  { grid-area: down; }
     .left  { grid-area: left; }
@@ -67,23 +60,14 @@
 </head>
 <body>
 
-  <!-- ログイン画面 -->
-
-
-
-
-  
   <div id="loginScreen">
     <h2>プレイヤー名を入力してください</h2>
     <input type="text" id="playerNameInput" placeholder="名前を入力">
     <button id="loginButton">ログイン</button>
   </div>
 
-  <!-- フィールド画面 -->
   <div id="gameContainer">
     <img id="player" src="https://lh3.googleusercontent.com/d/1peHOi70oOmL8c9v3OQydE5N-9R0PB6vh" alt="hero">
-    
-    <!-- 十字キー -->
     <div id="dpad">
       <div class="dpad-button up" onclick="movePlayer(0, -20)"></div>
       <div class="dpad-button left" onclick="movePlayer(-20, 0)"></div>
@@ -94,57 +78,46 @@
   </div>
 
   <script>
-    // ✅ Google Apps Script の WebアプリURL（最新のデプロイURLを入れる）
-    const GAS_URL = "https://script.google.com/macros/s/https://script.google.com/macros/s/AKfycbzZCP75M7RM4su-5DH13V70WaZ6iR0nLRrR9anDcePLNJRbWyPu4UaYM83ysbz4Z2B1Nw/exec/exec";
-
-    document.getElementById("loginButton").addEventListener("click", function () {
-    let enteredName = document.getElementById("playerNameInput").value.trim(); // ここで定義
-    if (enteredName === "") {
-        alert("名前を入力してください！");
-        return;
-    }
-
-    fetch(GAS_URL + "?name=" + encodeURIComponent(enteredName), {
-        method: "GET"
-    })
-    .then(response => response.json())
-    .then(data => {
-        console.log("データ取得成功:", data);
-        playerData = {
-            name: enteredName,
-            level: parseInt(data.level, 10),
-            exp: parseInt(data.exp, 10),
-            g: parseInt(data.g, 10)
-        };
-
-        document.getElementById("loginScreen").style.display = "none";
-        document.getElementById("gameContainer").style.display = "block";
-    })
-    .catch(error => console.error("データ取得エラー:", error));
-});
-
+    const GAS_URL = "https://script.google.com/macros/s/AKfycbzZCP75M7RM4su-5DH13V70WaZ6iR0nLRrR9anDcePLNJRbWyPu4UaYM83ysbz4Z2B1Nw/exec";
 
     let playerData = { name: "", level: 1, exp: 0, g: 0 };
+
+    document.getElementById("loginButton").addEventListener("click", function () {
+        let enteredName = document.getElementById("playerNameInput").value.trim();
+        if (enteredName === "") {
+            alert("名前を入力してください！");
+            return;
+        }
+
+        fetch(GAS_URL + "?name=" + encodeURIComponent(enteredName), {
+            method: "GET"
+        })
+        .then(response => response.json())
+        .then(data => {
+            console.log("データ取得成功:", data);
+            playerData.name = enteredName;
+            playerData.level = parseInt(data.level, 10);
+            playerData.exp = parseInt(data.exp, 10);
+            playerData.g = parseInt(data.g, 10);
+
+            console.log("取得したプレイヤーデータ:", playerData);
+
+            document.getElementById("loginScreen").style.display = "none";
+            document.getElementById("gameContainer").style.display = "block";
+        })
+        .catch(error => console.error("データ取得エラー:", error));
+    });
+
     let playerSprite = { x: 100, y: 100 };
-
     function movePlayer(dx, dy) {
-      playerSprite.x += dx;
-      playerSprite.y += dy;
-
-      const maxX = window.innerWidth - 30;
-      const maxY = window.innerHeight - 30;
-      if (playerSprite.x < 0) playerSprite.x = 0;
-      if (playerSprite.y < 0) playerSprite.y = 0;
-      if (playerSprite.x > maxX) playerSprite.x = maxX;
-      if (playerSprite.y > maxY) playerSprite.y = maxY;
-
-      updatePlayerPosition();
+        playerSprite.x += dx;
+        playerSprite.y += dy;
+        updatePlayerPosition();
     }
-
     function updatePlayerPosition() {
-      let playerElement = document.getElementById("player");
-      playerElement.style.left = playerSprite.x + "px";
-      playerElement.style.top = playerSprite.y + "px";
+        let playerElement = document.getElementById("player");
+        playerElement.style.left = playerSprite.x + "px";
+        playerElement.style.top = playerSprite.y + "px";
     }
   </script>
 
