@@ -550,10 +550,10 @@ function showMonsters(monsters) {
     // ========== BGM管理 ==========
     const fieldBGM = document.getElementById("fieldBGM");
     const battleBGM = document.getElementById("battleBGM");
-    function playFieldBGM() {
-      fieldBGM.currentTime = 0;
-      fieldBGM.play().catch(err => console.warn("フィールドBGM再生エラー:", err));
-    }
+   function playFieldBGM() {
+  fieldBGM.currentTime = 0;
+  fieldBGM.play().catch(err => console.warn("フィールドBGM再生エラー:", err));
+}
 
 function playFieldBGM() {
   fieldBGM.currentTime = 0;
@@ -571,7 +571,35 @@ function playFieldBGM() {
     function stopBattleBGM() {
      battleBGM.pause();
       battleBGM.currentTime = 0; // 曲の開始位置に戻す}
+ }
 
+
+    function endBattle() {
+  setTimeout(() => {
+    document.getElementById("battle-screen").style.display = "none";
+    document.getElementById("gameArea").style.display = "block";
+    
+    stopBattleBGM(); // 戦闘BGMを止める
+    playFieldBGM();  // フィールドBGMを再生
+
+    inBattle = false;
+  }, 5000); // 5秒間待つ（テキストが読めるように）
+}
+
+function endBattle() {
+  setTimeout(() => {
+    document.getElementById("battle-screen").style.display = "none";
+    document.getElementById("gameArea").style.display = "block";
+    
+    stopBattleBGM(); // 戦闘BGMを止める
+    playFieldBGM();  // フィールドBGMを再生
+
+    inBattle = false;
+  }, 5000); // 5秒間待つ（テキストが読めるように）
+}
+
+
+   
       
     // ========== タイトルからゲーム開始 ==========
     function startGame() {
