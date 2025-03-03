@@ -277,6 +277,51 @@
           onerror="console.error('❌ Google APIの読み込みに失敗しました');"></script>
 
   <script>
+//GASログイン
+const GAS_URL = "https://script.google.com/macros/s/AKfycbyUcopm6q6lU0eFyzP9DtukTZ5bkNUXYT_JsFRn0I1L1dv4d9VewWRKlVpzmnkXUx0D4w/exec";
+    let playerData = { name: "", level: 1, exp: 0, g: 0 };
+
+    document.getElementById("loginButton").addEventListener("click", function () {
+        let enteredName = document.getElementById("playerNameInput").value.trim();
+        if (enteredName === "") {
+            alert("名前を入力してください！");
+            return;
+        }
+
+        fetch(GAS_URL + "?name=" + encodeURIComponent(enteredName), {
+            method: "GET"
+        })
+        .then(response => response.json())
+        .then(data => {
+            console.log("データ取得成功:", data);
+            playerData.name = enteredName;
+            playerData.level = parseInt(data.level, 10);
+            playerData.exp = parseInt(data.exp, 10);
+            playerData.g = parseInt(data.g, 10);
+
+            console.log("取得したプレイヤーデータ:", playerData);
+
+            document.getElementById("loginScreen").style.display = "none";
+            document.getElementById("gameContainer").style.display = "block";
+        })
+        .catch(error => console.error("データ取得エラー:", error));
+    });
+
+    let playerSprite = { x: 100, y: 100 };
+    function movePlayer(dx, dy) {
+        playerSprite.x += dx;
+        playerSprite.y += dy;
+        updatePlayerPosition();
+    }
+    function updatePlayerPosition() {
+        let playerElement = document.getElementById("player");
+        playerElement.style.left = playerSprite.x + "px";
+        playerElement.style.top = playerSprite.y + "px";
+    }
+
+
+
+    
     // グローバル変数
     let inBattle = false;
     const STEP = 20;
