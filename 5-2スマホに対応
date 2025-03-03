@@ -247,7 +247,7 @@
 
     <!-- ---------- 戦闘画面 ---------- -->
     <div id="battle-screen">
-      <div id="top-text-box">モンスターがあらわれた！</div>
+      <div id="top-text-box">mamがあらわれた！</div>
       <div id="enemy-container"></div>
       <img id="quiz-image" src="">
       <div id="choice-area"></div>
@@ -445,10 +445,10 @@ function showMonsters(monsters) {
 
       const monsterNames = currentMonsters.map(m => m.name).join("、");
       const topTextBox = document.getElementById("top-text-box");
-      topTextBox.textContent = monsterNames + "があらわれた！";
+      topTextBox.textContent = "mamがあらわれた！";
 
       setTimeout(() => { topTextBox.textContent = ""; }, 2000);
-      setTimeout(() => { topTextBox.textContent = monsterNames + "の攻撃！"; }, 3000);
+      setTimeout(() => { topTextBox.textContent = "mamの復習攻撃！"; }, 3000);
       setTimeout(() => {
         topTextBox.textContent = "クイズ開始！";
         showQuiz();
@@ -489,14 +489,14 @@ function showMonsters(monsters) {
       }
       if (correctCount >= MAX_CORRECT) {
         setTimeout(() => {
-          topTextBox.textContent = "4回正解！モンスターを倒した！";
+          topTextBox.textContent = "mamは安心して去っていった！";
           endBattle();
         }, 1000);
         return;
       }
       if (missCount >= MAX_MISS) {
         setTimeout(() => {
-          topTextBox.textContent = "4回ミス...。";
+          topTextBox.textContent = "mamは復習を求めた。";
           document.getElementById("zaorikuButton").style.display = "inline-block";
         }, 1000);
         return;
