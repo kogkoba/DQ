@@ -1,7 +1,6 @@
 <!DOCTYPE html>
 <html lang="ja">
 <head>
-  １
   <meta charset="UTF-8">
   <!-- モバイル対応のためのビューポート設定 -->
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -248,7 +247,7 @@
 
     <!-- ---------- 戦闘画面 ---------- -->
     <div id="battle-screen">
-      <div id="top-text-box">モンスターがあらわれた！</div>
+      <div id="top-text-box">mamがあらわれた！</div>
       <div id="enemy-container"></div>
       <img id="quiz-image" src="">
       <div id="choice-area"></div>
@@ -266,38 +265,10 @@
     <source src="./gypsydance.mp3" type="audio/mpeg">
   </audio>
 
- <!-- Google API のスクリプト -->
-<script async defer src="https://apis.google.com/js/api.js"></script>
-
-<script>
-  window.onload = function() {
-    document.getElementById("startButton").onclick = startGame;
-    gapi.load("client", gapiLoaded);
-  };
-
-  function gapiLoaded() {
-    console.log("✅ gapiLoaded");
-    gapi.load("client", initClient);
-  }
-
-  async function initClient() {
-    try {
-      await gapi.client.init({
-        apiKey: API_KEY,
-        discoveryDocs: ["https://sheets.googleapis.com/$discovery/rest?version=v4"]
-      });
-      console.log("✅ GAPI Initialized");
-      await loadQuizData();
-      await loadMonsterData();
-      console.log("✅ Data Loaded");
-    } catch (err) {
-      console.error("⛔ GAPI Init Error:", err);
-    }
-  }
-</script>  <!-- ✅ ここに閉じタグを追加 -->
-
-
-
+  <!-- ---------- Google API のスクリプト ---------- -->
+  <script async defer src="https://apis.google.com/js/api.js" 
+          onload="gapiLoaded()" 
+          onerror="console.error('❌ Google APIの読み込みに失敗しました');"></script>
 
   <script>
     // グローバル変数
@@ -376,20 +347,11 @@
       }
     }
     // ========== ランダム取得 ==========
-function getRandomQuiz() {
-  if (!quizData || quizData.length === 0) {
-    return {
-      question: "データがありません。再読み込みしてください。",
-      imageUrl: "",
-      choices: ["OK"],
-      correct: 1
-    };
-  }
-  const idx = Math.floor(Math.random() * quizData.length);
-  return quizData[idx];
-}
-
-
+    function getRandomQuiz() {
+      if (!quizData || quizData.length === 0) return null;
+      const idx = Math.floor(Math.random() * quizData.length);
+      return quizData[idx];
+    }
     function getRandomMonsters() {
       if (monsterData.length < 4) {
         console.warn("Not enough monsters");
@@ -444,7 +406,7 @@ function getRandomQuiz() {
     }
 
 function showMonsters(monsters) {
-  console.log("📢 モンスターを表示:", monsters);
+  console.log("📢 モンスターを表示:", monsters); // ログを出して確認
   const container = document.getElementById("enemy-container");
   container.innerHTML = "";
 
@@ -452,19 +414,6 @@ function showMonsters(monsters) {
     console.error("⛔ モンスターが取得できませんでした");
     return;
   }
-
-  monsters.forEach(monster => {
-    if (!monster.url) return; // 🛠 修正: 画像URLがない場合スキップ
-    const img = document.createElement("img");
-    img.className = "monster";
-    img.src = monster.url;
-    img.alt = monster.name;
-    container.appendChild(img);
-  });
-
-  console.log("✅ モンスター表示完了");
-}
-
 
   monsters.forEach(monster => {
     const img = document.createElement("img");
@@ -499,7 +448,7 @@ function showMonsters(monsters) {
       topTextBox.textContent = "mamがあらわれた！";
 
       setTimeout(() => { topTextBox.textContent = ""; }, 2000);
-     setTimeout(() => { topTextBox.textContent = "mamの復習問題攻撃！"; }, 3000);
+      setTimeout(() => { topTextBox.textContent = "mamの復習攻撃！"; }, 3000);
       setTimeout(() => {
         topTextBox.textContent = "クイズ開始！";
         showQuiz();
@@ -540,14 +489,14 @@ function showMonsters(monsters) {
       }
       if (correctCount >= MAX_CORRECT) {
         setTimeout(() => {
-          topTextBox.textContent = "mamは満足して去っていった！";
+          topTextBox.textContent = "mamは安心して去っていった！";
           endBattle();
         }, 1000);
         return;
       }
       if (missCount >= MAX_MISS) {
         setTimeout(() => {
-          topTextBox.textContent = "mamはもう一度プレイしろと願った...。";
+          topTextBox.textContent = "mamは復習を求めた。";
           document.getElementById("zaorikuButton").style.display = "inline-block";
         }, 1000);
         return;
@@ -573,15 +522,7 @@ function showMonsters(monsters) {
     function endBattle() {
       document.getElementById("battle-screen").style.display = "none";
       document.getElementById("gameArea").style.display = "block";
-      stopBattleBGM();
-      playFieldBGM(); // 🛠 修正: フィールドBGMを再開
       inBattle = false;
-
-
-
-
-
-      
     }
     // ========== BGM管理 ==========
     const fieldBGM = document.getElementById("fieldBGM");
@@ -591,8 +532,7 @@ function showMonsters(monsters) {
       fieldBGM.play().catch(err => console.warn("フィールドBGM再生エラー:", err));
     }
     function stopFieldBGM() {
-        fieldBGM.pause();
-      fieldBGM.currentTime = 0;
+      fieldBGM.pause();
     }
     function playBattleBGM() {
       battleBGM.currentTime = 0;
@@ -602,13 +542,12 @@ function showMonsters(monsters) {
       battleBGM.pause();
     }
     // ========== タイトルからゲーム開始 ==========
-
-function startGame() {
-  document.getElementById("titleScreen").style.display = "none";
-  document.getElementById("gameContainer").style.display = "block";
-  initGame(); // 🛠 修正: 位置をリセット
-  playFieldBGM();
-}
+    function startGame() {
+      document.getElementById("titleScreen").style.display = "none";
+      document.getElementById("gameContainer").style.display = "block";
+      initGame();
+      playFieldBGM();
+    }
     // ========== フィールドでの勇者移動 ==========
     const playerImages = [
       "https://lh3.googleusercontent.com/d/1peHOi70oOmL8c9v3OQydE5N-9R0PB6vh", // 立ち姿
@@ -656,6 +595,6 @@ function startGame() {
       player.y = document.getElementById("gameArea").clientHeight / 2;
       updatePlayerPosition();
     }
- 
+  </script>
 </body>
 </html>
