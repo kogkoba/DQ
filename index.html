@@ -566,6 +566,9 @@ function playFieldBGM() {
       battleBGM.play().catch(err => console.warn("戦闘BGM再生エラー:", err));
     }
 
+
+    
+
     
     function stopBattleBGM() {
      battleBGM.pause();
@@ -578,8 +581,7 @@ function playFieldBGM() {
     document.getElementById("battle-screen").style.display = "none";
     document.getElementById("gameArea").style.display = "block";
     
-    stopBattleBGM(); // 戦闘BGMを止める
-    playFieldBGM();  // フィールドBGMを再生
+   
 
     inBattle = false;
   }, 5000); // 5秒間待つ（テキストが読めるように）
