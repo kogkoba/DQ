@@ -268,7 +268,7 @@
 
   <!-- ---------- Google API のスクリプト ---------- -->
 <script async defer src="https://apis.google.com/js/api.js"></script>
-<script>
+
 window.onload = function() {
   document.getElementById("startButton").onclick = startGame;
   gapi.load("client", gapiLoaded);
@@ -654,6 +654,6 @@ function startGame() {
       player.y = document.getElementById("gameArea").clientHeight / 2;
       updatePlayerPosition();
     }
-  </script>
+ 
 </body>
 </html>
