@@ -368,6 +368,7 @@
         console.error("⛔ GAPI Init Error:", err);
       }
     }
+   // ========== クイズデータ取得 ==========
     async function loadQuizData() {
       try {
         const resp = await gapi.client.sheets.spreadsheets.values.get({
@@ -379,13 +380,14 @@
           imageUrl: row[2] || "",
           choices: [row[3], row[4], row[5], row[6]],
           correct: parseInt(row[7] || "1", 10),
-          explanation: row[9] || ""
+          explanation: row[9] || ""  // J列から解説を取得（index 9）
         }));
         console.log("Quiz Data:", quizData);
       } catch (err) {
         console.error("Quiz Data Error:", err);
       }
     }
+    // ========== モンスターデータ取得 ==========
     async function loadMonsterData() {
       try {
         const resp = await gapi.client.sheets.spreadsheets.values.get({
