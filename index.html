@@ -52,15 +52,17 @@
       font-size: 18px;
       background-color: #111;
     }
-    /* ---------- フィールド画面 ---------- */
-    #gameArea {
-      position: relative;
-      width: 100%;
-      height: calc(100% - 50px);
-      background: url("https://lh3.googleusercontent.com/d/1jDckidA8IqAdhUncYX09kzOQd2IqanYQ") no-repeat center center;
-      background-size: cover;
-      overflow: hidden;
-    }
+    
+    <!-- ---------- フィールド画面 ---------- -->
+    <div id="gameArea">
+      <img id="player" src="https://lh3.googleusercontent.com/d/1peHOi70oOmL8c9v3OQydE5N-9R0PB6vh" alt="hero">
+      <div id="dpad">
+        <div class="dpad-button up" onclick="movePlayer(0, -STEP)"></div>
+        <div class="dpad-button left" onclick="movePlayer(-STEP, 0)"></div>
+        <div class="dpad-button center"></div>
+        <div class="dpad-button right" onclick="movePlayer(STEP, 0)"></div>
+        <div class="dpad-button down" onclick="movePlayer(0, STEP)"></div>
+      </div>
     /* 勇者画像 */
     #player {
       position: absolute;
