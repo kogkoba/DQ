@@ -547,6 +547,23 @@ function showMonsters(monsters) {
       document.getElementById("gameArea").style.display = "block";
       inBattle = false;
     }
+
+// ======== BGMの管理 ========
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    
     // ========== BGM管理 ==========
     const fieldBGM = document.getElementById("fieldBGM");
     const battleBGM = document.getElementById("battleBGM");
@@ -554,26 +571,25 @@ function showMonsters(monsters) {
     fieldBGM.play().catch(err => console.warn("フィールドBGM再生エラー:", err));
     }
 
+
+// フィールドBGMの再生
 function playFieldBGM() {
   fieldBGM.currentTime = 0;
   fieldBGM.play().catch(err => console.warn("フィールドBGM再生エラー:", err));
-  fieldBGM.pause();
+}
+    
+// 戦闘BGMの再生
+function playBattleBGM() {
+  battleBGM.currentTime = 0;
+  battleBGM.play().catch(err => console.warn("戦闘BGM再生エラー:", err));
 }
 
 
-    function playBattleBGM() {
-      battleBGM.currentTime = 0;
-      battleBGM.play().catch(err => console.warn("戦闘BGM再生エラー:", err));
-    }
-
-
-    
-
-    
-    function stopBattleBGM() {
-     battleBGM.pause();
-      battleBGM.currentTime = 0; // 曲の開始位置に戻す}
- }
+// 戦闘BGMを止める
+function stopBattleBGM() {
+  battleBGM.pause();
+  battleBGM.currentTime = 0; // 曲の開始位置に戻す
+}
 
 
     function endBattle() {
