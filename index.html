@@ -664,7 +664,9 @@ function stopBattleBGM() {
   initGame();
   lastEncounterSteps = player.steps;
   encounterThreshold = getRandomEncounterThreshold();
-
+  
+  // BGMは初期状態でオフなので、自動で再生しない
+}
   // BGMの初期状態がONならフィールドBGMを再生
   if (isBgmPlaying) {
     playFieldBGM();
