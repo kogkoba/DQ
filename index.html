@@ -554,16 +554,25 @@ function showMonsters(monsters) {
       fieldBGM.currentTime = 0;
       fieldBGM.play().catch(err => console.warn("フィールドBGM再生エラー:", err));
     }
-    function stopFieldBGM() {
-      fieldBGM.pause();
-    }
+
+function playFieldBGM() {
+  fieldBGM.currentTime = 0;
+  fieldBGM.play().catch(err => console.warn("フィールドBGM再生エラー:", err));
+  fieldBGM.pause();
+}
+
+
     function playBattleBGM() {
       battleBGM.currentTime = 0;
       battleBGM.play().catch(err => console.warn("戦闘BGM再生エラー:", err));
     }
+
+    
     function stopBattleBGM() {
-      battleBGM.pause();
-    }
+     battleBGM.pause();
+      battleBGM.currentTime = 0; // 曲の開始位置に戻す}
+
+      
     // ========== タイトルからゲーム開始 ==========
     function startGame() {
       document.getElementById("titleScreen").style.display = "none";
