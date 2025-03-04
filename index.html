@@ -526,32 +526,39 @@ document.getElementById("loginButton").addEventListener("click", function () {
       }
     }
   
-    /* ========= 戦闘関連 ========= */
-    function startEncounter() {
-      inBattle = true;
-      stopFieldBGM();
-      lastEncounterSteps = player.steps;
-      encounterThreshold = getRandomEncounterThreshold();
-      const overlay = document.getElementById("transition-overlay");
-      const circle = document.getElementById("transition-circle");
-      overlay.style.display = "block";
-      requestAnimationFrame(() => {
-        circle.classList.add("active");
-      });
-      setTimeout(() => {
-        document.getElementById("gameArea").style.display = "none";
-        document.getElementById("battle-screen").style.display = "block";
-        overlay.style.display = "none";
-        circle.classList.remove("active");
-        // ▼ プレイヤーがBGMオンなら戦闘BGMを再生
-        if (isBgmPlaying) {
-          playBattleBGM();
-        }
-        // ▲ プレイヤーがBGMオンなら戦闘BGMを再生
-        startBattle();
-      }, 800);
-    }
-  
+function startEncounter() {
+  inBattle = true;
+  stopFieldBGM(); // フィールドBGMを停止
+  lastEncounterSteps = player.steps;
+  encounterThreshold = getRandomEncounterThreshold();
+
+  // ▼ ここでプレイヤーのBGM設定を維持したまま戦闘BGMを再生
+  if (isBgmPlaying) {
+    playBattleBGM();
+  }
+  // ▲ ここでプレイヤーのBGM設定を維持したまま戦闘BGMを再生
+
+  const overlay = document.getElementById("transition-overlay");
+  const circle = document.getElementById("transition-circle");
+  overlay.style.display = "block";
+  requestAnimationFrame(() => {
+    circle.classList.add("active");
+  });
+
+  setTimeout(() => {
+    document.getElementById("gameArea").style.display = "none";
+    document.getElementById("battle-screen").style.display = "block";
+    overlay.style.display = "none";
+    circle.classList.remove("active");
+    startBattle();
+  }, 800);
+}
+
+
+
+
+
+    
     function showMonsters(monsters) {
       console.log("📢 モンスターを表示:", monsters);
       const container = document.getElementById("enemy-container");
@@ -756,21 +763,19 @@ document.getElementById("loginButton").addEventListener("click", function () {
       player.y = document.getElementById("gameArea").clientHeight / 2;
       updatePlayerPosition();
     }
-    /* ========= 戦闘終了時の処理 ========= */
     function endBattle() {
-      stopBattleBGM();
-      stopQuizBGM();
-      document.getElementById("battle-screen").style.display = "none";
-      document.getElementById("gameArea").style.display = "block";
-      inBattle = false;
-      setTimeout(() => {
-        // ▼ プレイヤーがBGMオンならフィールドBGMを再生
-        if (isBgmPlaying) {
-          playFieldBGM();
-        }
-        // ▲ プレイヤーがBGMオンならフィールドBGMを再生
-      }, 1000);
-    }
+  stopBattleBGM();
+  document.getElementById("battle-screen").style.display = "none";
+  document.getElementById("gameArea").style.display = "block";
+  inBattle = false;
+
+  // ▼ ここでプレイヤーのBGM設定を維持したままフィールドBGMを再生
+  if (isBgmPlaying) {
+    playFieldBGM();
+  }
+  // ▲ ここでプレイヤーのBGM設定を維持したままフィールドBGMを再生
+}
+
   </script>
 </body>
 </html>
