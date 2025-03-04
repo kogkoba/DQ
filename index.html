@@ -612,34 +612,33 @@ function initHearts() {
         }, 500);
       }
     }
+function showQuiz() {
+  const quiz = getRandomQuiz();
+  const topTextBox = document.getElementById("top-text-box");
+  if (!quiz) {
+    topTextBox.textContent = "クイズデータがありません";
+    return;
+  }
+  topTextBox.textContent = quiz.question;
 
+  const quizImage = document.getElementById("quiz-image");
+  quizImage.src = quiz.imageUrl;
+  quizImage.style.display = quiz.imageUrl ? "block" : "none";
 
+  const choiceArea = document.getElementById("choice-area");
+  choiceArea.innerHTML = "";
 
-    
-    function showQuiz() {
-      const quiz = getRandomQuiz();
-      const topTextBox = document.getElementById("top-text-box");
-      if (!quiz) {
-        topTextBox.textContent = "クイズデータがありません";
-        return;
-      }
-      topTextBox.textContent = quiz.question;
-      const quizImage = document.getElementById("quiz-image");
-      quizImage.src = quiz.imageUrl;
-      quizImage.style.display = quiz.imageUrl ? "block" : "none";
-      const choiceArea = document.getElementById("choice-area");
-      choiceArea.innerHTML = "";
-      quiz.choices.forEach((choice, index) => {
-        let btn = document.createElement("button");
-        btn.className = "choice-button";
-        btn.textContent = choice;
-        btn.onclick = () => handleAnswer(index + 1, quiz);
-        choiceArea.appendChild(btn);
-      });
-      // ここではクイズBGMを再度再生しない (すでに再生中)
-      // 次のクイズは handleAnswer の setTimeout で表示
-      setTimeout(() => { showQuiz(); }, 3000);
-    }
+  quiz.choices.forEach((choice, index) => {
+    let btn = document.createElement("button");
+    btn.className = "choice-button";
+    btn.textContent = choice;
+    btn.onclick = () => handleAnswer(index + 1, quiz); // ✅ 回答がクリックされるまで次の問題に進まない
+    choiceArea.appendChild(btn);
+  });
+
+  // ✅ setTimeout() を削除（プレイヤーの回答を待つ仕様にする）
+}
+
     function handleAnswer(selected, quiz) {
       const topTextBox = document.getElementById("top-text-box");
       if (selected === quiz.correct) {
