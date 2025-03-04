@@ -527,24 +527,28 @@ function startEncounter() {
       });
       console.log("✅ モンスター表示完了");
     }
-    function startBattle() {
-      correctCount = 0;
-      missCount = 0;
-      document.getElementById("quiz-image").style.display = "none";
-      document.getElementById("choice-area").innerHTML = "";
-      document.getElementById("zaorikuButton").style.display = "none";
-      initHearts();
-      currentMonsters = getRandomMonsters();
-      showMonsters(currentMonsters);
-      const topTextBox = document.getElementById("top-text-box");
-      topTextBox.textContent = "mamがあらわれた！";
-      setTimeout(() => { topTextBox.textContent = ""; }, 2000);
-      setTimeout(() => { topTextBox.textContent = "mamの復習攻撃！"; }, 3000);
-      setTimeout(() => {
-        topTextBox.textContent = "クイズ開始！";
-        showQuiz();
-      }, 5000);
+function startBattle() {
+  correctCount = 0;
+  missCount = 0;
+  // ...（その他の初期化処理）
+  initHearts();
+  currentMonsters = getRandomMonsters();
+  showMonsters(currentMonsters);
+  
+  const topTextBox = document.getElementById("top-text-box");
+  topTextBox.textContent = "mamがあらわれた！";
+  setTimeout(() => { topTextBox.textContent = ""; }, 2000);
+  setTimeout(() => { topTextBox.textContent = "mamの復習攻撃！"; }, 3000);
+  setTimeout(() => {
+    topTextBox.textContent = "クイズ開始！";
+    // 戦闘開始時に一度だけクイズBGMを再生
+    if (isBgmPlaying) { 
+        playQuizBGM();
     }
+    showQuiz();
+  }, 5000);
+}
+
   function showQuiz() {
     const quiz = getRandomQuiz();
     const topTextBox = document.getElementById("top-text-box");
