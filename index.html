@@ -140,7 +140,6 @@
       font-size: 24px;
       color: red;
     }
-
     /* ---------- レスポンシブ調整 ---------- */
     @media (max-width: 600px) {
       #status { font-size: 16px; padding: 10px; }
@@ -152,11 +151,11 @@
       .heart { font-size: 20px; }
     }
   </style>
-<script>
-// 🔹 ここで先に API_KEY を定義
-const API_KEY = "AIzaSyBszPu-BQ2_Aq9C3lhAiW--kyenM5vQsjs";
+  <script>
+    // 🔹 ここで先に API_KEY を定義
+    const API_KEY = "AIzaSyBszPu-BQ2_Aq9C3lhAiW--kyenM5vQsjs";
 
- function gapiLoaded() {
+    function gapiLoaded() {
       console.log("✅ gapiLoaded");
       // Google API (client) をロードし終わったら initClient() を呼ぶ
       gapi.load("client", initClient);
@@ -166,14 +165,12 @@ const API_KEY = "AIzaSyBszPu-BQ2_Aq9C3lhAiW--kyenM5vQsjs";
     async function initClient() {
       try {
         console.log("🔄 initClient() 開始...");
-
         // Sheets APIを使えるように初期化
         await gapi.client.init({
           apiKey: API_KEY,
           discoveryDocs: ["https://sheets.googleapis.com/$discovery/rest?version=v4"]
         });
         console.log("✅ GAPI Initialized");
-
         // クイズ＆モンスターデータを取得
         await loadQuizData();
         await loadMonsterData();
@@ -259,30 +256,25 @@ const API_KEY = "AIzaSyBszPu-BQ2_Aq9C3lhAiW--kyenM5vQsjs";
   <!-- ============== メインのスクリプト ============== -->
   <script>
     // ========== グローバル変数 ==========
-
-    // BGM関連
-    let isBgmPlaying = false;       // BGMがONかOFFか
-    let isBattleBGMPlaying = false; // バトルBGMが再生中かどうか
-    let quizBGM = null;            // クイズBGM要素を保持
-    // バトル関連
+    let isBgmPlaying = false;       
+    let isBattleBGMPlaying = false; 
+    let quizBGM = null;            
     let inBattle = false;
     let correctCount = 0;
     let missCount = 0;
     const MAX_CORRECT = 4;
     const MAX_MISS = 4;
-    // プレイヤー関連
     let player = { x: 0, y: 0, hp: 100, level: 1, steps: 0 };
     let facingRight = true;
     const STEP = 20;
     let lastEncounterSteps = 0;
-    let encounterThreshold = 5; // 後で getRandomEncounterThreshold() で上書き
+    let encounterThreshold = 5; 
 
-    // Google Sheets
+    // Google Sheets 関連
     let quizData = [];
     let monsterData = [];
     const GAS_URL = "https://script.google.com/macros/s/AKfycbyUcopm6q6lU0eFyzP9DtukTZ5bkNUXYT_JsFRn0I1L1dv4d9VewWRKlVpzmnkXUx0D4w/exec";
     let playerData = { name: "", level: 1, exp: 0, g: 0 };
-    const API_KEY = "AIzaSyBszPu-BQ2_Aq9C3lhAiW--kyenM5vQsjs";
     const QUIZ_SHEET_ID = "1GyKDfVQCNrBlkxjsrQDv_ouIio9yjO3mVQy6Ds5uQzg";
     const MONSTER_SHEET_ID = "1t08cjUMrug0nvIpredcxjuoxejDRazqqzLTqjVraJhw";
     const SHEET_NAME_QUIZ = "sheet1";
@@ -290,28 +282,23 @@ const API_KEY = "AIzaSyBszPu-BQ2_Aq9C3lhAiW--kyenM5vQsjs";
 
     // プレイヤーアニメーション
     const playerImages = [
-      "https://lh3.googleusercontent.com/d/1peHOi70oOmL8c9v3OQydE5N-9R0PB6vh",  // 立ち姿
-      "https://lh3.googleusercontent.com/d/1iuVZiT6Eh9mp2Ta__Cpm5z28HZ2k0YA0",  // 右足前
-      "https://lh3.googleusercontent.com/d/1fCmul9iotoUh4MLa_qzHvaOUDYMvng8C"      // 左足前
+      "https://lh3.googleusercontent.com/d/1peHOi70oOmL8c9v3OQydE5N-9R0PB6vh",  
+      "https://lh3.googleusercontent.com/d/1iuVZiT6Eh9mp2Ta__Cpm5z28HZ2k0YA0",  
+      "https://lh3.googleusercontent.com/d/1fCmul9iotoUh4MLa_qzHvaOUDYMvng8C"      
     ];
     let currentImageIndex = 0;
 
-    // ========== ページ読み込み後の初期化 ==========
+    // DOMContentLoaded 後に初期化処理とイベント登録
     document.addEventListener("DOMContentLoaded", () => {
       console.log("✅ DOMContentLoaded");
-      // BGM停止
       stopFieldBGM();
       stopBattleBGM();
       stopQuizBGM();
       isBgmPlaying = false;
-
-      // BGMボタンの文言をOFFに
       const bgmButton = document.getElementById("bgmToggleButton");
       if (bgmButton) {
         bgmButton.textContent = "🔇 BGM OFF";
       }
-
-      // quizBGM要素を取得＆ループ設定
       quizBGM = document.getElementById("quizBGM");
       if (quizBGM) {
         quizBGM.loop = true;
@@ -320,33 +307,35 @@ const API_KEY = "AIzaSyBszPu-BQ2_Aq9C3lhAiW--kyenM5vQsjs";
       }
       updateBgmButton();
 
-      // ログインボタンのイベントはHTMLで定義済みなのでOK
-    });
-
-    // ========== ログイン処理 ==========
-    document.getElementById("loginButton").addEventListener("click", () => {
-      const enteredName = document.getElementById("playerNameInput").value.trim();
-      if (!enteredName) {
-        alert("名前を入力してください！");
-        return;
-      }
-      fetch(GAS_URL + "?name=" + encodeURIComponent(enteredName), { method: "GET" })
-        .then(response => response.json())
-        .then(data => {
+      // ログインボタンのイベント登録（非同期処理に変更）
+      document.getElementById("loginButton").addEventListener("click", async () => {
+        const enteredName = document.getElementById("playerNameInput").value.trim();
+        if (!enteredName) {
+          alert("名前を入力してください！");
+          return;
+        }
+        try {
+          const response = await fetch(GAS_URL + "?name=" + encodeURIComponent(enteredName), { method: "GET" });
+          if (!response.ok) {
+            throw new Error("ネットワークエラーです");
+          }
+          const data = await response.json();
           console.log("データ取得成功:", data);
           playerData.name = enteredName;
           playerData.level = parseInt(data.level, 10);
           playerData.exp = parseInt(data.exp, 10);
           playerData.g = parseInt(data.g, 10);
           console.log("取得したプレイヤーデータ:", playerData);
-          // 画面切り替え
           document.getElementById("loginScreen").style.display = "none";
           document.getElementById("titleScreen").style.display = "flex";
-        })
-        .catch(err => console.error("データ取得エラー:", err));
+        } catch (err) {
+          console.error("データ取得エラー:", err);
+          alert("ログインエラーが発生しました。再度お試しください。");
+        }
+      });
     });
 
-    // ========== Google Sheetsからクイズ＆モンスター取得 ==========
+    // ========== Google Sheetsからデータ取得 ==========
     async function loadQuizData() {
       try {
         const resp = await gapi.client.sheets.spreadsheets.values.get({
@@ -457,8 +446,6 @@ const API_KEY = "AIzaSyBszPu-BQ2_Aq9C3lhAiW--kyenM5vQsjs";
     }
 
     // ========== ゲーム開始関連 ==========
-
-    // プレイヤー初期化
     function initGame() {
       const gameArea = document.getElementById("gameArea");
       player.x = window.innerWidth / 2;
@@ -537,7 +524,7 @@ const API_KEY = "AIzaSyBszPu-BQ2_Aq9C3lhAiW--kyenM5vQsjs";
         if (isBgmPlaying) {
           playBattleBGM();
         }
-        playQuizBGM();  // クイズBGM再生
+        playQuizBGM();
         startBattle();
       }, 800);
     }
@@ -558,17 +545,18 @@ const API_KEY = "AIzaSyBszPu-BQ2_Aq9C3lhAiW--kyenM5vQsjs";
       document.getElementById("quiz-image").style.display = "none";
       document.getElementById("choice-area").innerHTML = "";
       document.getElementById("zaorikuButton").style.display = "none";
-      initHearts(); // ← ここで呼び出す
-      // ✅ 関数として定義
-function initHearts() {
-  const heartsContainer = document.getElementById("hearts-container");
-  heartsContainer.innerHTML = "";
-  for (let i = 0; i < 4; i++) {
-    const heart = document.createElement("span");
-    heart.className = "heart";
-    heart.textContent = "♡";
-    heartsContainer.appendChild(heart);
-      currentMonsters = getRandomMonsters();
+      initHearts();
+    }
+    function initHearts() {
+      const heartsContainer = document.getElementById("hearts-container");
+      heartsContainer.innerHTML = "";
+      for (let i = 0; i < 4; i++) {
+        const heart = document.createElement("span");
+        heart.className = "heart";
+        heart.textContent = "♡";
+        heartsContainer.appendChild(heart);
+      }
+      const currentMonsters = getRandomMonsters();
       showMonsters(currentMonsters);
       const topTextBox = document.getElementById("top-text-box");
       topTextBox.textContent = "mamがあらわれた！";
@@ -579,9 +567,6 @@ function initHearts() {
         showQuiz();
       }, 5000);
     }
-
-      }
-
     function shakeAndRemoveHeart() {
       const heartsContainer = document.getElementById("hearts-container");
       if (heartsContainer.children.length > 0) {
@@ -594,60 +579,53 @@ function initHearts() {
         }, 500);
       }
     }
-function showQuiz() {
-  const quiz = getRandomQuiz();
-  const topTextBox = document.getElementById("top-text-box");
-  if (!quiz) {
-    topTextBox.textContent = "クイズデータがありません";
-    return;
-  }
-  topTextBox.textContent = quiz.question;
-
-  const quizImage = document.getElementById("quiz-image");
-  quizImage.src = quiz.imageUrl;
-  quizImage.style.display = quiz.imageUrl ? "block" : "none";
-
-  const choiceArea = document.getElementById("choice-area");
-  choiceArea.innerHTML = "";
-
-  quiz.choices.forEach((choice, index) => {
-    let btn = document.createElement("button");
-    btn.className = "choice-button";
-    btn.textContent = choice;
-    btn.onclick = () => handleAnswer(index + 1, quiz); // ✅ 回答がクリックされるまで次の問題に進まない
-    choiceArea.appendChild(btn);
-  });
-
-  // ✅ setTimeout() を削除（プレイヤーの回答を待つ仕様にする）
-}
-
-function handleAnswer(selected, quiz) {
-  const topTextBox = document.getElementById("top-text-box");
-  if (selected === quiz.correct) {
-    correctCount++;
-    topTextBox.textContent = "✅ 正解！ " + quiz.explanation;
-    shakeAndRemoveMonster();
-      } else {
-    missCount++;
-    topTextBox.textContent = "❌ 不正解！ " + quiz.explanation;
-    shakeAndRemoveHeart();
+    function showQuiz() {
+      const quiz = getRandomQuiz();
+      const topTextBox = document.getElementById("top-text-box");
+      if (!quiz) {
+        topTextBox.textContent = "クイズデータがありません";
+        return;
       }
-// ✅ 3秒待ってから次の問題を表示
-  setTimeout(() => {
-    if (correctCount >= MAX_CORRECT) {
-      topTextBox.textContent = "mamは安心して去っていった！";
-      stopQuizBGM();
-      endBattle();
-    } else if (missCount >= MAX_MISS) {
-      topTextBox.textContent = "mamは復習を求めた。";
-      stopQuizBGM();
-      stopBattleBGM();
-      document.getElementById("zaorikuButton").style.display = "inline-block";
-    } else {
-      showQuiz(); // 次の問題を出す
+      topTextBox.textContent = quiz.question;
+      const quizImage = document.getElementById("quiz-image");
+      quizImage.src = quiz.imageUrl;
+      quizImage.style.display = quiz.imageUrl ? "block" : "none";
+      const choiceArea = document.getElementById("choice-area");
+      choiceArea.innerHTML = "";
+      quiz.choices.forEach((choice, index) => {
+        let btn = document.createElement("button");
+        btn.className = "choice-button";
+        btn.textContent = choice;
+        btn.onclick = () => handleAnswer(index + 1, quiz);
+        choiceArea.appendChild(btn);
+      });
     }
-  }, 3000);
-}
+    function handleAnswer(selected, quiz) {
+      const topTextBox = document.getElementById("top-text-box");
+      if (selected === quiz.correct) {
+        correctCount++;
+        topTextBox.textContent = "✅ 正解！ " + quiz.explanation;
+        shakeAndRemoveMonster();
+      } else {
+        missCount++;
+        topTextBox.textContent = "❌ 不正解！ " + quiz.explanation;
+        shakeAndRemoveHeart();
+      }
+      setTimeout(() => {
+        if (correctCount >= MAX_CORRECT) {
+          topTextBox.textContent = "mamは安心して去っていった！";
+          stopQuizBGM();
+          endBattle();
+        } else if (missCount >= MAX_MISS) {
+          topTextBox.textContent = "mamは復習を求めた。";
+          stopQuizBGM();
+          stopBattleBGM();
+          document.getElementById("zaorikuButton").style.display = "inline-block";
+        } else {
+          showQuiz();
+        }
+      }, 3000);
+    }
     function shakeAndRemoveMonster() {
       const container = document.getElementById("enemy-container");
       if (container.children.length > 0) {
@@ -684,5 +662,6 @@ function handleAnswer(selected, quiz) {
         }
       }, 1000);
     }
- </body>
+  </script>
+</body>
 </html>
