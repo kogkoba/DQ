@@ -539,7 +539,7 @@ document.addEventListener("DOMContentLoaded", function() {
       quiz.choices.forEach((choice, index) => {
         let btn = document.createElement("button");
         btn.className = "choice-button";
-        btn.textContent = ▶ ${choice};
+        btn.textContent =　{choice};
         btn.onclick = () => handleAnswer(index + 1, quiz);
         choiceArea.appendChild(btn);
       });
