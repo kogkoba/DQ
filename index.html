@@ -242,9 +242,16 @@
 
       // BGMをすべてミュート状態で開始
       stopFieldBGM();
-      // クイズ開始時にBGMを切り替える
+      
+// クイズ開始時にBGMを切り替える
 stopBattleBGM();
 
+// クイズBGMの制御（ミュート時は再生しない・すでに再生中ならそのまま）
+if (isBgmPlaying) { 
+    playQuizBGM(); 
+} else {
+    console.log("🔇 ミュート状態なのでクイズBGMは再生しません");
+}
 // クイズBGMの制御（ミュート時は再生しない・すでに再生中ならそのまま）
 if (isBgmPlaying) { 
     playQuizBGM(); 
@@ -672,18 +679,24 @@ if (missCount >= MAX_MISS) {
         stopQuizBGM();
       }
     }
-    function playQuizBGM() {
+function playQuizBGM() {
     const quizBGM = document.getElementById("quizBGM");
 
+    // BGMがミュートされている場合は再生しない
     if (!isBgmPlaying) {
         console.log("🔇 BGMがOFFのため、クイズBGMを再生しません");
-        return; // ミュートなら絶対に再生しない
+        return;
     }
 
-    if (quizBGM && quizBGM.paused) { // すでに再生中なら `play()` しない
-        quizBGM.play().catch(err => console.warn("クイズBGM再生エラー:", err));
-    } else {
+    // すでに再生中なら何もしない
+    if (quizBGM && !quizBGM.paused) {
         console.log("🎵 クイズBGMはすでに再生中");
+        return;
+    }
+
+    // ここで初めてBGMを再生
+    if (quizBGM) {
+        quizBGM.play().catch(err => console.warn("クイズBGM再生エラー:", err));
     }
 }
 
