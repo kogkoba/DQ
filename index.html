@@ -33,7 +33,7 @@
     }
     /* ---------- タイトル画面 ---------- */
     #titleScreen {
-      display: none;
+      display: none; /* ログイン後に表示 */
       flex-direction: column;
       justify-content: center;
       align-items: center;
@@ -234,18 +234,6 @@
   </style>
   <!-- gapiLoaded をグローバルに定義 -->
   <script>
-    function startGame() {
-  console.log("🎮 startGame() 実行！");
-  // タイトル画面を非表示にし、ゲーム画面を表示
-  document.getElementById("titleScreen").style.display = "none";
-  document.getElementById("gameContainer").style.display = "block";
-  // ゲーム初期化処理（例：プレイヤーの初期位置設定）
-  initGame();
-  lastEncounterSteps = player.steps;
-  encounterThreshold = getRandomEncounterThreshold();
-  console.log("🎲 初期化完了！");
-}
-
     function gapiLoaded() {
       console.log("✅ gapiLoaded");
       gapi.load("client", initClient);
@@ -337,21 +325,14 @@
 
   <!-- ========= 以下、メインのスクリプト ========= -->
   <script>
-    // DOMContentLoaded内でDOM要素の取得＆初期化
+    // DOMContentLoaded での初期化
     document.addEventListener("DOMContentLoaded", () => {
       console.log("✅ DOMが完全に読み込まれました");
-
-      // BGMはすべてOFFで開始
+      // ※ audio 要素は上記で head で取得しているので、ここでは BGMOFF 処理のみ
       stopFieldBGM();
       stopBattleBGM();
       stopQuizBGM();
       isBgmPlaying = false;
-
-      // ボタン初期設定
-      const bgmButton = document.getElementById("bgmToggleButton");
-      if (bgmButton) {
-        bgmButton.textContent = "🔇 BGM OFF";
-      }
       updateBgmButton();
     });
 
@@ -466,22 +447,160 @@
         }, 500);
       }
     }
+
+    /* ========= プレイヤー・移動関連 ========= */
+    const playerImages = [
+      "https://lh3.googleusercontent.com/d/1peHOi70oOmL8c9v3OQydE5N-9R0PB6vh",  // 立ち姿
+      "https://lh3.googleusercontent.com/d/1iuVZiT6Eh9mp2Ta__Cpm5z28HZ2k0YA0",  // 右足前
+      "https://lh3.googleusercontent.com/d/1fCmul9iotoUh4MLa_qzHvaOUDYMvng8C"      // 左足前
+    ];
+    let currentImageIndex = 0;
+    let player = { x: 0, y: 0, hp: 100, level: 1, steps: 0 };
+    let facingRight = true;
+    // ※ playerElement の取得は DOMContentLoaded 後に行うため、下記は関数内で取得
+    function updatePlayerPosition() {
+      const playerElement = document.getElementById("player");
+      playerElement.style.left = player.x + "px";
+      playerElement.style.top = player.y + "px";
+      playerElement.style.transform = "translate(-50%, -50%) " + (facingRight ? "scaleX(1)" : "scaleX(-1)");
+    }
+    function movePlayer(dx, dy) {
+      if (inBattle) return;
+      if (dx < 0) { facingRight = false; }
+      else if (dx > 0) { facingRight = true; }
+      currentImageIndex = (currentImageIndex + 1) % playerImages.length;
+      const playerElement = document.getElementById("player");
+      playerElement.src = playerImages[currentImageIndex];
+      player.x += dx;
+      player.y += dy;
+      const pw = playerElement.offsetWidth;
+      const ph = playerElement.offsetHeight;
+      const maxX = window.innerWidth - pw;
+      const maxY = document.getElementById("gameArea").clientHeight - ph;
+      if (player.x < 0) player.x = 0;
+      if (player.y < 0) player.y = 0;
+      if (player.x > maxX) player.x = maxX;
+      if (player.y > maxY) player.y = maxY;
+      updatePlayerPosition();
+      player.steps++;
+      document.getElementById("hp").textContent = player.hp;
+      document.getElementById("level").textContent = player.level;
+      console.log("歩数:", player.steps);
+      if (player.steps - lastEncounterSteps >= getRandomEncounterThreshold()) {
+        startEncounter();
+      }
+    }
+    function initGame() {
+      player.x = window.innerWidth / 2;
+      player.y = document.getElementById("gameArea").clientHeight / 2;
+      updatePlayerPosition();
+    }
+
+    /* ========= BGM管理 ========= */
+    // グローバルで audio 要素はすでに head 内で取得しているため、ここでは処理のみ
+    function playFieldBGM() {
+      if (!isBgmPlaying) {
+        console.log("⏸ BGMはOFFなので再生しません");
+        return;
+      }
+      const fieldBGM = document.getElementById("fieldBGM");
+      fieldBGM.currentTime = 0;
+      fieldBGM.play().catch(err => console.warn("フィールドBGM再生エラー:", err));
+    }
+    function stopFieldBGM() {
+      const fieldBGM = document.getElementById("fieldBGM");
+      if (fieldBGM) {
+        fieldBGM.pause();
+        fieldBGM.currentTime = 0;
+      }
+    }
+    let isBattleBGMPlaying = false;
+    function playBattleBGM() {
+      if (!isBgmPlaying) {
+        console.log("🔇 BGMがOFFなのでバトルBGMを流しません");
+        return;
+      }
+      if (isBattleBGMPlaying) {
+        console.log("🎵 バトルBGMはすでに再生中");
+        return;
+      }
+      const battleBGM = document.getElementById("battleBGM");
+      battleBGM.currentTime = 0;
+      battleBGM.play().then(() => {
+        isBattleBGMPlaying = true;
+      }).catch(err => console.warn("戦闘BGM再生エラー:", err));
+    }
+    function stopBattleBGM() {
+      const battleBGM = document.getElementById("battleBGM");
+      if (battleBGM) {
+        battleBGM.pause();
+        battleBGM.currentTime = 0;
+      }
+      isBattleBGMPlaying = false;
+    }
+    function toggleBGM() {
+      isBgmPlaying = !isBgmPlaying;
+      const button = document.getElementById("bgmToggleButton");
+      if (isBgmPlaying) {
+        button.textContent = "🎵 BGM ON";
+        playFieldBGM();
+      } else {
+        button.textContent = "🔇 BGM OFF";
+        stopFieldBGM();
+        stopBattleBGM();
+        stopQuizBGM();
+      }
+      updateBgmButton();
+    }
+    function updateBgmButton() {
+      const button = document.getElementById("bgmToggleButton");
+      if (!button) {
+        console.warn("❌ BGMボタンが見つかりませんでした！");
+        return;
+      }
+      button.textContent = isBgmPlaying ? "🎵 BGM ON" : "🔇 BGM OFF";
+    }
+    // クイズBGMはグローバル変数 quizBGM として DOMContentLoaded で取得済み
+    function playQuizBGM() {
+      if (!quizBGM) {
+        console.warn("❌ quizBGMが未定義です");
+        return;
+      }
+      if (!isBgmPlaying) {
+        console.log("🔇 BGMがOFFのため、クイズBGMは再生しません");
+        return;
+      }
+      if (!quizBGM.paused) {
+        console.log("🎵 クイズBGMはすでに再生中");
+        return;
+      }
+      quizBGM.play().catch(err => console.warn("クイズBGM再生エラー:", err));
+    }
+    function stopQuizBGM() {
+      if (!quizBGM) {
+        console.warn("❌ quizBGMが未定義です");
+        return;
+      }
+      quizBGM.pause();
+      quizBGM.currentTime = 0;
+      console.log("⏹ クイズBGMを停止しました");
+    }
+
     /* ========= 戦闘関連 ========= */
     function startEncounter() {
       inBattle = true;
       stopFieldBGM();
       stopQuizBGM();
       lastEncounterSteps = player.steps;
+      // encounterThreshold は再取得する形にしておく
       encounterThreshold = getRandomEncounterThreshold();
 
       const overlay = document.getElementById("transition-overlay");
       const circle = document.getElementById("transition-circle");
       overlay.style.display = "block";
-
       requestAnimationFrame(() => {
         circle.classList.add("active");
       });
-
       setTimeout(() => {
         document.getElementById("gameArea").style.display = "none";
         document.getElementById("battle-screen").style.display = "block";
@@ -491,7 +610,7 @@
         if (isBgmPlaying) {
           playBattleBGM();
         }
-        // クイズ開始時に一度だけクイズBGMを再生
+        // 戦闘開始時にクイズBGMを1度だけ再生
         playQuizBGM();
         startBattle();
       }, 800);
@@ -551,7 +670,7 @@
         btn.onclick = () => handleAnswer(index + 1, quiz);
         choiceArea.appendChild(btn);
       });
-      // ※ クイズBGMは既に開始済みのため、ここでは再生処理は行わない
+      // 次の問題は handleAnswer 内で setTimeout で呼び出す
       setTimeout(() => { showQuiz(); }, 3000);
     }
     function handleAnswer(selected, quiz) {
@@ -559,6 +678,7 @@
       if (selected === quiz.correct) {
         correctCount++;
         topTextBox.textContent = "✅ 正解！ " + quiz.explanation;
+        // 正解時、1体目の敵をシェイクして除去
         shakeAndRemoveMonster();
       } else {
         missCount++;
@@ -628,6 +748,18 @@
           playFieldBGM();
         }
       }, 1000);
+    }
+
+    /* ========= ゲーム開始関連 ========= */
+    function startGame() {
+      console.log("🎮 startGame() 実行！");
+      document.getElementById("titleScreen").style.display = "none";
+      document.getElementById("gameContainer").style.display = "block";
+      initGame();
+      lastEncounterSteps = player.steps;
+      // encounterThreshold を初期化
+      encounterThreshold = getRandomEncounterThreshold();
+      console.log("🎲 初期化完了！");
     }
   </script>
 </body>
