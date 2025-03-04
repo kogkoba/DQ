@@ -864,6 +864,21 @@ if (bgmButton) {
     
     /* ========= タイトルからゲーム開始 ========= */
 function startGame() {
+  
+    console.log("🎮 startGame() 実行！"); // ← デバッグ用ログを追加
+
+    document.getElementById("titleScreen").style.display = "none";
+    document.getElementById("gameContainer").style.display = "block";
+    
+    console.log("📌 タイトル画面を非表示、ゲーム画面を表示しました");
+
+    initGame();
+    lastEncounterSteps = player.steps;
+    encounterThreshold = getRandomEncounterThreshold();
+
+    console.log("🎲 初期化完了！");
+}
+
     document.getElementById("titleScreen").style.display = "none";
     document.getElementById("gameContainer").style.display = "block";
     initGame();
