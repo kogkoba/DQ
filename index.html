@@ -655,8 +655,9 @@ function showQuiz() {
       fieldBGM.play().catch(err => console.warn("フィールドBGM再生エラー:", err));
     }
     function stopFieldBGM() {
-      fieldBGM.pause();
-    }
+    fieldBGM.pause();
+    fieldBGM.currentTime = 0; // BGMを停止時に巻き戻す
+}
     function playBattleBGM() {
       battleBGM.currentTime = 0;
       battleBGM.play().catch(err => console.warn("戦闘BGM再生エラー:", err));
@@ -665,18 +666,18 @@ function showQuiz() {
       battleBGM.pause();
     }
 function toggleBGM() {
-  isBgmPlaying = !isBgmPlaying; // ON/OFFを切り替える
-  const button = document.getElementById("bgmToggleButton");
+    isBgmPlaying = !isBgmPlaying; // ON/OFFを切り替える
+    const button = document.getElementById("bgmToggleButton");
 
-  if (isBgmPlaying) {
-    button.textContent = "🎵 BGM ON";
-    playFieldBGM(); // BGMをオンにしたらフィールドBGMを流す
-  } else {
-    button.textContent = "🔇 BGM OFF";
-    stopFieldBGM(); // BGMをオフにしたらBGMを止める
-    stopBattleBGM();
-    stopQuizBGM();
-  }
+    if (isBgmPlaying) {
+        button.textContent = "🎵 BGM ON";
+        playFieldBGM(); // BGMをオンにしたらフィールドBGMを流す
+    } else {
+        button.textContent = "🔇 BGM OFF";
+        stopFieldBGM(); // BGMをオフにしたらBGMを止める
+        stopBattleBGM();
+        stopQuizBGM();
+    }
 }
 
 // ▼ ここに追加！クイズBGMをループさせる
