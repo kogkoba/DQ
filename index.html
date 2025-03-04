@@ -551,7 +551,21 @@
       document.getElementById("quiz-image").style.display = "none";
       document.getElementById("choice-area").innerHTML = "";
       document.getElementById("zaorikuButton").style.display = "none";
-      initHearts();
+      initHearts(); // ← ここで呼び出す
+      // ✅ 関数として定義
+function initHearts() {
+  const heartsContainer = document.getElementById("hearts-container");
+  heartsContainer.innerHTML = "";
+  for (let i = 0; i < 4; i++) {
+    const heart = document.createElement("span");
+    heart.className = "heart";
+    heart.textContent = "♡";
+    heartsContainer.appendChild(heart);
+  }
+}
+
+
+      
       currentMonsters = getRandomMonsters();
       showMonsters(currentMonsters);
       const topTextBox = document.getElementById("top-text-box");
@@ -563,7 +577,17 @@
         showQuiz();
       }, 5000);
     }
-    
+    function initHearts() {
+  const heartsContainer = document.getElementById("hearts-container");
+  heartsContainer.innerHTML = "";
+  for (let i = 0; i < 4; i++) {
+    const heart = document.createElement("span");
+    heart.className = "heart";
+    heart.textContent = "♡";
+    heartsContainer.appendChild(heart);
+  }
+}
+
     
     
      {
