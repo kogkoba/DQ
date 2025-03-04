@@ -682,13 +682,24 @@ function toggleBGM() {
     }
 }
 
-// ▼ ここに追加！クイズBGMをループさせる
-quizBGM.loop = true;
   
- // ▼ ここに追加！
+// ▼ ここに追加！
 document.addEventListener("DOMContentLoaded", () => {
-    updateBgmButton();
+    const quizBGM = document.getElementById("quizBGM"); // クイズBGMの要素を取得
+    if (quizBGM) {
+        quizBGM.loop = true; // クイズBGMをループさせる
+    } else {
+        console.warn("❌ quizBGM要素が見つかりませんでした！");
+    }
+
+    // updateBgmButton が定義されているか確認してから実行
+    if (typeof updateBgmButton === "function") {
+        updateBgmButton();
+    } else {
+        console.warn("❌ updateBgmButton 関数が定義されていません！");
+    }
 });
+
 
 
 
