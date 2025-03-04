@@ -22,7 +22,6 @@
       text-align: center;
       margin-top: 10px;
     }
-
     #bgmToggleButton {
       font-size: 16px;
       padding: 5px 10px;
@@ -49,6 +48,7 @@
       padding: 5px;
       margin: 10px;
     }
+    
     /* ---------- タイトル画面 ---------- */
     #titleScreen {
       display: none; /* ログイン後に表示 */
@@ -68,19 +68,24 @@
       color: #fff;
       border-radius: 5px;
     }
+    
     /* ---------- ゲーム画面全体 ---------- */
     #gameContainer {
       display: none;
       width: 100%;
       height: 100%;
     }
+    
     /* ---------- ステータス表示 ---------- */
+    /* ▼ ステータス表示エリア */
     #status {
       padding: 10px;
       text-align: center;
       font-size: 18px;
       background-color: #111;
     }
+    /* ▲ ステータス表示エリア */
+    
     /* ---------- フィールド画面 ---------- */
     #gameArea {
       position: relative;
@@ -125,6 +130,7 @@
     .left  { grid-area: left; }
     .right { grid-area: right; }
     .center{ grid-area: center; }
+    
     /* ---------- 戦闘画面 ---------- */
     #battle-screen {
       display: none;
@@ -171,7 +177,7 @@
       width: 150px;
       font-size: 16px;
     }
-    /* ハート表示用コンテナ */
+    /* ---------- ハート表示用コンテナ ---------- */
     #hearts-container {
       position: absolute;
       bottom: 10px;
@@ -184,7 +190,7 @@
       font-size: 24px;
       color: red;
     }
-    /* 解説は不要 */
+    /* ---------- 解説は不要 ---------- */
     #explanation {
       display: none;
     }
@@ -195,6 +201,7 @@
       margin-top: 10px;
       cursor: pointer;
     }
+    
     /* ---------- 円拡大演出用オーバーレイ ---------- */
     #transition-overlay {
       position: absolute;
@@ -220,6 +227,7 @@
     #transition-circle.active {
       transform: translate(-50%, -50%) scale(1);
     }
+    
     /* ---------- シェイクアニメーション ---------- */
     @keyframes shake {
       0% { transform: translate(0, 0); }
@@ -232,6 +240,7 @@
     .shake {
       animation: shake 0.5s;
     }
+    
     /* ---------- レスポンシブ調整 ---------- */
     @media (max-width: 600px) {
       #status { font-size: 16px; padding: 10px; }
@@ -258,30 +267,26 @@
     <input type="text" id="playerNameInput" placeholder="名前を入力">
     <button id="loginButton">ログイン</button>
   </div>
-
+  
   <!-- ---------- タイトル画面 ---------- -->
   <div id="titleScreen">
     <h1>ドラクエ風クイズRPG</h1>
     <button id="startButton" onclick="startGame()">▶ ゲームスタート</button>
   </div>
-
+  
   <!-- ---------- ゲーム画面全体 ---------- -->
   <div id="gameContainer">
-    <!-- ステータス表示 -->
-   <!-- ▼ ステータス表示エリア -->
-  <div id="status">
-    プレイヤーのHP: <span id="hp">100</span> / レベル: <span id="level">1</span>
-    
-    <!-- ▼ ここにBGMオンオフボタンを追加 -->
-    <div id="bgmToggleContainer">
-      <button id="bgmToggleButton" onclick="toggleBGM()">🎵 BGM ON</button>
+    <!-- ▼ ステータス表示エリア -->
+    <div id="status">
+      プレイヤーのHP: <span id="hp">100</span> / レベル: <span id="level">1</span>
+      <!-- ▼ ここにBGMオンオフボタンを追加 -->
+      <div id="bgmToggleContainer">
+        <button id="bgmToggleButton" onclick="toggleBGM()">🎵 BGM ON</button>
+      </div>
+      <!-- ▲ ここにBGMオンオフボタンを追加 -->
     </div>
-    <!-- ▲ ここにBGMオンオフボタンを追加 -->
-  </div>
-  <!-- ▲ ステータス表示エリア -->
-  
-  
-  
+    <!-- ▲ ステータス表示エリア -->
+    
     <!-- ---------- フィールド画面 ---------- -->
     <div id="gameArea">
       <img id="player" src="https://lh3.googleusercontent.com/d/1peHOi70oOmL8c9v3OQydE5N-9R0PB6vh" alt="hero">
@@ -297,43 +302,48 @@
         <div id="transition-circle"></div>
       </div>
     </div>
+    
     <!-- ---------- 戦闘画面 ---------- -->
     <div id="battle-screen">
       <div id="top-text-box">mamがあらわれた！</div>
       <div id="enemy-container"></div>
       <img id="quiz-image" src="">
       <div id="choice-area"></div>
-      <!-- ハートは下部中央に固定 -->
+      <!-- ▼ ハート表示用コンテナ -->
       <div id="hearts-container"></div>
+      <!-- ▲ ハート表示用コンテナ -->
       <button id="zaorikuButton" onclick="onZaoriku()">ザオリク</button>
     </div>
   </div>
-
-  <!-- ---------- BGM用オーディオタグ ---------- -->
-<!-- ▼ BGM用オーディオタグ -->
+  
+  <!-- ▼ BGM用オーディオタグ -->
   <audio id="fieldBGM" loop preload="auto">
     <source src="./kouyawoiku.mp3" type="audio/mpeg">
   </audio>
   <audio id="battleBGM" loop preload="auto">
     <source src="./gypsydance.mp3" type="audio/mpeg">
   </audio>
+  <!-- クイズBGM（同じgypsydance.mp3を使用） -->
+  <audio id="quizBGM" loop preload="auto">
+    <source src="./gypsydance.mp3" type="audio/mpeg">
+  </audio>
   <!-- ▲ BGM用オーディオタグ -->
-
+  
   <!-- DQ down用オーディオタグ -->
   <audio id="dqDownAudio" preload="auto">
     <source src="./DQ down long.mp3" type="audio/mpeg">
   </audio>
-
+  
   <!-- ---------- Google API のスクリプト ---------- -->
   <script async defer src="https://apis.google.com/js/api.js" 
           onload="gapiLoaded()" 
           onerror="console.error('❌ Google APIの読み込みに失敗しました');"></script>
-
+  
   <script>
     /* ========= ログイン処理 ========= */
     const GAS_URL = "https://script.google.com/macros/s/AKfycbyUcopm6q6lU0eFyzP9DtukTZ5bkNUXYT_JsFRn0I1L1dv4d9VewWRKlVpzmnkXUx0D4w/exec";
     let playerData = { name: "", level: 1, exp: 0, g: 0 };
-
+  
     document.getElementById("loginButton").addEventListener("click", function () {
         let enteredName = document.getElementById("playerNameInput").value.trim();
         if (enteredName === "") {
@@ -351,13 +361,14 @@
             playerData.exp = parseInt(data.exp, 10);
             playerData.g = parseInt(data.g, 10);
             console.log("取得したプレイヤーデータ:", playerData);
-            // ログイン後、ログイン画面を隠してタイトル画面を表示
+            // ▼ ログイン後、ログイン画面を隠してタイトル画面を表示
             document.getElementById("loginScreen").style.display = "none";
             document.getElementById("titleScreen").style.display = "flex";
+            // ▲ ログイン後、ログイン画面を隠してタイトル画面を表示
         })
         .catch(error => console.error("データ取得エラー:", error));
     });
-
+  
     /* ========= ゲーム用グローバル変数 ========= */
     let inBattle = false;
     const STEP = 20;
@@ -366,14 +377,14 @@
     function getRandomEncounterThreshold() {
       return Math.floor(Math.random() * 11) + 5;
     }
-
+  
     /* ======= Google Sheets & データ設定 ======= */
     const API_KEY = "AIzaSyBszPu-BQ2_Aq9C3lhAiW--kyenM5vQsjs";
     const QUIZ_SHEET_ID = "1GyKDfVQCNrBlkxjsrQDv_ouIio9yjO3mVQy6Ds5uQzg";
     const MONSTER_SHEET_ID = "1t08cjUMrug0nvIpredcxjuoxejDRazqqzLTqjVraJhw";
     const SHEET_NAME_QUIZ = "sheet1";
     const SHEET_NAME_MONSTER = "sheet1";
-
+  
     let quizData = [];
     let monsterData = [];
     let currentMonsters = [];
@@ -381,88 +392,11 @@
     let missCount = 0;
     const MAX_CORRECT = 4;
     const MAX_MISS = 4;
-        /* ▼ BGM管理 */
-    let isBgmPlaying = false; // 初期状態はBGMオフ
-
-    function toggleBGM() {
-      isBgmPlaying = !isBgmPlaying;
-      const bgmButton = document.getElementById("bgmToggleButton");
-
-      if (isBgmPlaying) {
-        playFieldBGM();
-        bgmButton.textContent = "🎵 BGM OFF";
-      } else {
-        stopFieldBGM();
-        stopBattleBGM();
-        bgmButton.textContent = "🎵 BGM ON";
-      }
-    }
-
-    function playFieldBGM() {
-      if (!isBgmPlaying) return;
-      try {
-        fieldBGM.currentTime = 0;
-        fieldBGM.play();
-      } catch (err) {
-        console.warn("フィールドBGM再生エラー:", err);
-      }
-    }
-
-    function stopFieldBGM() {
-      fieldBGM.pause();
-    }
-
-    function playBattleBGM() {
-      if (!isBgmPlaying) return;
-      try {
-        battleBGM.currentTime = 0;
-        battleBGM.play();
-      } catch (err) {
-        console.warn("戦闘BGM再生エラー:", err);
-      }
-    }
-
-    function stopBattleBGM() {
-      battleBGM.pause();
-    }
+  
+    /* ▼ BGM管理（先述の部分はすでに上部に統合済） */
+    // isBgmPlaying, toggleBGM, playFieldBGM, stopFieldBGM, playBattleBGM, stopBattleBGM, playQuizBGM, stopQuizBGM, fadeInBGM, fadeOutBGM
     /* ▲ BGM管理 */
-
-    /* ▼ 戦闘開始時の処理 */
-    function startEncounter() {
-      inBattle = true;
-      stopFieldBGM();
-      lastEncounterSteps = player.steps;
-      encounterThreshold = getRandomEncounterThreshold();
-
-      setTimeout(() => {
-        document.getElementById("gameArea").style.display = "none";
-        document.getElementById("battle-screen").style.display = "block";
-
-        // ▼ ここでプレイヤーのBGM設定を維持したまま戦闘BGMを再生
-        if (isBgmPlaying) {
-          playBattleBGM();
-        }
-        // ▲ ここでプレイヤーのBGM設定を維持したまま戦闘BGMを再生
-      }, 800);
-    }
-    /* ▲ 戦闘開始時の処理 */
-
-    /* ▼ 戦闘終了時の処理 */
-    function endBattle() {
-      stopBattleBGM();
-      document.getElementById("battle-screen").style.display = "none";
-      document.getElementById("gameArea").style.display = "block";
-      inBattle = false;
-      
-      setTimeout(() => {
-        // ▼ ここでプレイヤーのBGM設定を維持したままフィールドBGMを再生
-        if (isBgmPlaying) {
-          playFieldBGM();
-        }
-        // ▲ ここでプレイヤーのBGM設定を維持したままフィールドBGMを再生
-      }, 1000);
-    }
-    /* ▲ 戦闘終了時の処理 */
+  
     /* ========= Google API 初期化 ========= */
     function gapiLoaded() {
       console.log("✅ gapiLoaded");
@@ -482,7 +416,8 @@
         console.error("⛔ GAPI Init Error:", err);
       }
     }
-   // ========== クイズデータ取得 ==========
+  
+    // ========== クイズデータ取得 ==========
     async function loadQuizData() {
       try {
         const resp = await gapi.client.sheets.spreadsheets.values.get({
@@ -501,6 +436,7 @@
         console.error("Quiz Data Error:", err);
       }
     }
+  
     // ========== モンスターデータ取得 ==========
     async function loadMonsterData() {
       try {
@@ -518,11 +454,13 @@
         console.error("Monster Data Error:", err);
       }
     }
+  
     function getRandomQuiz() {
       if (!quizData || quizData.length === 0) return null;
       const idx = Math.floor(Math.random() * quizData.length);
       return quizData[idx];
     }
+  
     function getRandomMonsters() {
       if (monsterData.length < 4) {
         console.warn("Not enough monsters");
@@ -531,6 +469,7 @@
       const shuffled = [...monsterData].sort(() => Math.random() - 0.5);
       return shuffled.slice(0, 4);
     }
+  
     function initHearts() {
       const heartsContainer = document.getElementById("hearts-container");
       heartsContainer.innerHTML = "";
@@ -541,6 +480,7 @@
         heartsContainer.appendChild(heart);
       }
     }
+  
     function shakeAndRemoveHeart() {
       const heartsContainer = document.getElementById("hearts-container");
       if (heartsContainer.children.length > 0) {
@@ -553,6 +493,7 @@
         }, 500);
       }
     }
+  
     /* ========= 戦闘関連 ========= */
     function startEncounter() {
       inBattle = true;
@@ -570,10 +511,15 @@
         document.getElementById("battle-screen").style.display = "block";
         overlay.style.display = "none";
         circle.classList.remove("active");
-        playBattleBGM();
+        // ▼ プレイヤーがBGMオンなら戦闘BGMを再生
+        if (isBgmPlaying) {
+          playBattleBGM();
+        }
+        // ▲ プレイヤーがBGMオンなら戦闘BGMを再生
         startBattle();
       }, 800);
     }
+  
     function showMonsters(monsters) {
       console.log("📢 モンスターを表示:", monsters);
       const container = document.getElementById("enemy-container");
@@ -591,6 +537,7 @@
       });
       console.log("✅ モンスター表示完了");
     }
+  
     function startBattle() {
       correctCount = 0;
       missCount = 0;
@@ -609,6 +556,7 @@
         showQuiz();
       }, 5000);
     }
+  
     function showQuiz() {
       const quiz = getRandomQuiz();
       const topTextBox = document.getElementById("top-text-box");
@@ -629,7 +577,14 @@
         btn.onclick = () => handleAnswer(index + 1, quiz);
         choiceArea.appendChild(btn);
       });
+      // ▼ クイズ開始時、戦闘BGMからクイズBGMへ切替（プレイヤーがオンの場合のみ）
+      stopBattleBGM();
+      if (isBgmPlaying) {
+        playQuizBGM();
+      }
+      // ▲ クイズ開始時、戦闘BGMからクイズBGMへ切替（プレイヤーがオンの場合のみ）
     }
+  
     function handleAnswer(selected, quiz) {
       const topTextBox = document.getElementById("top-text-box");
       if (selected === quiz.correct) {
@@ -661,6 +616,7 @@
       }
       setTimeout(() => { showQuiz(); }, 3000);
     }
+  
     function shakeAndRemoveMonster() {
       const container = document.getElementById("enemy-container");
       if (container.children.length > 0) {
@@ -673,6 +629,7 @@
         }, 500);
       }
     }
+  
     function onZaoriku() {
       const dqAudio = document.getElementById("dqDownAudio");
       dqAudio.pause();
@@ -680,23 +637,37 @@
       document.getElementById("top-text-box").textContent = "ザオリクが唱えられた！";
       setTimeout(() => { endBattle(); }, 1000);
     }
-    /* ========= BGM管理 ========= */
-    const fieldBGM = document.getElementById("fieldBGM");
-    const battleBGM = document.getElementById("battleBGM");
-    function playFieldBGM() {
-      fieldBGM.currentTime = 0;
-      fieldBGM.play().catch(err => console.warn("フィールドBGM再生エラー:", err));
+  
+    /* ▼ BGM フェードイン・フェードアウト実装 */
+    function fadeInBGM(audioElement) {
+      if (!isBgmPlaying) return;
+      audioElement.volume = 0;
+      audioElement.play().catch(err => console.warn("BGM再生エラー:", err));
+      let volume = 0;
+      const interval = setInterval(() => {
+        if (volume < 1) {
+          volume += 0.05;
+          audioElement.volume = volume;
+        } else {
+          clearInterval(interval);
+        }
+      }, 200);
     }
-    function stopFieldBGM() {
-      fieldBGM.pause();
+  
+    function fadeOutBGM(audioElement) {
+      let volume = audioElement.volume;
+      const interval = setInterval(() => {
+        if (volume > 0) {
+          volume -= 0.05;
+          audioElement.volume = volume;
+        } else {
+          clearInterval(interval);
+          audioElement.pause();
+        }
+      }, 200);
     }
-    function playBattleBGM() {
-      battleBGM.currentTime = 0;
-      battleBGM.play().catch(err => console.warn("戦闘BGM再生エラー:", err));
-    }
-    function stopBattleBGM() {
-      battleBGM.pause();
-    }
+    /* ▲ BGM フェードイン・フェードアウト実装 */
+  
     /* ========= タイトルからゲーム開始 ========= */
     function startGame() {
       document.getElementById("titleScreen").style.display = "none";
@@ -704,8 +675,10 @@
       initGame();
       lastEncounterSteps = player.steps;
       encounterThreshold = getRandomEncounterThreshold();
-      playFieldBGM();
+      // ▼ ゲーム開始時はBGMは流さない（プレイヤー設定を尊重）
+      // ▲ ゲーム開始時はBGMは流さない（プレイヤー設定を尊重）
     }
+  
     /* ========= フィールドでの勇者移動 ========= */
     const playerImages = [
       "https://lh3.googleusercontent.com/d/1peHOi70oOmL8c9v3OQydE5N-9R0PB6vh", // 立ち姿
@@ -754,11 +727,16 @@
     /* ========= 戦闘終了時の処理 ========= */
     function endBattle() {
       stopBattleBGM();
+      stopQuizBGM();
       document.getElementById("battle-screen").style.display = "none";
       document.getElementById("gameArea").style.display = "block";
       inBattle = false;
       setTimeout(() => {
-        playFieldBGM();
+        // ▼ プレイヤーがBGMオンならフィールドBGMを再生
+        if (isBgmPlaying) {
+          playFieldBGM();
+        }
+        // ▲ プレイヤーがBGMオンならフィールドBGMを再生
       }, 1000);
     }
   </script>
