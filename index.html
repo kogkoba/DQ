@@ -127,6 +127,20 @@
     .shake {
       animation: shake 0.5s;
     }
+     /* ---------- ハート表示用コンテナ ---------- */
+    #hearts-container {
+      position: absolute;
+      bottom: 10px;
+      left: 50%;
+      transform: translateX(-50%);
+      display: flex;
+      gap: 10px;
+    }
+    .heart {
+      font-size: 24px;
+      color: red;
+    }
+
     /* ---------- レスポンシブ調整 ---------- */
     @media (max-width: 600px) {
       #status { font-size: 16px; padding: 10px; }
@@ -552,7 +566,7 @@
     
     
     
-    function initHearts() {
+     {
       const heartsContainer = document.getElementById("hearts-container");
       heartsContainer.innerHTML = "";
       for (let i = 0; i < 4; i++) {
@@ -562,6 +576,19 @@
         heartsContainer.appendChild(heart);
       }
     }
+    function shakeAndRemoveHeart() {
+      const heartsContainer = document.getElementById("hearts-container");
+      if (heartsContainer.children.length > 0) {
+        const firstHeart = heartsContainer.children[0];
+        firstHeart.classList.add("shake");
+        setTimeout(() => {
+          if (heartsContainer.contains(firstHeart)) {
+            heartsContainer.removeChild(firstHeart);
+          }
+        }, 500);
+      }
+    }
+
 
 
     
