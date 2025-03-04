@@ -153,15 +153,16 @@
     }
   </style>
 <script>
-  <!-- ==================== gapiLoaded & initClient ==================== -->
-  // 🔹 ここで先に API_KEY を定義
-    const API_KEY = "AIzaSyBszPu-BQ2_Aq9C3lhAiW--kyenM5vQsjs";
+// 🔹 ここで先に API_KEY を定義
+const API_KEY = "...";
 
-    function gapiLoaded() {
-      console.log("✅ gapiLoaded");
-      gapi.load("client", initClient);
-    }
- setTimeout(async () => {
+function gapiLoaded() {
+  console.log("✅ gapiLoaded");
+  gapi.load("client", initClient);
+}
+
+// ▼ どちらか一方でOK。setTimeoutを使うならこのブロックだけで完結
+setTimeout(async () => {
   try {
     await gapi.client.init({
       apiKey: API_KEY,
@@ -176,16 +177,9 @@
   }
 }, 2000); // 2秒待ってから実行
 
-
-       console.log("✅ GAPI Initialized");
-        await loadQuizData();
-        await loadMonsterData();
-        console.log("✅ Data Loaded");
-      } catch (err) {
-        console.error("⛔ GAPI Init Error:", err);
-      }
-    }
+// 🔸 重複していた await loadQuizData()... は削除！
 </script>
+
 
 </head>
 
