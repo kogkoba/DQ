@@ -611,17 +611,22 @@ if (missCount >= MAX_MISS) {
         stopQuizBGM();
         stopBattleBGM();
 
-        // ザオリクボタンを **1.5秒後に** 表示（短縮）
-        document.getElementById("zaorikuButton").style.display = "inline-block";
+        // 🔇 ミュートならDQダウン音を鳴らさない
+        if (isBgmPlaying) {
+            const dqAudio = document.getElementById("dqDownAudio");
+            dqAudio.currentTime = 0;
+            dqAudio.play().catch(err => console.warn("DQ Down Audio play error:", err));
+        } else {
+            console.log("🔇 BGMオフなのでDQダウン音は再生しません");
+        }
 
-        // DQダウン音を再生
-        const dqAudio = document.getElementById("dqDownAudio");
-        dqAudio.currentTime = 0;
-        dqAudio.play().catch(err => console.warn("DQ Down Audio play error:", err));
-    }, 1500); // ← **ここを短縮**
-    
+        // ザオリクボタンを表示
+        document.getElementById("zaorikuButton").style.display = "inline-block";
+    }, 1500); 
+
     return;
 }
+
 
       setTimeout(() => { showQuiz(); }, 3000);
     }
@@ -639,12 +644,15 @@ if (missCount >= MAX_MISS) {
     }
 function onZaoriku() {
     const dqAudio = document.getElementById("dqDownAudio");
-    dqAudio.pause();
-    dqAudio.currentTime = 0;
 
-    // ザオリク画面ではBGMを確実に止める
-    stopQuizBGM();
-    stopBattleBGM();
+    // 🔇 BGMがOFFのときは音を鳴らさない
+    if (!isBgmPlaying) {
+        console.log("🔇 ミュートなのでDQダウン音を流しません");
+    } else {
+        dqAudio.pause();
+        dqAudio.currentTime = 0;
+        dqAudio.play().catch(err => console.warn("DQ Down Audio play error:", err));
+    }
 
     document.getElementById("top-text-box").textContent = "ザオリクが唱えられた！";
     setTimeout(() => { endBattle(); }, 1000);
