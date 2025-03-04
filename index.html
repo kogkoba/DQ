@@ -257,10 +257,7 @@
 <div id="bgmToggleContainer">
     <button id="bgmToggleButton" onclick="toggleBGM()">🎵 BGM ON</button>
 </div>
-<!-- ▲ ここにBGMオンオフボタンを追加 -->
 
-    <button id="bgmToggleButton" onclick="toggleBGM()">🎵 BGM ON</button>
-    </div>
     <!-- ---------- フィールド画面 ---------- -->
     <div id="gameArea">
       <img id="player" src="https://lh3.googleusercontent.com/d/1peHOi70oOmL8c9v3OQydE5N-9R0PB6vh" alt="hero">
@@ -346,6 +343,7 @@
 
     /* ========= ゲーム用グローバル変数 ========= */
     let inBattle = false;
+    let isBgmPlaying = false;
     const STEP = 20;
     let lastEncounterSteps = 0;
     let encounterThreshold = getRandomEncounterThreshold();
