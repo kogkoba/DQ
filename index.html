@@ -33,7 +33,7 @@
     }
     /* ---------- タイトル画面 ---------- */
     #titleScreen {
-      display: none; /* ログイン後に表示 */
+      display: none;
       flex-direction: column;
       justify-content: center;
       align-items: center;
@@ -232,133 +232,29 @@
       .heart { font-size: 20px; }
     }
   </style>
-</head>
-<body>
-
-  <!-- ▼ DOMContentLoaded で初期化（BGMはミュート状態で開始） -->
+  <!-- gapiLoaded をグローバルに定義 -->
   <script>
-    // グローバル変数宣言
-    let quizBGM; // クイズBGM用オーディオ要素
-    let inBattle = false;
-    let isBgmPlaying = false;
-    const STEP = 20;
-    let lastEncounterSteps = 0;
-    let encounterThreshold = getRandomEncounterThreshold();
-    function getRandomEncounterThreshold() {
-      return Math.floor(Math.random() * 11) + 5;
+    function gapiLoaded() {
+      console.log("✅ gapiLoaded");
+      gapi.load("client", initClient);
     }
-
-    document.addEventListener("DOMContentLoaded", () => {
-      console.log("✅ DOMが読み込まれました");
-
-      // BGMはすべてOFFで開始
-      stopFieldBGM();
-      stopBattleBGM();
-      stopQuizBGM();
-      isBgmPlaying = false;
-
-      const bgmButton = document.getElementById("bgmToggleButton");
-      if (bgmButton) {
-        bgmButton.textContent = "🔇 BGM OFF";
+    async function initClient() {
+      try {
+        await gapi.client.init({
+          apiKey: API_KEY,
+          discoveryDocs: ["https://sheets.googleapis.com/$discovery/rest?version=v4"]
+        });
+        console.log("✅ GAPI Initialized");
+        await loadQuizData();
+        await loadMonsterData();
+        console.log("✅ Data Loaded");
+      } catch (err) {
+        console.error("⛔ GAPI Init Error:", err);
       }
-
-      // クイズBGMをグローバル変数に取得＆ループ設定
-      quizBGM = document.getElementById("quizBGM");
-      if (quizBGM) {
-        quizBGM.loop = true;
-      } else {
-        console.warn("❌ quizBGM要素が見つかりませんでした！");
-      }
-
-      updateBgmButton();
-    });
-
-    // クイズBGMの再生／停止をグローバル関数として定義
-    function playQuizBGM() {
-      if (!quizBGM) {
-        console.warn("❌ quizBGMが未定義です");
-        return;
-      }
-      if (!isBgmPlaying) {
-        console.log("🔇 BGMがOFFのため、クイズBGMは再生しません");
-        return;
-      }
-      // 既に再生中なら何もしない
-      if (!quizBGM.paused) {
-        console.log("🎵 クイズBGMはすでに再生中");
-        return;
-      }
-      quizBGM.play().catch(err => console.warn("クイズBGM再生エラー:", err));
-    }
-    function stopQuizBGM() {
-      if (!quizBGM) {
-        console.warn("❌ quizBGMが未定義です");
-        return;
-      }
-      quizBGM.pause();
-      quizBGM.currentTime = 0;
-      console.log("⏹ クイズBGMを停止しました");
-    }
-
-    // BGM管理（フィールド・バトル）
-    const fieldBGM = document.getElementById("fieldBGM");
-    const battleBGM = document.getElementById("battleBGM");
-    function playFieldBGM() {
-      if (!isBgmPlaying) {
-        console.log("⏸ BGMはOFFなので再生しません");
-        return;
-      }
-      fieldBGM.currentTime = 0;
-      fieldBGM.play().catch(err => console.warn("フィールドBGM再生エラー:", err));
-    }
-    function stopFieldBGM() {
-      fieldBGM.pause();
-      fieldBGM.currentTime = 0;
-    }
-    let isBattleBGMPlaying = false;
-    function playBattleBGM() {
-      if (!isBgmPlaying) {
-        console.log("🔇 BGMがOFFなのでバトルBGMを流しません");
-        return;
-      }
-      if (isBattleBGMPlaying) {
-        console.log("🎵 バトルBGMはすでに再生中");
-        return;
-      }
-      battleBGM.currentTime = 0;
-      battleBGM.play().then(() => {
-        isBattleBGMPlaying = true;
-      }).catch(err => console.warn("戦闘BGM再生エラー:", err));
-    }
-    function stopBattleBGM() {
-      battleBGM.pause();
-      battleBGM.currentTime = 0;
-      isBattleBGMPlaying = false;
-    }
-    function toggleBGM() {
-      isBgmPlaying = !isBgmPlaying;
-      const button = document.getElementById("bgmToggleButton");
-      if (isBgmPlaying) {
-        button.textContent = "🎵 BGM ON";
-        playFieldBGM();
-      } else {
-        button.textContent = "🔇 BGM OFF";
-        stopFieldBGM();
-        stopBattleBGM();
-        stopQuizBGM();
-      }
-    }
-    function updateBgmButton() {
-      const button = document.getElementById("bgmToggleButton");
-      if (!button) {
-        console.warn("❌ BGMボタンが見つかりませんでした！");
-        return;
-      }
-      button.textContent = isBgmPlaying ? "🎵 BGM ON" : "🔇 BGM OFF";
     }
   </script>
-  <!-- ▲ DOMContentLoaded 初期化 -->
-
+</head>
+<body>
   <!-- ---------- ログイン画面 ---------- -->
   <div id="loginScreen">
     <h2>プレイヤー名を入力してください</h2>
@@ -378,7 +274,6 @@
     <div id="status">
       プレイヤーのHP: <span id="hp">100</span> / レベル: <span id="level">1</span>
       <div id="bgmToggleContainer">
-        <!-- ▼ BGMオンオフボタン -->
         <button id="bgmToggleButton" onclick="toggleBGM()">🔇 BGM OFF</button>
       </div>
     </div>
@@ -393,7 +288,6 @@
         <div class="dpad-button right" onclick="movePlayer(STEP, 0)"></div>
         <div class="dpad-button down" onclick="movePlayer(0, STEP)"></div>
       </div>
-      <!-- ---------- 円拡大演出用オーバーレイ ---------- -->
       <div id="transition-overlay">
         <div id="transition-circle"></div>
       </div>
@@ -417,12 +311,9 @@
   <audio id="battleBGM" loop preload="auto">
     <source src="./jypdance.mp3" type="audio/mpeg">
   </audio>
-  <!-- クイズBGM（同じjypdance.mp3を使用） -->
   <audio id="quizBGM" loop preload="auto">
     <source src="./jypdance.mp3" type="audio/mpeg">
   </audio>
-  
-  <!-- DQ down用オーディオタグ -->
   <audio id="dqDownAudio" preload="auto">
     <source src="./DQ down long.mp3" type="audio/mpeg">
   </audio>
@@ -433,7 +324,25 @@
           onerror="console.error('❌ Google APIの読み込みに失敗しました');"></script>
 
   <!-- ========= 以下、メインのスクリプト ========= -->
-  
+  <script>
+    // DOMContentLoaded内でDOM要素の取得＆初期化
+    document.addEventListener("DOMContentLoaded", () => {
+      console.log("✅ DOMが完全に読み込まれました");
+
+      // BGMはすべてOFFで開始
+      stopFieldBGM();
+      stopBattleBGM();
+      stopQuizBGM();
+      isBgmPlaying = false;
+
+      // ボタン初期設定
+      const bgmButton = document.getElementById("bgmToggleButton");
+      if (bgmButton) {
+        bgmButton.textContent = "🔇 BGM OFF";
+      }
+      updateBgmButton();
+    });
+
     /* ========= ログイン処理 ========= */
     const GAS_URL = "https://script.google.com/macros/s/AKfycbyUcopm6q6lU0eFyzP9DtukTZ5bkNUXYT_JsFRn0I1L1dv4d9VewWRKlVpzmnkXUx0D4w/exec";
     let playerData = { name: "", level: 1, exp: 0, g: 0 };
@@ -468,7 +377,7 @@
     let isBattleBGMPlaying = false;
     const MAX_CORRECT = 4;
     const MAX_MISS = 4;
-    
+
     /* ======= Google Sheets & データ設定 ======= */
     const API_KEY = "AIzaSyBszPu-BQ2_Aq9C3lhAiW--kyenM5vQsjs";
     const QUIZ_SHEET_ID = "1GyKDfVQCNrBlkxjsrQDv_ouIio9yjO3mVQy6Ds5uQzg";
@@ -549,7 +458,7 @@
     function startEncounter() {
       inBattle = true;
       stopFieldBGM();
-      stopQuizBGM();  
+      stopQuizBGM();
       lastEncounterSteps = player.steps;
       encounterThreshold = getRandomEncounterThreshold();
 
@@ -630,8 +539,7 @@
         btn.onclick = () => handleAnswer(index + 1, quiz);
         choiceArea.appendChild(btn);
       });
-      // ※ ここでは再度 playQuizBGM() は呼ばず、クイズ開始時に1度だけ再生済みとする
-      // 次のクイズは handleAnswer() 内で showQuiz() の setTimeout により呼び出される
+      // ※ クイズBGMは既に開始済みのため、ここでは再生処理は行わない
       setTimeout(() => { showQuiz(); }, 3000);
     }
     function handleAnswer(selected, quiz) {
