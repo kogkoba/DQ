@@ -252,6 +252,14 @@
     <!-- ステータス表示 -->
     <div id="status">
       プレイヤーのHP: <span id="hp">100</span> / レベル: <span id="level">1</span>
+      <div id="bgmToggleContainer">
+        <!-- ▼ ここにBGMオンオフボタンを追加 -->
+<div id="bgmToggleContainer">
+    <button id="bgmToggleButton" onclick="toggleBGM()">🎵 BGM ON</button>
+</div>
+<!-- ▲ ここにBGMオンオフボタンを追加 -->
+
+    <button id="bgmToggleButton" onclick="toggleBGM()">🎵 BGM ON</button>
     </div>
     <!-- ---------- フィールド画面 ---------- -->
     <div id="gameArea">
@@ -639,6 +647,24 @@ function showQuiz() {
     function stopBattleBGM() {
       battleBGM.pause();
     }
+function toggleBGM() {
+  isBgmPlaying = !isBgmPlaying; // ON/OFFを切り替える
+  const button = document.getElementById("bgmToggleButton");
+
+  if (isBgmPlaying) {
+    button.textContent = "🎵 BGM ON";
+    playFieldBGM(); // BGMをオンにしたらフィールドBGMを流す
+  } else {
+    button.textContent = "🔇 BGM OFF";
+    stopFieldBGM(); // BGMをオフにしたらBGMを止める
+    stopBattleBGM();
+    stopQuizBGM();
+  }
+}
+
+
+
+    
 
 
   /* ======== クイズBGM管理 ======== */
