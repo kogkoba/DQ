@@ -669,15 +669,16 @@ if (missCount >= MAX_MISS) {
 
     if (!isBgmPlaying) {
         console.log("🔇 BGMがOFFのため、クイズBGMを再生しません");
-        return; // ミュートなら再生しない
+        return; // ミュートなら絶対に再生しない
     }
 
-    if (quizBGM) {
-        if (quizBGM.paused) { // 既に再生中でなければ再生
-            quizBGM.play().catch(err => console.warn("クイズBGM再生エラー:", err));
-        }
+    if (quizBGM && quizBGM.paused) { // すでに再生中なら `play()` しない
+        quizBGM.play().catch(err => console.warn("クイズBGM再生エラー:", err));
+    } else {
+        console.log("🎵 クイズBGMはすでに再生中");
     }
 }
+
 
 
     function stopQuizBGM() {
