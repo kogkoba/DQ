@@ -287,6 +287,16 @@
   <audio id="battleBGM" loop preload="auto">
     <source src="./jypdance.mp3" type="audio/mpeg">
   </audio>
+
+  <!-- クイズBGM用オーディオタグを追加 -->
+<audio id="quizBGM" loop preload="auto">
+  <source src="./jypdance.mp3" type="audio/mpeg">
+</audio>
+
+
+
+
+  
   <!-- DQ down用オーディオタグ -->
   <audio id="dqDownAudio" preload="auto">
     <source src="./DQ down long.mp3" type="audio/mpeg">
@@ -516,38 +526,83 @@
         btn.onclick = () => handleAnswer(index + 1, quiz);
         choiceArea.appendChild(btn);
       });
+function showQuiz() {
+  const quiz = getRandomQuiz();
+  const topTextBox = document.getElementById("top-text-box");
+
+  if (!quiz) {
+    topTextBox.textContent = "クイズデータがありません";
+    return;
+  }
+
+  topTextBox.textContent = quiz.question;
+  const quizImage = document.getElementById("quiz-image");
+  quizImage.src = quiz.imageUrl;
+  quizImage.style.display = quiz.imageUrl ? "block" : "none";
+
+  const choiceArea = document.getElementById("choice-area");
+  choiceArea.innerHTML = "";
+
+  quiz.choices.forEach((choice, index) => {
+    let btn = document.createElement("button");
+    btn.className = "choice-button";
+    btn.textContent = `▶ ${choice}`;
+    btn.onclick = () => handleAnswer(index + 1, quiz);
+    choiceArea.appendChild(btn);
+  });
+
+  // ======== クイズ開始時にBGMを切り替える ========
+  stopBattleBGM(); // 戦闘BGMを止める
+  playQuizBGM(); // クイズBGMを再生
+}
+
+
+
+      
     }
     function handleAnswer(selected, quiz) {
-      const topTextBox = document.getElementById("top-text-box");
-      if (selected === quiz.correct) {
-        correctCount++;
-        topTextBox.textContent = "✅ 正解！ " + quiz.explanation;
-        shakeAndRemoveMonster();
-      } else {
-        missCount++;
-        topTextBox.textContent = "❌ 不正解！ " + quiz.explanation;
-        shakeAndRemoveHeart();
-      }
-      if (correctCount >= MAX_CORRECT) {
-        setTimeout(() => {
-          topTextBox.textContent = "mamは安心して去っていった！";
-          endBattle();
-        }, 3000);
-        return;
-      }
-      if (missCount >= MAX_MISS) {
-        setTimeout(() => {
-          topTextBox.textContent = "mamは復習を求めた。";
-          document.getElementById("zaorikuButton").style.display = "inline-block";
-          stopBattleBGM();
-          const dqAudio = document.getElementById("dqDownAudio");
-          dqAudio.currentTime = 0;
-          dqAudio.play().catch(err => console.warn("DQ Down Audio play error:", err));
-        }, 3000);
-        return;
-      }
-      setTimeout(() => { showQuiz(); }, 3000);
-    }
+  const topTextBox = document.getElementById("top-text-box");
+
+  if (selected === quiz.correct) {
+    correctCount++;
+    topTextBox.textContent = "✅ 正解！ " + quiz.explanation;
+    shakeAndRemoveMonster();
+  } else {
+    missCount++;
+    topTextBox.textContent = "❌ 不正解！ " + quiz.explanation;
+    shakeAndRemoveHeart();
+  }
+
+  if (correctCount >= MAX_CORRECT) {
+    setTimeout(() => {
+      topTextBox.textContent = "mamは安心して去っていった！";
+      stopQuizBGM(); // クイズBGMを止める
+      endBattle();
+    }, 3000);
+    return;
+  }
+
+  if (missCount >= MAX_MISS) {
+    setTimeout(() => {
+      topTextBox.textContent = "mamは復習を求めた。";
+      stopQuizBGM(); // クイズBGMを止める
+      document.getElementById("zaorikuButton").style.display = "inline-block";
+      stopBattleBGM();
+      const dqAudio = document.getElementById("dqDownAudio");
+      dqAudio.currentTime = 0;
+      dqAudio.play().catch(err => console.warn("DQ Down Audio play error:", err));
+    }, 3000);
+    return;
+  }
+
+  setTimeout(() => { showQuiz(); }, 3000);
+}
+
+
+
+
+
+    
     function shakeAndRemoveMonster() {
       const container = document.getElementById("enemy-container");
       if (container.children.length > 0) {
@@ -584,6 +639,28 @@
     function stopBattleBGM() {
       battleBGM.pause();
     }
+
+
+  /* ======== クイズBGM管理 ======== */
+  const quizBGM = document.getElementById("quizBGM"); // クイズBGMのオーディオ要素を取得
+
+  function playQuizBGM() {
+    quizBGM.currentTime = 0; // BGMを最初から再生
+    quizBGM.play().catch(err => console.warn("クイズBGM再生エラー:", err));
+  }
+
+  function stopQuizBGM() {
+    quizBGM.pause(); // BGMを一時停止
+    quizBGM.currentTime = 0; // 停止後に巻き戻す
+  }
+
+
+
+
+
+
+
+    
     /* ========= タイトルからゲーム開始 ========= */
     function startGame() {
       document.getElementById("titleScreen").style.display = "none";
@@ -639,15 +716,20 @@
       updatePlayerPosition();
     }
     /* ========= 戦闘終了時の処理 ========= */
-    function endBattle() {
-      stopBattleBGM();
-      document.getElementById("battle-screen").style.display = "none";
-      document.getElementById("gameArea").style.display = "block";
-      inBattle = false;
-      setTimeout(() => {
-        playFieldBGM();
-      }, 1000);
-    }
+  function endBattle() {
+  stopBattleBGM();  // 戦闘BGMを止める
+  stopQuizBGM();    // クイズBGMを止める（念のため）
+
+  document.getElementById("battle-screen").style.display = "none";
+  document.getElementById("gameArea").style.display = "block";
+  inBattle = false;
+
+  // 1秒後にフィールドBGMを再生
+  setTimeout(() => {
+    playFieldBGM();
+  }, 1000);
+}
+
   </script>
 </body>
 </html>
