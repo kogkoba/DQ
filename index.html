@@ -579,17 +579,31 @@
         }, 3000);
         return;
       }
-      if (missCount >= MAX_MISS) {
-        setTimeout(() => {
-          topTextBox.textContent = "mamは復習を求めた。";
-          document.getElementById("zaorikuButton").style.display = "inline-block";
-          stopBattleBGM();
-          const dqAudio = document.getElementById("dqDownAudio");
-          dqAudio.currentTime = 0;
-          dqAudio.play().catch(err => console.warn("DQ Down Audio play error:", err));
-        }, 3000);
-        return;
-      }
+     if (missCount >= MAX_MISS) {
+    console.log("🛑 クイズ失敗！ザオリクボタンを表示");
+
+    // ここでクイズBGMを確実に停止する
+    stopQuizBGM();
+
+    setTimeout(() => {
+        document.getElementById("top-text-box").textContent = "mamは復習を求めた。";
+
+        // ここでもう一度、BGMが止まっていることを保証
+        stopQuizBGM(); 
+        stopBattleBGM();
+
+        // ザオリクボタンを表示
+        document.getElementById("zaorikuButton").style.display = "inline-block";
+
+        // DQダウン音を再生
+        const dqAudio = document.getElementById("dqDownAudio");
+        dqAudio.currentTime = 0;
+        dqAudio.play().catch(err => console.warn("DQ Down Audio play error:", err));
+    }, 3000);
+    
+    return;
+}
+
       setTimeout(() => { showQuiz(); }, 3000);
     }
     function shakeAndRemoveMonster() {
