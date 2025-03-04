@@ -341,8 +341,40 @@
   
   <script>
     /* ========= ログイン処理 ========= */
-    const GAS_URL = "https://script.google.com/macros/s/AKfycbyUcopm6q6lU0eFyzP9DtukTZ5bkNUXYT_JsFRn0I1L1dv4d9VewWRKlVpzmnkXUx0D4w/exec";
-    let playerData = { name: "", level: 1, exp: 0, g: 0 };
+   <script>
+const GAS_URL = "https://script.google.com/macros/s/AKfycbyUcopm6q6lU0eFyzP9DtukTZ5bkNUXYT_JsFRn0I1L1dv4d9VewWRKlVpzmnkXUx0D4w/exec";
+let playerData = { name: "", level: 1, exp: 0, g: 0 };
+
+/* ▼ ここに追加（BGM管理：プレイヤー設定維持） */
+let isBgmPlaying = false; // 初期状態はBGMオフ
+// ここにBGM管理のコードを追加する
+/* ▲ ここに追加（BGM管理：プレイヤー設定維持） */
+
+// ログイン処理
+document.getElementById("loginButton").addEventListener("click", function () {
+    let enteredName = document.getElementById("playerNameInput").value.trim();
+    if (enteredName === "") {
+        alert("名前を入力してください！");
+        return;
+    }
+    fetch(GAS_URL + "?name=" + encodeURIComponent(enteredName), {
+        method: "GET"
+    })
+    .then(response => response.json())
+    .then(data => {
+        console.log("データ取得成功:", data);
+        playerData.name = enteredName;
+        playerData.level = parseInt(data.level, 10);
+        playerData.exp = parseInt(data.exp, 10);
+        playerData.g = parseInt(data.g, 10);
+        console.log("取得したプレイヤーデータ:", playerData);
+        document.getElementById("loginScreen").style.display = "none";
+        document.getElementById("titleScreen").style.display = "flex";
+    })
+    .catch(error => console.error("データ取得エラー:", error));
+});
+
+    
   
     document.getElementById("loginButton").addEventListener("click", function () {
         let enteredName = document.getElementById("playerNameInput").value.trim();
