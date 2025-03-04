@@ -239,8 +239,16 @@
 document.addEventListener("DOMContentLoaded", function() {
     console.log("✅ DOMが読み込まれました");
     console.log(document.getElementById("loginButton")); // ここでボタンが正しく取得できるか確認
+
+    // 🎵 BGMをミュート状態で開始
+    stopFieldBGM(); // フィールドBGMを停止
+    stopBattleBGM(); // 戦闘BGMを停止
+    stopQuizBGM(); // クイズBGMを停止
+    isBgmPlaying = false; // BGMはオフの状態
+    document.getElementById("bgmToggleButton").textContent = "🔇 BGM OFF"; // ボタンの表示をOFFに設定
 });
 </script>
+
 
   
   <!-- ---------- ログイン画面 ---------- -->
