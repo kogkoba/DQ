@@ -554,11 +554,13 @@
 
       // クイズ開始時にBGMを切り替える
       stopBattleBGM();
-      if (isBgmPlaying) {
-        playQuizBGM();
-      } else {
-        stopQuizBGM();
-      }
+     // クイズ開始時のBGM制御
+if (isBgmPlaying) { 
+    playQuizBGM(); // ミュートでない場合のみ再生
+} else {
+    console.log("🔇 ミュート状態なのでクイズBGMは再生しません");
+}
+
     }
     function handleAnswer(selected, quiz) {
       const topTextBox = document.getElementById("top-text-box");
