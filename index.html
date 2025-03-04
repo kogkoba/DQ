@@ -579,27 +579,27 @@
         }, 3000);
         return;
       }
-     if (missCount >= MAX_MISS) {
+if (missCount >= MAX_MISS) {
     console.log("🛑 クイズ失敗！ザオリクボタンを表示");
 
-    // ここでクイズBGMを確実に停止する
+    // すぐにクイズBGMを停止
     stopQuizBGM();
 
     setTimeout(() => {
         document.getElementById("top-text-box").textContent = "mamは復習を求めた。";
 
-        // ここでもう一度、BGMが止まっていることを保証
-        stopQuizBGM(); 
+        // 再度BGM停止を保証
+        stopQuizBGM();
         stopBattleBGM();
 
-        // ザオリクボタンを表示
+        // ザオリクボタンを **1.5秒後に** 表示（短縮）
         document.getElementById("zaorikuButton").style.display = "inline-block";
 
         // DQダウン音を再生
         const dqAudio = document.getElementById("dqDownAudio");
         dqAudio.currentTime = 0;
         dqAudio.play().catch(err => console.warn("DQ Down Audio play error:", err));
-    }, 3000);
+    }, 1500); // ← **ここを短縮**
     
     return;
 }
@@ -661,12 +661,14 @@
       }
     }
     function playQuizBGM() {
-      const quizBGM = document.getElementById("quizBGM");
-      if (quizBGM) {
-        quizBGM.currentTime = 0;
-        quizBGM.play().catch(err => console.warn("クイズBGM再生エラー:", err));
-      }
+    const quizBGM = document.getElementById("quizBGM");
+    if (quizBGM) {
+        if (quizBGM.paused) { // 既に再生中でなければ再生
+            quizBGM.play().catch(err => console.warn("クイズBGM再生エラー:", err));
+        }
     }
+}
+
     function stopQuizBGM() {
       const quizBGM = document.getElementById("quizBGM");
       if (quizBGM) {
