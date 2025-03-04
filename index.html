@@ -237,40 +237,28 @@
 
   <!-- ▼ DOMContentLoaded で初期化（BGMはミュート状態で開始） -->
   <script>
-    document.addEventListener("DOMContentLoaded", function() {
-      console.log("✅ DOMが読み込まれました");
+document.addEventListener("DOMContentLoaded", () => {
+    console.log("✅ DOMが読み込まれました");
 
-      // BGMをすべてミュート状態で開始
-      stopFieldBGM();
-      
-// クイズ開始時にBGMを切り替える
-stopBattleBGM();
+    // BGMはすべてOFFで開始
+    stopFieldBGM();
+    stopBattleBGM();
+    stopQuizBGM();
+    isBgmPlaying = false;
 
-// クイズBGMの制御（ミュート時は再生しない・すでに再生中ならそのまま）
-if (isBgmPlaying) { 
-    playQuizBGM(); 
-} else {
-    console.log("🔇 ミュート状態なのでクイズBGMは再生しません");
-}
-// クイズBGMの制御（ミュート時は再生しない・すでに再生中ならそのまま）
-if (isBgmPlaying) { 
-    playQuizBGM(); 
-} else {
-    console.log("🔇 ミュート状態なのでクイズBGMは再生しません");
-}
-
-
-      isBgmPlaying = false; // BGMはオフの状態
-
-      // BGMボタンの表示をOFFにする
-      const bgmButton = document.getElementById("bgmToggleButton");
-      if (bgmButton) {
+    const bgmButton = document.getElementById("bgmToggleButton");
+    if (bgmButton) {
         bgmButton.textContent = "🔇 BGM OFF";
-        console.log("🔹 BGMボタンをOFFに設定");
-      } else {
-        console.warn("❌ BGMボタンが見つかりませんでした！");
-      }
-    });
+    }
+
+    // クイズBGMをループ設定
+    const quizBGM = document.getElementById("quizBGM");
+    if (quizBGM) {
+        quizBGM.loop = true;
+    } else {
+        console.warn("❌ quizBGM要素が見つかりませんでした！");
+    }
+});
   </script>
   <!-- ▲ DOMContentLoaded 初期化 -->
 
@@ -573,11 +561,12 @@ if (isBgmPlaying) {
 
     // 🎵 クイズBGMを再生（ミュート時は再生しない）
     if (isBgmPlaying) { 
-        playQuizBGM(); // ✅ ミュートOFFなら再生
+        playQuizBGM(); // ✅ すでに再生中ならリスタートしない
     } else {
         console.log("🔇 ミュート状態なのでクイズBGMは再生しません");
     }
 }
+
 
     function handleAnswer(selected, quiz) {
       const topTextBox = document.getElementById("top-text-box");
@@ -637,13 +626,19 @@ if (missCount >= MAX_MISS) {
         }, 500);
       }
     }
-    function onZaoriku() {
-      const dqAudio = document.getElementById("dqDownAudio");
-      dqAudio.pause();
-      dqAudio.currentTime = 0;
-      document.getElementById("top-text-box").textContent = "ザオリクが唱えられた！";
-      setTimeout(() => { endBattle(); }, 1000);
-    }
+function onZaoriku() {
+    const dqAudio = document.getElementById("dqDownAudio");
+    dqAudio.pause();
+    dqAudio.currentTime = 0;
+
+    // ザオリク画面ではBGMを確実に止める
+    stopQuizBGM();
+    stopBattleBGM();
+
+    document.getElementById("top-text-box").textContent = "ザオリクが唱えられた！";
+    setTimeout(() => { endBattle(); }, 1000);
+}
+
     /* ========= BGM管理 ========= */
     const fieldBGM = document.getElementById("fieldBGM");
     const battleBGM = document.getElementById("battleBGM");
@@ -682,33 +677,32 @@ if (missCount >= MAX_MISS) {
 function playQuizBGM() {
     const quizBGM = document.getElementById("quizBGM");
 
-    // BGMがミュートされている場合は再生しない
+    // BGMがOFFのときは再生しない
     if (!isBgmPlaying) {
         console.log("🔇 BGMがOFFのため、クイズBGMを再生しません");
         return;
     }
 
-    // すでに再生中なら何もしない
+    // すでに再生中なら何もしない（連続再生を確保）
     if (quizBGM && !quizBGM.paused) {
         console.log("🎵 クイズBGMはすでに再生中");
         return;
     }
 
-    // ここで初めてBGMを再生
+    // BGMが止まっている場合のみ再生する
     if (quizBGM) {
         quizBGM.play().catch(err => console.warn("クイズBGM再生エラー:", err));
     }
 }
 
+function stopQuizBGM() {
+    const quizBGM = document.getElementById("quizBGM");
 
-
-    function stopQuizBGM() {
-      const quizBGM = document.getElementById("quizBGM");
-      if (quizBGM) {
-        quizBGM.pause();
-        quizBGM.currentTime = 0;
-      }
+    if (quizBGM) {
+        quizBGM.pause();  // 停止するが、位置はリセットしない
+        console.log("⏹ クイズBGMを一時停止しました");
     }
+}
     function updateBgmButton() {
       const button = document.getElementById("bgmToggleButton");
       if (!button) {
