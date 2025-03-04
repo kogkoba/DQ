@@ -238,15 +238,108 @@
 <script>
 document.addEventListener("DOMContentLoaded", function() {
     console.log("✅ DOMが読み込まれました");
-    console.log(document.getElementById("loginButton")); // ここでボタンが正しく取得できるか確認
 
-    // 🎵 BGMをミュート状態で開始
-    stopFieldBGM(); // フィールドBGMを停止
-    stopBattleBGM(); // 戦闘BGMを停止
-    stopQuizBGM(); // クイズBGMを停止
-    isBgmPlaying = false; // BGMはオフの状態
-    document.getElementById("bgmToggleButton").textContent = "🔇 BGM OFF"; // ボタンの表示をOFFに設定
+    // BGMをすべてミュート状態で開始
+    stopFieldBGM();
+    stopBattleBGM();
+    stopQuizBGM();
+
+    isBgmPlaying = false; // BGMの状態をオフにする
+
+    // BGMボタンの表示を OFF にする
+    const bgmButton = document.getElementById("bgmToggleButton");
+    if (bgmButton) {
+        bgmButton.textContent = "🔇 BGM OFF";
+    } else {
+        console.warn("❌ BGMボタンが見つかりませんでした！");
+    }
 });
+
+// BGMのON/OFFを切り替える処理
+function toggleBGM() {
+    isBgmPlaying = !isBgmPlaying; // ON/OFFを切り替え
+    const button = document.getElementById("bgmToggleButton");
+
+    if (isBgmPlaying) {
+        button.textContent = "🎵 BGM ON";
+        playFieldBGM(); // フィールドBGMを再生
+    } else {
+        button.textContent = "🔇 BGM OFF";
+        stopFieldBGM(); // BGMを停止
+        stopBattleBGM();
+        stopQuizBGM();
+    }
+}
+
+// BGMの状態を更新する関数
+function updateBgmButton() {
+    const button = document.getElementById("bgmToggleButton");
+    if (!button) {
+        console.warn("❌ BGMボタンが見つかりませんでした！");
+        return;
+    }
+
+    if (isBgmPlaying) {
+        button.textContent = "🎵 BGM ON";
+    } else {
+        button.textContent = "🔇 BGM OFF";
+    }
+}
+
+// フィールドBGM再生
+function playFieldBGM() {
+    const fieldBGM = document.getElementById("fieldBGM");
+    if (fieldBGM) {
+        fieldBGM.currentTime = 0;
+        fieldBGM.play().catch(err => console.warn("フィールドBGM再生エラー:", err));
+    }
+}
+
+// フィールドBGM停止
+function stopFieldBGM() {
+    const fieldBGM = document.getElementById("fieldBGM");
+    if (fieldBGM) {
+        fieldBGM.pause();
+        fieldBGM.currentTime = 0; // 停止時に巻き戻す
+    }
+}
+
+// 戦闘BGM再生
+function playBattleBGM() {
+    const battleBGM = document.getElementById("battleBGM");
+    if (battleBGM) {
+        battleBGM.currentTime = 0;
+        battleBGM.play().catch(err => console.warn("戦闘BGM再生エラー:", err));
+    }
+}
+
+// 戦闘BGM停止
+function stopBattleBGM() {
+    const battleBGM = document.getElementById("battleBGM");
+    if (battleBGM) {
+        battleBGM.pause();
+        battleBGM.currentTime = 0;
+    }
+}
+
+// クイズBGM再生
+function playQuizBGM() {
+    const quizBGM = document.getElementById("quizBGM");
+    if (quizBGM) {
+        quizBGM.currentTime = 0;
+        quizBGM.play().catch(err => console.warn("クイズBGM再生エラー:", err));
+    }
+}
+
+// クイズBGM停止
+function stopQuizBGM() {
+    const quizBGM = document.getElementById("quizBGM");
+    if (quizBGM) {
+        quizBGM.pause();
+        quizBGM.currentTime = 0;
+    }
+}
+
 </script>
 
 
