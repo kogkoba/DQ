@@ -161,16 +161,7 @@
       console.log("✅ gapiLoaded");
       gapi.load("client", initClient);
     }
-
-    // 🔹 先に API_KEY を定義する
-    const API_KEY = "AIzaSyBszPu-BQ2_Aq9C3lhAiW--kyenM5vQsjs";
-
-    function gapiLoaded() {
-      console.log("✅ gapiLoaded");
-      gapi.load("client", initClient);
-    }
-
-    async function initClient() {
+  async function initClient() {
       try {
         await gapi.client.init({
           apiKey: API_KEY,  // ✅ API_KEY を先に定義したのでエラーが出ない
