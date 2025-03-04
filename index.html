@@ -750,9 +750,16 @@ function showQuiz() {
     const fieldBGM = document.getElementById("fieldBGM");
     const battleBGM = document.getElementById("battleBGM");
     function playFieldBGM() {
-      fieldBGM.currentTime = 0;
-      fieldBGM.play().catch(err => console.warn("フィールドBGM再生エラー:", err));
+    if (!isBgmPlaying) {
+        console.log("⏸ BGMはOFFなので再生しません");
+        return; // BGMがOFFなら何もしない
     }
+    const fieldBGM = document.getElementById("fieldBGM");
+    if (fieldBGM) {
+        fieldBGM.currentTime = 0;
+        fieldBGM.play().catch(err => console.warn("フィールドBGM再生エラー:", err));
+    }
+}
     function stopFieldBGM() {
     fieldBGM.pause();
     fieldBGM.currentTime = 0; // BGMを停止時に巻き戻す
@@ -864,19 +871,14 @@ if (bgmButton) {
     
     /* ========= タイトルからゲーム開始 ========= */
 function startGame() {
-  
-    console.log("🎮 startGame() 実行！"); // ← デバッグ用ログを追加
-
     document.getElementById("titleScreen").style.display = "none";
     document.getElementById("gameContainer").style.display = "block";
-    
-    console.log("📌 タイトル画面を非表示、ゲーム画面を表示しました");
-
     initGame();
     lastEncounterSteps = player.steps;
     encounterThreshold = getRandomEncounterThreshold();
-
-    console.log("🎲 初期化完了！");
+    
+    // BGMを勝手に再生しないようにする（playFieldBGM() を削除）
+    console.log("🎮 ゲーム開始！BGMはOFFのまま");
 }
     
     /* ========= フィールドでの勇者移動 ========= */
