@@ -681,7 +681,23 @@ function toggleBGM() {
         stopQuizBGM();
     }
 }
+    updateBgmButton(); // 🔄 BGMボタンの状態を更新
+}
 
+// 🔽 ここに追加 🔽
+function updateBgmButton() {
+    const button = document.getElementById("bgmToggleButton");
+    if (!button) {
+        console.warn("❌ BGMボタンが見つかりませんでした！");
+        return;
+    }
+
+    if (isBgmPlaying) {
+        button.textContent = "🎵 BGM ON";
+    } else {
+        button.textContent = "🔇 BGM OFF";
+    }
+}
   
 // ▼ ここに追加！
 document.addEventListener("DOMContentLoaded", () => {
