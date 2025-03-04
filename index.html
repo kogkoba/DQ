@@ -280,9 +280,10 @@
         return;
       }
       if (!isBgmPlaying) {
-        console.log("🔇 BGMがOFFのため、クイズBGMを再生しません");
+        console.log("🔇 BGMがOFFのため、クイズBGMは再生しません");
         return;
       }
+      // 既に再生中なら何もしない
       if (!quizBGM.paused) {
         console.log("🎵 クイズBGMはすでに再生中");
         return;
@@ -569,6 +570,8 @@
         if (isBgmPlaying) {
           playBattleBGM();
         }
+        // クイズ開始時に一度だけクイズBGMを再生
+        playQuizBGM();
         startBattle();
       }, 800);
     }
@@ -627,11 +630,8 @@
         btn.onclick = () => handleAnswer(index + 1, quiz);
         choiceArea.appendChild(btn);
       });
-      if (isBgmPlaying) { 
-        playQuizBGM();
-      } else {
-        console.log("🔇 ミュート状態なのでクイズBGMは再生しません");
-      }
+      // ※ ここでは再度 playQuizBGM() は呼ばず、クイズ開始時に1度だけ再生済みとする
+      // 次のクイズは handleAnswer() 内で showQuiz() の setTimeout により呼び出される
       setTimeout(() => { showQuiz(); }, 3000);
     }
     function handleAnswer(selected, quiz) {
