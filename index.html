@@ -662,12 +662,19 @@ if (missCount >= MAX_MISS) {
     }
     function playQuizBGM() {
     const quizBGM = document.getElementById("quizBGM");
+
+    if (!isBgmPlaying) {
+        console.log("🔇 BGMがOFFのため、クイズBGMを再生しません");
+        return; // ミュートなら再生しない
+    }
+
     if (quizBGM) {
         if (quizBGM.paused) { // 既に再生中でなければ再生
             quizBGM.play().catch(err => console.warn("クイズBGM再生エラー:", err));
         }
     }
 }
+
 
     function stopQuizBGM() {
       const quizBGM = document.getElementById("quizBGM");
