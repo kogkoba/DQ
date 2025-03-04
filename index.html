@@ -390,7 +390,8 @@
       try {
         const resp = await gapi.client.sheets.spreadsheets.values.get({
           spreadsheetId: QUIZ_SHEET_ID,
-          range: ${SHEET_NAME_QUIZ}!A2:K1000
+          range: `${SHEET_NAME_QUIZ}!A2:K1000`
+
         });
         quizData = resp.result.values.map(row => ({
           question: row[1] || "",
@@ -409,7 +410,8 @@
       try {
         const resp = await gapi.client.sheets.spreadsheets.values.get({
           spreadsheetId: MONSTER_SHEET_ID,
-          range: ${SHEET_NAME_MONSTER}!A2:C1000
+          range: `${SHEET_NAME_MONSTER}!A2:C1000`
+
         });
         monsterData = resp.result.values.map(row => ({
           id: row[0] || "",
