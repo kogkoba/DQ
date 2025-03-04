@@ -639,44 +639,33 @@ function showQuiz() {
   // ✅ setTimeout() を削除（プレイヤーの回答を待つ仕様にする）
 }
 
-    function handleAnswer(selected, quiz) {
-      const topTextBox = document.getElementById("top-text-box");
-      if (selected === quiz.correct) {
-        correctCount++;
-        topTextBox.textContent = "✅ 正解！ " + quiz.explanation;
-        shakeAndRemoveMonster();
+function handleAnswer(selected, quiz) {
+  const topTextBox = document.getElementById("top-text-box");
+  if (selected === quiz.correct) {
+    correctCount++;
+    topTextBox.textContent = "✅ 正解！ " + quiz.explanation;
+    shakeAndRemoveMonster();
       } else {
-        missCount++;
-        topTextBox.textContent = "❌ 不正解！ " + quiz.explanation;
-        shakeAndRemoveHeart();
+    missCount++;
+    topTextBox.textContent = "❌ 不正解！ " + quiz.explanation;
+    shakeAndRemoveHeart();
       }
-      if (correctCount >= MAX_CORRECT) {
-        setTimeout(() => {
-          topTextBox.textContent = "mamは安心して去っていった！";
-          stopQuizBGM();
-          endBattle();
-        }, 3000);
-        return;
-      }
-      if (missCount >= MAX_MISS) {
-        console.log("🛑 クイズ失敗！ザオリクボタンを表示");
-        stopQuizBGM();
-        setTimeout(() => {
-          document.getElementById("top-text-box").textContent = "mamは復習を求めた。";
-          stopQuizBGM();
-          stopBattleBGM();
-          if (isBgmPlaying) {
-            const dqAudio = document.getElementById("dqDownAudio");
-            dqAudio.currentTime = 0;
-            dqAudio.play().catch(err => console.warn("DQ Down Audio play error:", err));
-          }
-          document.getElementById("zaorikuButton").style.display = "inline-block";
-        }, 1500);
-        return;
-      }
-      // 3秒後に次のクイズを表示
-      setTimeout(() => { showQuiz(); }, 3000);
+// ✅ 3秒待ってから次の問題を表示
+  setTimeout(() => {
+    if (correctCount >= MAX_CORRECT) {
+      topTextBox.textContent = "mamは安心して去っていった！";
+      stopQuizBGM();
+      endBattle();
+    } else if (missCount >= MAX_MISS) {
+      topTextBox.textContent = "mamは復習を求めた。";
+      stopQuizBGM();
+      stopBattleBGM();
+      document.getElementById("zaorikuButton").style.display = "inline-block";
+    } else {
+      showQuiz(); // 次の問題を出す
     }
+  }, 3000);
+}
     function shakeAndRemoveMonster() {
       const container = document.getElementById("enemy-container");
       if (container.children.length > 0) {
