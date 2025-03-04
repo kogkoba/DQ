@@ -167,7 +167,8 @@
           apiKey: API_KEY,  // ✅ API_KEY を先に定義したのでエラーが出ない
           discoveryDocs: ["https://sheets.googleapis.com/$discovery/rest?version=v4"]
         });
-        console.log("✅ GAPI Initialized");
+
+       console.log("✅ GAPI Initialized");
         await loadQuizData();
         await loadMonsterData();
         console.log("✅ Data Loaded");
