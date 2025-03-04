@@ -160,11 +160,11 @@
       console.log("✅ gapiLoaded");
       gapi.load("client", initClient);
     }
-    // Google API 初期化
+     // Google API 初期化
     async function initClient() {
       try {
         await gapi.client.init({
-          apiKey: AIzaSyBszPu-BQ2_Aq9C3lhAiW--kyenM5vQsjs,
+          apiKey: API_KEY,
           discoveryDocs: ["https://sheets.googleapis.com/$discovery/rest?version=v4"]
         });
         console.log("✅ GAPI Initialized");
