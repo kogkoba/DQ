@@ -549,6 +549,22 @@
         showQuiz();
       }, 5000);
     }
+    
+    
+    
+    function initHearts() {
+      const heartsContainer = document.getElementById("hearts-container");
+      heartsContainer.innerHTML = "";
+      for (let i = 0; i < 4; i++) {
+        const heart = document.createElement("span");
+        heart.className = "heart";
+        heart.textContent = "♡";
+        heartsContainer.appendChild(heart);
+      }
+    }
+
+
+    
     function showQuiz() {
       const quiz = getRandomQuiz();
       const topTextBox = document.getElementById("top-text-box");
