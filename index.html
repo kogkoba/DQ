@@ -792,6 +792,29 @@ function updateBgmButton() {
   
 // ▼ ここに追加！
 document.addEventListener("DOMContentLoaded", () => {
+console.log("✅ DOMが読み込まれました");
+console.log("🔹 初期BGM停止処理が実行されました");
+
+// BGMをすべてミュート状態で開始
+stopFieldBGM();
+stopBattleBGM();
+stopQuizBGM();
+
+isBgmPlaying = false; // BGMの状態をオフにする
+
+// BGMボタンの表示を OFF にする
+const bgmButton = document.getElementById("bgmToggleButton");
+if (bgmButton) {
+    bgmButton.textContent = "🔇 BGM OFF";
+    console.log("🔹 BGMボタンの表示をOFFに設定");
+} else {
+    console.warn("❌ BGMボタンが見つかりませんでした！");
+}
+
+
+
+
+  
     const quizBGM = document.getElementById("quizBGM"); // クイズBGMの要素を取得
     if (quizBGM) {
         quizBGM.loop = true; // クイズBGMをループさせる
