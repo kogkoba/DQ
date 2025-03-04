@@ -154,17 +154,27 @@
   </style>
 
   <!-- ==================== gapiLoaded & initClient ==================== -->
-  <script>
-    // Google API 読み込み後に呼ばれる
+  // 🔹 ここで先に API_KEY を定義
+    const API_KEY = "AIzaSyBszPu-BQ2_Aq9C3lhAiW--kyenM5vQsjs";
+
     function gapiLoaded() {
       console.log("✅ gapiLoaded");
       gapi.load("client", initClient);
     }
-     // Google API 初期化
+    
+<script>
+    // 🔹 先に API_KEY を定義する
+    const API_KEY = "AIzaSyBszPu-BQ2_Aq9C3lhAiW--kyenM5vQsjs";
+
+    function gapiLoaded() {
+      console.log("✅ gapiLoaded");
+      gapi.load("client", initClient);
+    }
+
     async function initClient() {
       try {
         await gapi.client.init({
-          apiKey: API_KEY,
+          apiKey: API_KEY,  // ✅ API_KEY を先に定義したのでエラーが出ない
           discoveryDocs: ["https://sheets.googleapis.com/$discovery/rest?version=v4"]
         });
         console.log("✅ GAPI Initialized");
@@ -175,7 +185,8 @@
         console.error("⛔ GAPI Init Error:", err);
       }
     }
-  </script>
+</script>
+
 </head>
 
 <body>
