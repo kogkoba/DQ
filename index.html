@@ -531,37 +531,39 @@
         showQuiz();
       }, 5000);
     }
-    function showQuiz() {
-      const quiz = getRandomQuiz();
-      const topTextBox = document.getElementById("top-text-box");
-      if (!quiz) {
+  function showQuiz() {
+    const quiz = getRandomQuiz();
+    const topTextBox = document.getElementById("top-text-box");
+
+    if (!quiz) {
         topTextBox.textContent = "クイズデータがありません";
         return;
-      }
-      topTextBox.textContent = quiz.question;
-      const quizImage = document.getElementById("quiz-image");
-      quizImage.src = quiz.imageUrl;
-      quizImage.style.display = quiz.imageUrl ? "block" : "none";
-      const choiceArea = document.getElementById("choice-area");
-      choiceArea.innerHTML = "";
-      quiz.choices.forEach((choice, index) => {
+    }
+
+    topTextBox.textContent = quiz.question;
+    const quizImage = document.getElementById("quiz-image");
+    quizImage.src = quiz.imageUrl;
+    quizImage.style.display = quiz.imageUrl ? "block" : "none";
+
+    const choiceArea = document.getElementById("choice-area");
+    choiceArea.innerHTML = "";
+
+    quiz.choices.forEach((choice, index) => {
         let btn = document.createElement("button");
         btn.className = "choice-button";
-        btn.textContent = `▶ ${choice}`;
+        btn.textContent = choice;
         btn.onclick = () => handleAnswer(index + 1, quiz);
         choiceArea.appendChild(btn);
-      });
+    });
 
-      // クイズ開始時にBGMを切り替える
-      stopBattleBGM();
-     // クイズ開始時のBGM制御
-if (isBgmPlaying) { 
-    playQuizBGM(); // ミュートでない場合のみ再生
-} else {
-    console.log("🔇 ミュート状態なのでクイズBGMは再生しません");
+    // 🎵 クイズBGMを再生（ミュート時は再生しない）
+    if (isBgmPlaying) { 
+        playQuizBGM(); // ✅ ミュートOFFなら再生
+    } else {
+        console.log("🔇 ミュート状態なのでクイズBGMは再生しません");
+    }
 }
 
-    }
     function handleAnswer(selected, quiz) {
       const topTextBox = document.getElementById("top-text-box");
       if (selected === quiz.correct) {
