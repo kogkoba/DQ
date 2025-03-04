@@ -695,13 +695,14 @@ document.addEventListener("DOMContentLoaded", () => {
     
     /* ========= タイトルからゲーム開始 ========= */
     function startGame() {
-      document.getElementById("titleScreen").style.display = "none";
-      document.getElementById("gameContainer").style.display = "block";
-      initGame();
-      lastEncounterSteps = player.steps;
-      encounterThreshold = getRandomEncounterThreshold();
-      playFieldBGM();
-    }
+    console.log("startGame() が呼ばれました"); // デバッグ用
+    document.getElementById("titleScreen").style.display = "none";
+    document.getElementById("gameContainer").style.display = "block";
+    initGame();
+    lastEncounterSteps = player.steps;
+    encounterThreshold = getRandomEncounterThreshold();
+    playFieldBGM();
+}
     /* ========= フィールドでの勇者移動 ========= */
     const playerImages = [
       "https://lh3.googleusercontent.com/d/1peHOi70oOmL8c9v3OQydE5N-9R0PB6vh", // 立ち姿
