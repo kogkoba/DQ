@@ -617,12 +617,14 @@ function startEncounter() {
         choiceArea.appendChild(btn);
       });
       // ▼ クイズ開始時、戦闘BGMからクイズBGMへ切替（プレイヤーがオンの場合のみ）
-      stopBattleBGM();
-      if (isBgmPlaying) {
-        playQuizBGM();
-      }
-      // ▲ クイズ開始時、戦闘BGMからクイズBGMへ切替（プレイヤーがオンの場合のみ）
-    }
+     // クイズ開始時、プレイヤーがBGM ONにしている場合のみ、クイズBGMを再生
+if (isBgmPlaying) {
+  stopBattleBGM();
+  playQuizBGM();
+} else {
+  stopBattleBGM();
+  stopQuizBGM(); // BGM OFFのままにする
+}
   
     function handleAnswer(selected, quiz) {
       const topTextBox = document.getElementById("top-text-box");
@@ -763,18 +765,19 @@ function startEncounter() {
       player.y = document.getElementById("gameArea").clientHeight / 2;
       updatePlayerPosition();
     }
-    function endBattle() {
+   function endBattle() {
   stopBattleBGM();
+  stopQuizBGM(); // クイズBGMも止める
   document.getElementById("battle-screen").style.display = "none";
   document.getElementById("gameArea").style.display = "block";
   inBattle = false;
 
-  // ▼ ここでプレイヤーのBGM設定を維持したままフィールドBGMを再生
+  // プレイヤーがBGM ONにしていたらフィールドBGMを流す
   if (isBgmPlaying) {
     playFieldBGM();
   }
-  // ▲ ここでプレイヤーのBGM設定を維持したままフィールドBGMを再生
 }
+
 
   </script>
 </body>
