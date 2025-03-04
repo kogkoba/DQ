@@ -878,17 +878,7 @@ function startGame() {
 
     console.log("🎲 初期化完了！");
 }
-
-    document.getElementById("titleScreen").style.display = "none";
-    document.getElementById("gameContainer").style.display = "block";
-    initGame();
-    lastEncounterSteps = player.steps;
-    encounterThreshold = getRandomEncounterThreshold();
     
-    // BGMを勝手に再生しないようにする（playFieldBGM() を削除）
-    console.log("🎮 ゲーム開始！BGMはOFFのまま");
-}
-
     /* ========= フィールドでの勇者移動 ========= */
     const playerImages = [
       "https://lh3.googleusercontent.com/d/1peHOi70oOmL8c9v3OQydE5N-9R0PB6vh", // 立ち姿
