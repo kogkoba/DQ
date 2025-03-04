@@ -253,8 +253,13 @@
     <div id="status">
       プレイヤーのHP: <span id="hp">100</span> / レベル: <span id="level">1</span>
       <div id="bgmToggleContainer">
-        <button id="bgmToggleButton" onclick="toggleBGM()">🎵 BGM ON</button>
-      </div>
+        <!-- ▼ ここにBGMオンオフボタンを追加 -->
+<div id="bgmToggleContainer">
+    <button id="bgmToggleButton" onclick="toggleBGM()">🎵 BGM ON</button>
+</div>
+<!-- ▲ ここにBGMオンオフボタンを追加 -->
+
+    <button id="bgmToggleButton" onclick="toggleBGM()">🎵 BGM ON</button>
     </div>
     <!-- ---------- フィールド画面 ---------- -->
     <div id="gameArea">
@@ -290,10 +295,16 @@
   <audio id="battleBGM" loop preload="auto">
     <source src="./jypdance.mp3" type="audio/mpeg">
   </audio>
-  <!-- クイズBGM用オーディオタグ -->
-  <audio id="quizBGM" loop preload="auto">
-    <source src="./jypdance.mp3" type="audio/mpeg">
-  </audio>
+
+  <!-- クイズBGM用オーディオタグを追加 -->
+<audio id="quizBGM" loop preload="auto">
+  <source src="./jypdance.mp3" type="audio/mpeg">
+</audio>
+
+
+
+
+  
   <!-- DQ down用オーディオタグ -->
   <audio id="dqDownAudio" preload="auto">
     <source src="./DQ down long.mp3" type="audio/mpeg">
@@ -310,32 +321,31 @@
     let playerData = { name: "", level: 1, exp: 0, g: 0 };
 
     document.getElementById("loginButton").addEventListener("click", function () {
-      let enteredName = document.getElementById("playerNameInput").value.trim();
-      if (enteredName === "") {
-        alert("名前を入力してください！");
-        return;
-      }
-      fetch(GAS_URL + "?name=" + encodeURIComponent(enteredName), {
-        method: "GET"
-      })
-      .then(response => response.json())
-      .then(data => {
-        console.log("データ取得成功:", data);
-        playerData.name = enteredName;
-        playerData.level = parseInt(data.level, 10);
-        playerData.exp = parseInt(data.exp, 10);
-        playerData.g = parseInt(data.g, 10);
-        console.log("取得したプレイヤーデータ:", playerData);
-        // ログイン後、ログイン画面を隠してタイトル画面を表示
-        document.getElementById("loginScreen").style.display = "none";
-        document.getElementById("titleScreen").style.display = "flex";
-      })
-      .catch(error => console.error("データ取得エラー:", error));
+        let enteredName = document.getElementById("playerNameInput").value.trim();
+        if (enteredName === "") {
+            alert("名前を入力してください！");
+            return;
+        }
+        fetch(GAS_URL + "?name=" + encodeURIComponent(enteredName), {
+            method: "GET"
+        })
+        .then(response => response.json())
+        .then(data => {
+            console.log("データ取得成功:", data);
+            playerData.name = enteredName;
+            playerData.level = parseInt(data.level, 10);
+            playerData.exp = parseInt(data.exp, 10);
+            playerData.g = parseInt(data.g, 10);
+            console.log("取得したプレイヤーデータ:", playerData);
+            // ログイン後、ログイン画面を隠してタイトル画面を表示
+            document.getElementById("loginScreen").style.display = "none";
+            document.getElementById("titleScreen").style.display = "flex";
+        })
+        .catch(error => console.error("データ取得エラー:", error));
     });
 
     /* ========= ゲーム用グローバル変数 ========= */
     let inBattle = false;
-    let isBgmPlaying = false;
     const STEP = 20;
     let lastEncounterSteps = 0;
     let encounterThreshold = getRandomEncounterThreshold();
@@ -377,19 +387,19 @@
         console.error("⛔ GAPI Init Error:", err);
       }
     }
-    // ========== クイズデータ取得 ==========
+   // ========== クイズデータ取得 ==========
     async function loadQuizData() {
       try {
         const resp = await gapi.client.sheets.spreadsheets.values.get({
           spreadsheetId: QUIZ_SHEET_ID,
-          range: `${SHEET_NAME_QUIZ}!A2:K1000`
+          range: ${SHEET_NAME_QUIZ}!A2:K1000
         });
         quizData = resp.result.values.map(row => ({
           question: row[1] || "",
           imageUrl: row[2] || "",
           choices: [row[3], row[4], row[5], row[6]],
           correct: parseInt(row[7] || "1", 10),
-          explanation: row[9] || ""
+          explanation: row[9] || ""  // J列から解説を取得（index 9）
         }));
         console.log("Quiz Data:", quizData);
       } catch (err) {
@@ -401,7 +411,7 @@
       try {
         const resp = await gapi.client.sheets.spreadsheets.values.get({
           spreadsheetId: MONSTER_SHEET_ID,
-          range: `${SHEET_NAME_MONSTER}!A2:C1000`
+          range: ${SHEET_NAME_MONSTER}!A2:C1000
         });
         monsterData = resp.result.values.map(row => ({
           id: row[0] || "",
@@ -504,73 +514,103 @@
         showQuiz();
       }, 5000);
     }
-    // ======== showQuiz() の定義（重複を削除・BGM切替追加） ========
     function showQuiz() {
       const quiz = getRandomQuiz();
       const topTextBox = document.getElementById("top-text-box");
-
       if (!quiz) {
         topTextBox.textContent = "クイズデータがありません";
         return;
       }
-
       topTextBox.textContent = quiz.question;
       const quizImage = document.getElementById("quiz-image");
       quizImage.src = quiz.imageUrl;
       quizImage.style.display = quiz.imageUrl ? "block" : "none";
-
       const choiceArea = document.getElementById("choice-area");
       choiceArea.innerHTML = "";
-
       quiz.choices.forEach((choice, index) => {
         let btn = document.createElement("button");
         btn.className = "choice-button";
-        btn.textContent = `▶ ${choice}`;
+        btn.textContent = ▶ ${choice};
         btn.onclick = () => handleAnswer(index + 1, quiz);
         choiceArea.appendChild(btn);
       });
+function showQuiz() {
+  const quiz = getRandomQuiz();
+  const topTextBox = document.getElementById("top-text-box");
 
-      // クイズ開始時にBGMを切り替える
-      stopBattleBGM();
-      playQuizBGM();
+  if (!quiz) {
+    topTextBox.textContent = "クイズデータがありません";
+    return;
+  }
+
+  topTextBox.textContent = quiz.question;
+  const quizImage = document.getElementById("quiz-image");
+  quizImage.src = quiz.imageUrl;
+  quizImage.style.display = quiz.imageUrl ? "block" : "none";
+
+  const choiceArea = document.getElementById("choice-area");
+  choiceArea.innerHTML = "";
+
+  quiz.choices.forEach((choice, index) => {
+    let btn = document.createElement("button");
+    btn.className = "choice-button";
+    btn.textContent = ▶ ${choice};
+    btn.onclick = () => handleAnswer(index + 1, quiz);
+    choiceArea.appendChild(btn);
+  });
+
+  // ======== クイズ開始時にBGMを切り替える ========
+  stopBattleBGM(); // 戦闘BGMを止める
+  playQuizBGM(); // クイズBGMを再生
+}
+
+
+
+      
     }
     function handleAnswer(selected, quiz) {
-      const topTextBox = document.getElementById("top-text-box");
+  const topTextBox = document.getElementById("top-text-box");
 
-      if (selected === quiz.correct) {
-        correctCount++;
-        topTextBox.textContent = "✅ 正解！ " + quiz.explanation;
-        shakeAndRemoveMonster();
-      } else {
-        missCount++;
-        topTextBox.textContent = "❌ 不正解！ " + quiz.explanation;
-        shakeAndRemoveHeart();
-      }
+  if (selected === quiz.correct) {
+    correctCount++;
+    topTextBox.textContent = "✅ 正解！ " + quiz.explanation;
+    shakeAndRemoveMonster();
+  } else {
+    missCount++;
+    topTextBox.textContent = "❌ 不正解！ " + quiz.explanation;
+    shakeAndRemoveHeart();
+  }
 
-      if (correctCount >= MAX_CORRECT) {
-        setTimeout(() => {
-          topTextBox.textContent = "mamは安心して去っていった！";
-          stopQuizBGM();
-          endBattle();
-        }, 3000);
-        return;
-      }
+  if (correctCount >= MAX_CORRECT) {
+    setTimeout(() => {
+      topTextBox.textContent = "mamは安心して去っていった！";
+      stopQuizBGM(); // クイズBGMを止める
+      endBattle();
+    }, 3000);
+    return;
+  }
 
-      if (missCount >= MAX_MISS) {
-        setTimeout(() => {
-          topTextBox.textContent = "mamは復習を求めた。";
-          stopQuizBGM();
-          document.getElementById("zaorikuButton").style.display = "inline-block";
-          stopBattleBGM();
-          const dqAudio = document.getElementById("dqDownAudio");
-          dqAudio.currentTime = 0;
-          dqAudio.play().catch(err => console.warn("DQ Down Audio play error:", err));
-        }, 3000);
-        return;
-      }
+  if (missCount >= MAX_MISS) {
+    setTimeout(() => {
+      topTextBox.textContent = "mamは復習を求めた。";
+      stopQuizBGM(); // クイズBGMを止める
+      document.getElementById("zaorikuButton").style.display = "inline-block";
+      stopBattleBGM();
+      const dqAudio = document.getElementById("dqDownAudio");
+      dqAudio.currentTime = 0;
+      dqAudio.play().catch(err => console.warn("DQ Down Audio play error:", err));
+    }, 3000);
+    return;
+  }
 
-      setTimeout(() => { showQuiz(); }, 3000);
-    }
+  setTimeout(() => { showQuiz(); }, 3000);
+}
+
+
+
+
+
+    
     function shakeAndRemoveMonster() {
       const container = document.getElementById("enemy-container");
       if (container.children.length > 0) {
@@ -607,34 +647,56 @@
     function stopBattleBGM() {
       battleBGM.pause();
     }
-    function toggleBGM() {
-      isBgmPlaying = !isBgmPlaying;
-      const button = document.getElementById("bgmToggleButton");
+function toggleBGM() {
+  isBgmPlaying = !isBgmPlaying; // ON/OFFを切り替える
+  const button = document.getElementById("bgmToggleButton");
 
-      if (isBgmPlaying) {
-        button.textContent = "🎵 BGM ON";
-        playFieldBGM();
-      } else {
-        button.textContent = "🔇 BGM OFF";
-        stopFieldBGM();
-        stopBattleBGM();
-        stopQuizBGM();
-      }
-      quizBGM.loop = true;
-    }
-    /* ======== クイズBGM管理 ======== */
-    const quizBGM = document.getElementById("quizBGM");
-    function playQuizBGM() {
-      quizBGM.currentTime = 0;
-      quizBGM.play().catch(err => console.warn("クイズBGM再生エラー:", err));
-    }
-    function stopQuizBGM() {
-      quizBGM.pause();
-      quizBGM.currentTime = 0;
-    }
+  if (isBgmPlaying) {
+    button.textContent = "🎵 BGM ON";
+    playFieldBGM(); // BGMをオンにしたらフィールドBGMを流す
+  } else {
+    button.textContent = "🔇 BGM OFF";
+    stopFieldBGM(); // BGMをオフにしたらBGMを止める
+    stopBattleBGM();
+    stopQuizBGM();
+  }
+
+// ▼ ここに追加！クイズBGMをループさせる
+quizBGM.loop = true;
+  
+  // ▼ ここに追加！
+document.addEventListener("DOMContentLoaded", () => {
+    updateBgmButton();
+});
+}
+
+
+
+    
+
+
+  /* ======== クイズBGM管理 ======== */
+  const quizBGM = document.getElementById("quizBGM"); // クイズBGMのオーディオ要素を取得
+
+  function playQuizBGM() {
+    quizBGM.currentTime = 0; // BGMを最初から再生
+    quizBGM.play().catch(err => console.warn("クイズBGM再生エラー:", err));
+  }
+
+  function stopQuizBGM() {
+    quizBGM.pause(); // BGMを一時停止
+    quizBGM.currentTime = 0; // 停止後に巻き戻す
+  }
+
+
+
+
+
+
+
+    
     /* ========= タイトルからゲーム開始 ========= */
     function startGame() {
-      console.log("startGame() が呼ばれました");
       document.getElementById("titleScreen").style.display = "none";
       document.getElementById("gameContainer").style.display = "block";
       initGame();
@@ -644,9 +706,9 @@
     }
     /* ========= フィールドでの勇者移動 ========= */
     const playerImages = [
-      "https://lh3.googleusercontent.com/d/1peHOi70oOmL8c9v3OQydE5N-9R0PB6vh",
-      "https://lh3.googleusercontent.com/d/1iuVZiT6Eh9mp2Ta__Cpm5z28HZ2k0YA0",
-      "https://lh3.googleusercontent.com/d/1fCmul9iotoUh4MLa_qzHvaOUDYMvng8C"
+      "https://lh3.googleusercontent.com/d/1peHOi70oOmL8c9v3OQydE5N-9R0PB6vh", // 立ち姿
+      "https://lh3.googleusercontent.com/d/1iuVZiT6Eh9mp2Ta__Cpm5z28HZ2k0YA0", // 右足前
+      "https://lh3.googleusercontent.com/d/1fCmul9iotoUh4MLa_qzHvaOUDYMvng8C"  // 左足前
     ];
     let currentImageIndex = 0;
     let player = { x: 0, y: 0, hp: 100, level: 1, steps: 0 };
@@ -688,16 +750,20 @@
       updatePlayerPosition();
     }
     /* ========= 戦闘終了時の処理 ========= */
-    function endBattle() {
-      stopBattleBGM();
-      stopQuizBGM();
-      document.getElementById("battle-screen").style.display = "none";
-      document.getElementById("gameArea").style.display = "block";
-      inBattle = false;
-      setTimeout(() => {
-        playFieldBGM();
-      }, 1000);
-    }
+  function endBattle() {
+  stopBattleBGM();  // 戦闘BGMを止める
+  stopQuizBGM();    // クイズBGMを止める（念のため）
+
+  document.getElementById("battle-screen").style.display = "none";
+  document.getElementById("gameArea").style.display = "block";
+  inBattle = false;
+
+  // 1秒後にフィールドBGMを再生
+  setTimeout(() => {
+    playFieldBGM();
+  }, 1000);
+}
+
   </script>
 </body>
 </html>
