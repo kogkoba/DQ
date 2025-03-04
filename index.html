@@ -242,8 +242,16 @@
 
       // BGMをすべてミュート状態で開始
       stopFieldBGM();
-      stopBattleBGM();
-      stopQuizBGM();
+      // クイズ開始時にBGMを切り替える
+stopBattleBGM();
+
+// クイズBGMの制御（ミュート時は再生しない・すでに再生中ならそのまま）
+if (isBgmPlaying) { 
+    playQuizBGM(); 
+} else {
+    console.log("🔇 ミュート状態なのでクイズBGMは再生しません");
+}
+
 
       isBgmPlaying = false; // BGMはオフの状態
 
