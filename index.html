@@ -674,10 +674,19 @@ function onZaoriku() {
       fieldBGM.currentTime = 0;
     }
 function playBattleBGM() {
+    const battleBGM = document.getElementById("battleBGM");
+
     if (!isBgmPlaying) {
         console.log("🔇 BGMがOFFなのでバトルBGMを流しません");
         return;
     }
+
+    // ✅ すでに再生中なら処理しない
+    if (!battleBGM.paused) {
+        console.log("🎵 バトルBGMはすでに再生中");
+        return;
+    }
+
     battleBGM.currentTime = 0;
     battleBGM.play().catch(err => console.warn("戦闘BGM再生エラー:", err));
 }
@@ -811,16 +820,20 @@ function stopQuizBGM() {
       updatePlayerPosition();
     }
     /* ========= 戦闘終了時の処理 ========= */
-    function endBattle() {
-      stopBattleBGM();
-      stopQuizBGM();
-      document.getElementById("battle-screen").style.display = "none";
-      document.getElementById("gameArea").style.display = "block";
-      inBattle = false;
-      setTimeout(() => {
-        playFieldBGM();
-      }, 1000);
-    }
+function endBattle() {
+    stopBattleBGM();
+    stopQuizBGM();  // クイズBGMが鳴っていた場合も止める
+
+    document.getElementById("battle-screen").style.display = "none";
+    document.getElementById("gameArea").style.display = "block";
+    inBattle = false;
+
+    setTimeout(() => {
+        if (isBgmPlaying) {
+            playFieldBGM();
+        }
+    }, 1000);
+}
   </script>
 </body>
 </html>
