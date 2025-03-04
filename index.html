@@ -479,26 +479,37 @@ document.addEventListener("DOMContentLoaded", () => {
       }
     }
     /* ========= 戦闘関連 ========= */
-    function startEncounter() {
-      inBattle = true;
-      stopFieldBGM();
-      lastEncounterSteps = player.steps;
-      encounterThreshold = getRandomEncounterThreshold();
-      const overlay = document.getElementById("transition-overlay");
-      const circle = document.getElementById("transition-circle");
-      overlay.style.display = "block";
-      requestAnimationFrame(() => {
+   function startEncounter() {
+    inBattle = true;
+    stopFieldBGM();
+    lastEncounterSteps = player.steps;
+    encounterThreshold = getRandomEncounterThreshold();
+
+    const overlay = document.getElementById("transition-overlay");
+    const circle = document.getElementById("transition-circle");
+    overlay.style.display = "block";
+    
+    requestAnimationFrame(() => {
         circle.classList.add("active");
-      });
-      setTimeout(() => {
+    });
+
+    setTimeout(() => {
         document.getElementById("gameArea").style.display = "none";
         document.getElementById("battle-screen").style.display = "block";
         overlay.style.display = "none";
         circle.classList.remove("active");
-        playBattleBGM();
+
+        // ✅ BGMがONのときだけバトルBGMを流す
+        if (isBgmPlaying) {
+            playBattleBGM();
+        } else {
+            console.log("🔇 BGMがOFFなのでバトルBGMを流しません");
+        }
+
         startBattle();
-      }, 800);
-    }
+    }, 800);
+}
+
     function showMonsters(monsters) {
       console.log("📢 モンスターを表示:", monsters);
       const container = document.getElementById("enemy-container");
@@ -654,10 +665,15 @@ function onZaoriku() {
       fieldBGM.pause();
       fieldBGM.currentTime = 0;
     }
-    function playBattleBGM() {
-      battleBGM.currentTime = 0;
-      battleBGM.play().catch(err => console.warn("戦闘BGM再生エラー:", err));
+function playBattleBGM() {
+    if (!isBgmPlaying) {
+        console.log("🔇 BGMがOFFなのでバトルBGMを流しません");
+        return;
     }
+    battleBGM.currentTime = 0;
+    battleBGM.play().catch(err => console.warn("戦闘BGM再生エラー:", err));
+}
+
     function stopBattleBGM() {
       battleBGM.pause();
     }
