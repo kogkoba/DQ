@@ -288,12 +288,17 @@ function updateBgmButton() {
 
 // フィールドBGM再生
 function playFieldBGM() {
+    if (!isBgmPlaying) {
+        console.log("⏸ BGMはOFFなので再生しません");
+        return; // BGMがOFFなら何もしない
+    }
     const fieldBGM = document.getElementById("fieldBGM");
     if (fieldBGM) {
         fieldBGM.currentTime = 0;
         fieldBGM.play().catch(err => console.warn("フィールドBGM再生エラー:", err));
     }
 }
+
 
 // フィールドBGM停止
 function stopFieldBGM() {
@@ -760,19 +765,20 @@ function showQuiz() {
       battleBGM.pause();
     }
 function toggleBGM() {
-    isBgmPlaying = !isBgmPlaying; // ON/OFFを切り替える
+    isBgmPlaying = !isBgmPlaying; // ON/OFFを切り替え
     const button = document.getElementById("bgmToggleButton");
 
     if (isBgmPlaying) {
         button.textContent = "🎵 BGM ON";
-        playFieldBGM(); // BGMをオンにしたらフィールドBGMを流す
+        playFieldBGM(); // 🎵 BGMを再生
     } else {
         button.textContent = "🔇 BGM OFF";
-        stopFieldBGM(); // BGMをオフにしたらBGMを止める
+        stopFieldBGM(); // ⏸ BGMを停止
         stopBattleBGM();
         stopQuizBGM();
     }
 }
+
     updateBgmButton(); // 🔄 BGMボタンの状態を更新
 
 // 🔽 ここに追加 🔽
