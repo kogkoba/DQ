@@ -325,9 +325,10 @@ document.addEventListener("DOMContentLoaded", function() {
   </audio>
 
   <!-- ---------- Google API のスクリプト ---------- -->
-  <script async defer src="https://apis.google.com/js/api.js" 
-          onload="gapiLoaded()" 
-          onerror="console.error('❌ Google APIの読み込みに失敗しました');"></script>
+ <script async defer src="https://apis.google.com/js/api.js"
+        onload="gapiLoaded()"
+        onerror="console.error('❌ Google APIの読み込みに失敗しました');"></script>
+
 
   <script>
     /* ========= ログイン処理 ========= */
@@ -384,10 +385,11 @@ document.addEventListener("DOMContentLoaded", function() {
     const MAX_MISS = 4;
 
     /* ========= Google API 初期化 ========= */
-    function gapiLoaded() {
-      console.log("✅ gapiLoaded");
-      gapi.load("client", initClient);
-    }
+   function gapiLoaded() {
+    console.log("✅ gapiLoaded");
+    gapi.load("client", initClient);
+}
+
     async function initClient() {
       try {
         await gapi.client.init({
@@ -686,7 +688,6 @@ quizBGM.loop = true;
   // ▼ ここに追加！
 document.addEventListener("DOMContentLoaded", () => {
     updateBgmButton();
-});
 }
 
 
