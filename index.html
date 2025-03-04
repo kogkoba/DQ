@@ -156,31 +156,33 @@
 // 🔹 ここで先に API_KEY を定義
 const API_KEY = "AIzaSyBszPu-BQ2_Aq9C3lhAiW--kyenM5vQsjs";
 
-function gapiLoaded() {
-  console.log("✅ gapiLoaded");
-  gapi.load("client", initClient);
-}
+ function gapiLoaded() {
+      console.log("✅ gapiLoaded");
+      // Google API (client) をロードし終わったら initClient() を呼ぶ
+      gapi.load("client", initClient);
+    }
 
-// ▼ どちらか一方でOK。setTimeoutを使うならこのブロックだけで完結
-setTimeout(async () => {
-  try {
-    await gapi.client.init({
-      apiKey: API_KEY,
-      discoveryDocs: ["https://sheets.googleapis.com/$discovery/rest?version=v4"]
-    });
-    console.log("✅ GAPI Initialized");
-    await loadQuizData();
-    await loadMonsterData();
-    console.log("✅ Data Loaded");
-  } catch (err) {
-    console.error("⛔ GAPI Init Error:", err.message || err);
-  }
-}, 2000); // 2秒待ってから実行
+    // initClientを async 関数にし、await を使う
+    async function initClient() {
+      try {
+        console.log("🔄 initClient() 開始...");
 
-// 🔸 重複していた await loadQuizData()... は削除！
-</script>
+        // Sheets APIを使えるように初期化
+        await gapi.client.init({
+          apiKey: API_KEY,
+          discoveryDocs: ["https://sheets.googleapis.com/$discovery/rest?version=v4"]
+        });
+        console.log("✅ GAPI Initialized");
 
-
+        // クイズ＆モンスターデータを取得
+        await loadQuizData();
+        await loadMonsterData();
+        console.log("✅ Data Loaded");
+      } catch (err) {
+        console.error("⛔ GAPI Init Error:", err.message || err);
+      }
+    }
+  </script>
 </head>
 
 <body>
