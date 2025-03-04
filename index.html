@@ -561,11 +561,6 @@ function initHearts() {
     heart.className = "heart";
     heart.textContent = "♡";
     heartsContainer.appendChild(heart);
-  }
-}
-
-
-      
       currentMonsters = getRandomMonsters();
       showMonsters(currentMonsters);
       const topTextBox = document.getElementById("top-text-box");
@@ -578,12 +573,8 @@ function initHearts() {
       }, 5000);
     }
 
-    
-    
-     {
-      
       }
-    }
+
     function shakeAndRemoveHeart() {
       const heartsContainer = document.getElementById("hearts-container");
       if (heartsContainer.children.length > 0) {
