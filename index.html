@@ -514,16 +514,13 @@ async function initClient() {
     function getRandomEncounterThreshold() {
       return Math.floor(Math.random() * 11) + 5;
     }
-
-
-
-  
-
-  // プレイヤーアニメーション
-  currentImageIndex = (currentImageIndex + 1) % playerImages.length;
-  const playerElement = document.getElementById("player");
-  playerElement.src = playerImages[currentImageIndex];
-
+    // プレイヤーアニメーション用画像
+    const playerImages = [
+      "https://lh3.googleusercontent.com/d/1peHOi70oOmL8c9v3OQydE5N-9R0PB6vh",
+      "https://lh3.googleusercontent.com/d/1iuVZiT6Eh9mp2Ta__Cpm5z28HZ2k0YA0",
+      "https://lh3.googleusercontent.com/d/1fCmul9iotoUh4MLa_qzHvaOUDYMvng8C"
+    ];
+    let currentImageIndex = 0;
   // 位置を更新
   player.x += dx;
   player.y += dy;
