@@ -430,6 +430,26 @@ function savePlayerData() {
       "https://lh3.googleusercontent.com/d/1fCmul9iotoUh4MLa_qzHvaOUDYMvng8C"
     ];
     let currentImageIndex = 0;
+// ===================== タイトル画面表示用の関数を定義=====================
+// ローディングオーバーレイの関数などはそのまま
+
+// タイトル画面を表示するための関数を定義☆
+function showTitleScreen() {
+  document.getElementById("loginScreen").style.display = "none";
+  document.getElementById("titleScreen").style.display = "flex";
+}
+
+// ログインボタンのイベント内での画面切り替え例
+document.getElementById("loginButton").addEventListener("click", async () => {
+  // ... ログイン処理など
+  setTimeout(() => {
+    hideLoadingOverlay();
+    // ここで重複していた表示処理を1行に統一
+    showTitleScreen();
+  }, 500);
+});　//☆
+
+
 
     // ===================== ローディングオーバーレイ制御 =====================
 document.getElementById("loginButton").addEventListener("click", async () => {
@@ -451,11 +471,11 @@ document.getElementById("loginButton").addEventListener("click", async () => {
         playerData.g = parseInt(data.g, 10);
         playerData.hp = parseInt(data.hp, 10);
         updatePlayerStatusUI();
-        setTimeout(() => {
-            hideLoadingOverlay();
-            // ここでタイトル画面を表示する
-            showTitleScreen();
-        }, 500);
+setTimeout(() => {
+  hideLoadingOverlay();
+  showTitleScreen();
+}, 500);
+
     } catch (err) {
         console.error("データ取得エラー:", err);
         hideLoadingOverlay();
@@ -653,8 +673,6 @@ document.getElementById("loginButton").addEventListener("click", async () => {
           
           setTimeout(() => {
             hideLoadingOverlay();
-            document.getElementById("loginScreen").style.display = "none";
-            document.getElementById("titleScreen").style.display = "flex";
           }, 500);
         } catch (err) {
           console.error("データ取得エラー:", err);
