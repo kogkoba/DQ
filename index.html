@@ -241,7 +241,7 @@
   <script>
    // ===================== プレイヤーデーターの管理 =====================
 function doGet(e) {
-  const sheet = SpreadsheetApp.openById("1lI7T_OkeeeC9xGtOdS7g4IBxGrmHzEw7UY9f2SWNOKE").getSheetByName("SHEET1");
+  const sheet = S851("1lI7T_OkeeeC9xGtOdS7g4IBxGrmHzEw7UY9f2SWNOKE").getSheetByName("SHEET1");
   const name = e.parameter.name;
   const data = sheet.getDataRange().getValues();
 
@@ -846,9 +846,7 @@ function handleAnswer(selected, quiz) {
         if (isBgmPlaying) { playFieldBGM(); }
     }, 1000);
 }
-     
-      // ※ 今後、ここで exp などのプレイヤーデータを指定のスプレッドシートに保存する処理を実装する予定です
-    }
+
   </script>
 </body>
 </html>
