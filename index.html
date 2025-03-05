@@ -239,6 +239,31 @@
 
   <!-- ============== メインのスクリプト ============== -->
   <script>
+
+  <!-- ============== 定義 ============== -->
+// ローディングオーバーレイを表示する関数
+function showLoadingOverlay() {
+    const overlay = document.getElementById("loadingOverlay");
+    if (overlay) {
+        overlay.style.display = "flex";
+    } else {
+        console.warn("⚠️ loadingOverlayが見つかりません");
+    }
+}
+
+// ローディングオーバーレイを非表示にする関数
+function hideLoadingOverlay() {
+    const overlay = document.getElementById("loadingOverlay");
+    if (overlay) {
+        overlay.style.display = "none";
+    }
+}
+
+
+
+
+
+    
    // ===================== プレイヤーデーターの管理 =====================
 function doGet(e) {
   const sheet = S851("1lI7T_OkeeeC9xGtOdS7g4IBxGrmHzEw7UY9f2SWNOKE").getSheetByName("SHEET1");
@@ -379,17 +404,20 @@ function savePlayerData() {
     let currentImageIndex = 0;
 
     // ===================== ローディングオーバーレイ制御 =====================
-   document.getElementById("loginButton").addEventListener("click", async () => {
+document.getElementById("loginButton").addEventListener("click", async () => {
     const enteredName = document.getElementById("playerNameInput").value.trim();
-    if (!enteredName) { alert("名前を入力してください！"); return; }
+    if (!enteredName) { 
+        alert("名前を入力してください！"); 
+        return; 
+    }
 
     try {
-        showLoadingOverlay();
+        showLoadingOverlay();  // ✅ ここで関数が動くようになる
+
         const response = await fetch(GAS_URL + "?name=" + encodeURIComponent(enteredName), { method: "GET" });
         if (!response.ok) { throw new Error("ネットワークエラーです"); }
         const data = await response.json();
 
-        // データをプレイヤー変数に設定
         playerData.name = enteredName;
         playerData.level = parseInt(data.level, 10);
         playerData.exp = parseInt(data.exp, 10);
@@ -397,15 +425,14 @@ function savePlayerData() {
         playerData.hp = parseInt(data.hp, 10);
         updatePlayerStatusUI();
 
-        // 画面遷移
         setTimeout(() => {
-            hideLoadingOverlay();
+            hideLoadingOverlay();  // ✅ ここでもエラーがなくなる
             document.getElementById("loginScreen").style.display = "none";
             document.getElementById("titleScreen").style.display = "flex";
         }, 500);
     } catch (err) {
         console.error("データ取得エラー:", err);
-        hideLoadingOverlay();
+        hideLoadingOverlay();  // ✅ ここでもエラーがなくなる
         alert("ログインエラーが発生しました。再度お試しください。");
     }
 });
