@@ -485,6 +485,13 @@ async function initClient() {
       playerElement.style.top = player.y + "px";
       playerElement.style.transform = "translate(-50%, -50%) " + (facingRight ? "scaleX(1)" : "scaleX(-1)");
     }
+    // ===================== 移動関連 =====================
+    function updatePlayerPosition() {
+      const playerElement = document.getElementById("player");
+      playerElement.style.left = player.x + "px";
+      playerElement.style.top = player.y + "px";
+      playerElement.style.transform = "translate(-50%, -50%) " + (facingRight ? "scaleX(1)" : "scaleX(-1)");
+    }
     function movePlayer(dx, dy) {
       if (inBattle) return;
       if (dx < 0) { facingRight = false; }
@@ -514,6 +521,7 @@ async function initClient() {
     function getRandomEncounterThreshold() {
       return Math.floor(Math.random() * 11) + 5;
     }
+
     // プレイヤーアニメーション用画像
     const playerImages = [
       "https://lh3.googleusercontent.com/d/1peHOi70oOmL8c9v3OQydE5N-9R0PB6vh",
