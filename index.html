@@ -263,23 +263,33 @@ function doGet(e) {
 }
 
 function doPost(e) {
-  const sheet = SpreadsheetApp.openById("【スプレッドシートID】").getSheetByName("プレイヤーデータ");
+  const sheet = SpreadsheetApp.openById("1lI7T_OkeeeC9xGtOdS7g4IBxGrmHzEw7UY9f2SWNOKE").getSheetByName("SHEET1");
   const params = e.parameter;
   const name = params.name;
   const data = sheet.getDataRange().getValues();
 
   for (let i = 1; i < data.length; i++) {
     if (data[i][0] === name) {
-      sheet.getRange(i + 1, 2, 1, 4).setValues([[params.level, params.exp, params.g, params.hp]]);
+      sheet.getRange(i + 1, 2, 1, 4).setValues([
+        [
+          parseInt(params.level, 10),
+          parseInt(params.exp, 10),
+          parseInt(params.g, 10),
+          parseInt(params.hp, 10)
+        ]
+      ]);
       return ContentService.createTextOutput("Success").setMimeType(ContentService.MimeType.TEXT);
     }
   }
 
   return ContentService.createTextOutput("User not found").setMimeType(ContentService.MimeType.TEXT);
 }
-
-
-
+// ===================== レイヤー情報をUIに反映 =====================
+function updatePlayerStatusUI() {
+    document.getElementById("level").textContent = playerData.level;
+    document.getElementById("exp").textContent = playerData.exp;
+    document.getElementById("hp").textContent = playerData.hp;  // HPを表示
+}
 
     
     // ===================== グローバル変数 =====================
@@ -484,10 +494,15 @@ function savePlayerData() {
     // ===================== HP減少時に自動で保存=====================
     function decreaseHP(amount) {
     playerData.hp -= amount;
-    if (playerData.hp < 0) playerData.hp = 0;
+    if (playerData.hp <= 0) {
+        playerData.hp = 0;
+        alert("HPがなくなりました！ゲームオーバーです。");
+        endBattle(); // ゲーム終了処理
+    }
     updatePlayerStatusUI();
     savePlayerData();
 }
+
 
 
     // ===================== BGM管理関数 =====================
