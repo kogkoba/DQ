@@ -440,27 +440,25 @@ document.getElementById("loginButton").addEventListener("click", async () => {
     }
 
     try {
-        showLoadingOverlay();  // ✅ ここで関数が動くようになる
-
+        showLoadingOverlay();
         const response = await fetch(GAS_URL + "?name=" + encodeURIComponent(enteredName), { method: "GET" });
         if (!response.ok) { throw new Error("ネットワークエラーです"); }
         const data = await response.json();
-
+        console.log("データ取得成功:", data);
         playerData.name = enteredName;
         playerData.level = parseInt(data.level, 10);
         playerData.exp = parseInt(data.exp, 10);
         playerData.g = parseInt(data.g, 10);
         playerData.hp = parseInt(data.hp, 10);
         updatePlayerStatusUI();
-
         setTimeout(() => {
-            hideLoadingOverlay();  // ✅ ここでもエラーがなくなる
-            document.getElementById("loginScreen").style.display = "none";
-            document.getElementById("titleScreen").style.display = "flex";
+            hideLoadingOverlay();
+            // ここでタイトル画面を表示する
+            showTitleScreen();
         }, 500);
     } catch (err) {
         console.error("データ取得エラー:", err);
-        hideLoadingOverlay();  // ✅ ここでもエラーがなくなる
+        hideLoadingOverlay();
         alert("ログインエラーが発生しました。再度お試しください。");
     }
 });
@@ -652,6 +650,7 @@ document.getElementById("loginButton").addEventListener("click", async () => {
           playerData.g = parseInt(data.g, 10);
           console.log("取得したプレイヤーデータ:", playerData);
           // 少し待ってから画面切り替え
+          
           setTimeout(() => {
             hideLoadingOverlay();
             document.getElementById("loginScreen").style.display = "none";
