@@ -485,12 +485,39 @@ async function initClient() {
       playerElement.style.top = player.y + "px";
       playerElement.style.transform = "translate(-50%, -50%) " + (facingRight ? "scaleX(1)" : "scaleX(-1)");
     }
-function movePlayer(dx, dy) {
-  if (inBattle) return; // 戦闘中は動けない設定
+    function movePlayer(dx, dy) {
+      if (inBattle) return;
+      if (dx < 0) { facingRight = false; }
+      else if (dx > 0) { facingRight = true; }
+      currentImageIndex = (currentImageIndex + 1) % playerImages.length;
+      const playerElement = document.getElementById("player");
+      playerElement.src = playerImages[currentImageIndex];
+      player.x += dx;
+      player.y += dy;
+      const pw = playerElement.offsetWidth;
+      const ph = playerElement.offsetHeight;
+      const maxX = window.innerWidth - pw;
+      const maxY = document.getElementById("gameArea").clientHeight - ph;
+      if (player.x < 0) player.x = 0;
+      if (player.y < 0) player.y = 0;
+      if (player.x > maxX) player.x = maxX;
+      if (player.y > maxY) player.y = maxY;
+      updatePlayerPosition();
+      player.steps++;
+      document.getElementById("hp").textContent = player.hp;
+      document.getElementById("level").textContent = player.level;
+      console.log("歩数:", player.steps);
+      if (player.steps - lastEncounterSteps >= encounterThreshold) {
+        startEncounter();
+      }
+    }
+    function getRandomEncounterThreshold() {
+      return Math.floor(Math.random() * 11) + 5;
+    }
 
-  // 左右移動の向きに応じてプレイヤーを反転表示
-  if (dx < 0) { facingRight = false; }
-  else if (dx > 0) { facingRight = true; }
+
+
+  
 
   // プレイヤーアニメーション
   currentImageIndex = (currentImageIndex + 1) % playerImages.length;
