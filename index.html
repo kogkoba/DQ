@@ -191,7 +191,6 @@
       </div>
     </div>
     <!-- ---------- フィールド画面 ---------- -->
- <!-- ---------- フィールド画面 ---------- -->
     <div id="gameArea">
       <img id="player" src="https://lh3.googleusercontent.com/d/1peHOi70oOmL8c9v3OQydE5N-9R0PB6vh" alt="hero">
       <div id="dpad">
@@ -239,36 +238,54 @@
 
   <!-- ============== メインのスクリプト ============== -->
   <script>
+    // ============== gapiロード後の初期化 ==============
     function gapiLoaded() {
       console.log("✅ gapiLoaded");
-      // ここで gapi.load(...) など初期化処理を行う
       gapi.load("client", initClient);
     }
-
-async function initClient() {
-  try {
-    console.log("🔄 initClient() 開始...");
-    await gapi.client.init({
-      apiKey: API_KEY,
-      discoveryDocs: ["https://sheets.googleapis.com/$discovery/rest?version=v4"]
-    });
-    console.log("✅ GAPI Initialized");
-    // loadQuizData() とか loadMonsterData() とか呼び出す
-  } catch (err) {
-    console.error("⛔ GAPI Init Error:", err.message || err);
-  }
-}
-
-
-
-
     
-    // プレイヤーが1回の移動で動くピクセル数
+    async function initClient() {
+      try {
+        console.log("🔄 initClient() 開始...");
+        await gapi.client.init({
+          apiKey: API_KEY,
+          discoveryDocs: ["https://sheets.googleapis.com/$discovery/rest?version=v4"]
+        });
+        console.log("✅ GAPI Initialized");
+        // (必要なデータ取得処理など)
+      } catch (err) {
+        console.error("⛔ GAPI Init Error:", err.message || err);
+      }
+    }
+    
+    // ============== 定数・グローバル変数 ==============
     const STEP = 20;
-
+    const API_KEY = "AIzaSyBszPu-BQ2_Aq9C3lhAiW--kyenM5vQsjs";
+    const QUIZ_SHEET_ID = "1GyKDfVQCNrBlkxjsrQDv_ouIio9yjO3mVQy6Ds5uQzg";
+    const MONSTER_SHEET_ID = "1t08cjUMrug0nvIpredcxjuoxejDRazqqzLTqjVraJhw";
+    const SHEET_NAME_QUIZ = "sheet1";
+    const SHEET_NAME_MONSTER = "sheet1";
+    const GAS_URL = "https://script.google.com/macros/s/AKfycbxOtWDcvXfPCUj8YlJVzVIkGYbLidFzoLnUNPmZWIRwpPH7vTHlaTImwp4gIGqZgckIXA/exec";
     
-    // ===================== 定義 =====================
-    // ローディングオーバーレイ制御
+    let playerData = { name: "", level: 1, exp: 0, g: 100, hp: 100 };
+    let quizData = [];
+    let monsterData = [];
+    let facingRight = true;
+    let player = { x: 0, y: 0, hp: 100, level: 1, steps: 0 };
+    let inBattle = false;
+    let correctCount = 0;
+    let missCount = 0;
+    const MAX_CORRECT = 4;
+    const MAX_MISS = 4;
+    let currentImageIndex = 0;
+    
+    // ============== タイトル画面表示用関数 ==============
+    function showTitleScreen() {
+      document.getElementById("loginScreen").style.display = "none";
+      document.getElementById("titleScreen").style.display = "flex";
+    }
+    
+    // ============== ローディングオーバーレイ制御 ==============
     function showLoadingOverlay() {
       const overlay = document.getElementById("loadingOverlay");
       if (overlay) {
@@ -284,23 +301,14 @@ async function initClient() {
       }
     }
     
-    // タイトル画面表示用関数
-    function showTitleScreen() {
-      document.getElementById("loginScreen").style.display = "none";
-      document.getElementById("titleScreen").style.display = "flex";
-    }
-    
-    // ===================== プレイヤーデータ管理 =====================
-    // (GASのdoGet, doPostはサーバー側に実装済み)
-    
-    // UI更新
+    // ============== プレイヤーデータUI更新 ==============
     function updatePlayerStatusUI() {
       document.getElementById("level").textContent = playerData.level;
       document.getElementById("exp").textContent = playerData.exp;
       document.getElementById("hp").textContent = playerData.hp;
     }
     
-    // 経験値・レベルアップロジック
+    // ============== 経験値・レベルアップロジック ==============
     function checkLevelUp() {
       while (playerData.exp >= 100 && playerData.level < 100) {
         playerData.exp -= 100;
@@ -320,7 +328,7 @@ async function initClient() {
       savePlayerData();
     }
     
-    // ===================== サーバー連携 =====================
+    // ============== サーバー連携 ==============
     function savePlayerData() {
       const params = new URLSearchParams();
       params.append("name", playerData.name);
@@ -341,20 +349,7 @@ async function initClient() {
         });
     }
     
-    // ===================== 定数・グローバル変数 =====================
-    const API_KEY = "AIzaSyBszPu-BQ2_Aq9C3lhAiW--kyenM5vQsjs";
-    const QUIZ_SHEET_ID = "1GyKDfVQCNrBlkxjsrQDv_ouIio9yjO3mVQy6Ds5uQzg";
-    const MONSTER_SHEET_ID = "1t08cjUMrug0nvIpredcxjuoxejDRazqqzLTqjVraJhw";
-    const SHEET_NAME_QUIZ = "sheet1";
-    const SHEET_NAME_MONSTER = "sheet1";
-    const GAS_URL = "https://script.google.com/macros/s/AKfycbxOtWDcvXfPCUj8YlJVzVIkGYbLidFzoLnUNPmZWIRwpPH7vTHlaTImwp4gIGqZgckIXA/exec";
-    
-    let playerData = { name: "", level: 1, exp: 0, g: 100, hp: 100 };
-    let quizData = [];
-    let monsterData = [];
-    let facingRight = true; // ← これを追加
-    
-    // ===================== BGM管理 =====================
+    // ============== BGM管理 ==============
     let isBgmPlaying = false;
     let isBattleBGMPlaying = false;
     let quizBGM = null;
@@ -416,7 +411,7 @@ async function initClient() {
       console.log("⏹ クイズBGM停止");
     }
     
-    // ===================== ゲーム開始関連 =====================
+    // ============== ゲーム開始関連 ==============
     document.addEventListener("DOMContentLoaded", () => {
       console.log("✅ DOMContentLoaded");
       // 初期BGM設定
@@ -479,14 +474,7 @@ async function initClient() {
       console.log("🎲 初期化完了！");
     }
     
-    // ===================== 移動関連 =====================
-    function updatePlayerPosition() {
-      const playerElement = document.getElementById("player");
-      playerElement.style.left = player.x + "px";
-      playerElement.style.top = player.y + "px";
-      playerElement.style.transform = "translate(-50%, -50%) " + (facingRight ? "scaleX(1)" : "scaleX(-1)");
-    }
-    // ===================== 移動関連 =====================
+    // ============== 移動関連 ==============
     function updatePlayerPosition() {
       const playerElement = document.getElementById("player");
       playerElement.style.left = player.x + "px";
@@ -512,8 +500,9 @@ async function initClient() {
       if (player.y > maxY) player.y = maxY;
       updatePlayerPosition();
       player.steps++;
-      document.getElementById("hp").textContent = player.hp;
-      document.getElementById("level").textContent = player.level;
+      // UIは playerData で更新
+      document.getElementById("hp").textContent = playerData.hp;
+      document.getElementById("level").textContent = playerData.level;
       console.log("歩数:", player.steps);
       if (player.steps - lastEncounterSteps >= encounterThreshold) {
         startEncounter();
@@ -522,16 +511,11 @@ async function initClient() {
     function getRandomEncounterThreshold() {
       return Math.floor(Math.random() * 11) + 5;
     }
-
-    // プレイヤーアニメーション用画像
-    const playerImages = [
-      "https://lh3.googleusercontent.com/d/1peHOi70oOmL8c9v3OQydE5N-9R0PB6vh",
-      "https://lh3.googleusercontent.com/d/1iuVZiT6Eh9mp2Ta__Cpm5z28HZ2k0YA0",
-      "https://lh3.googleusercontent.com/d/1fCmul9iotoUh4MLa_qzHvaOUDYMvng8C"
-    ];
-    let currentImageIndex = 0;
-
-    // ===================== 戦闘関連 =====================
+    
+    // ============== 戦闘関連 ==============
+    let lastEncounterSteps = 0;
+    let encounterThreshold = 5;
+    
     function startEncounter() {
       inBattle = true;
       stopFieldBGM();
@@ -547,12 +531,10 @@ async function initClient() {
         document.getElementById("battle-screen").style.display = "block";
         overlay.style.display = "none";
         circle.classList.remove("active");
-        // 戦闘では quizBGM のみ再生する
         playQuizBGM();
         startBattleInit();
       }, 800);
     }
-    // 戦闘開始初期化（startBattleと名前を変更）
     function startBattleInit() {
       correctCount = 0;
       missCount = 0;
@@ -607,6 +589,17 @@ async function initClient() {
           if (container.contains(firstMonster)) { container.removeChild(firstMonster); }
         }, 500);
       }
+    }
+    function showMonsters(monsters) {
+      const container = document.getElementById("enemy-container");
+      container.innerHTML = "";
+      monsters.forEach(monster => {
+        const img = document.createElement("img");
+        img.className = "monster";
+        img.src = monster.url;
+        img.alt = monster.name;
+        container.appendChild(img);
+      });
     }
     function showQuiz() {
       const quiz = getRandomQuiz();
