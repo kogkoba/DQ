@@ -419,34 +419,62 @@
     }
 
     // ===================== プレイヤーデータ関連 =====================
-    function updatePlayerStatusUI() {
-      document.getElementById("level").textContent = playerData.level;
-      document.getElementById("hp").textContent    = playerData.hp;
-      // もしEXPなどを表示したければ、HTML側に要素を追加してそこに書き込む
+// ===================== プレイヤーデータ関連 =====================
+function updatePlayerStatusUI() {
+  // levelとhpを表示（EXPなども表示したければ適宜追加してください）
+  document.getElementById("level").textContent = playerData.level;
+  document.getElementById("hp").textContent = playerData.hp;
+}
+
+function savePlayerData() {
+  const params = new URLSearchParams();
+  params.append("name", playerData.name);
+  params.append("level", playerData.level);
+  params.append("exp", playerData.exp);
+  params.append("g", playerData.g);
+  params.append("hp", playerData.hp);
+
+  fetch(GAS_URL, {
+    method: "POST",
+    body: params
+  })
+    .then(res => res.text())
+    .then(data => {
+      console.log("✅ プレイヤーデータ保存成功:", data);
+    })
+    .catch(err => {
+      console.error("⛔ プレイヤーデータ保存エラー:", err);
+    });
+}
+
+// ===================== 経験値・レベルアップロジック =====================
+function checkLevelUp() {
+  // ここでは単純にEXPが100以上ならレベルアップする処理
+  // 最大レベルは100
+  while (playerData.exp >= 100 && playerData.level < 100) {
+    playerData.exp -= 100;   // EXP 100消費
+    playerData.level++;        // レベルアップ
+    playerData.g += 10;        // 1レベルアップごとに10Gを追加
+
+    // レベル100に到達した場合、ボーナス500Gを追加し、EXPはリセット
+    if (playerData.level === 100) {
+      playerData.g += 500;
+      playerData.exp = 0;
     }
-    function savePlayerData() {
-      // ここでは名前・level・exp・g・hpなどを送信
-      const params = new URLSearchParams();
-      params.append("name", playerData.name);
-      params.append("level", playerData.level);
-      params.append("exp", playerData.exp);
-      params.append("g", playerData.g);
-      params.append("hp", playerData.hp);
+    console.log(`🎉 レベルアップ！現在のレベル: ${playerData.level}`);
+  }
+}
 
-      fetch(GAS_URL, { method: "POST", body: params })
-        .then(res => res.text())
-        .then(data => {
-          console.log("✅ プレイヤーデータ保存成功:", data);
-        })
-        .catch(err => {
-          console.error("⛔ プレイヤーデータ保存エラー:", err);
-        });
-    }
-
-    // ===================== 経験値計算（必要なら加える） =====================
-    // function addExp(amount) { ... } など
-
-    // ===================== ログイン後の開始 =====================
+function addExp(amount) {
+  // 経験値を加算
+  playerData.exp += amount;
+  // レベルアップチェック
+  checkLevelUp();
+  // UI更新
+  updatePlayerStatusUI();
+  // サーバーへ保存
+  savePlayerData();
+}    // ===================== ログイン後の開始 =====================
     document.addEventListener("DOMContentLoaded", () => {
       console.log("✅ DOMContentLoaded");
       stopFieldBGM(); stopBattleBGM(); stopQuizBGM();
