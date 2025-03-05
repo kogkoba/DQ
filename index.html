@@ -182,13 +182,14 @@
   <!-- ---------- ゲーム画面全体 ---------- -->
   <div id="gameContainer">
     <!-- ステータス表示 -->
-    <div id="status">
-      プレイヤーのHP: <span id="hp">100</span> / レベル: <span id="level">1</span>
-      <div id="bgmToggleContainer">
-        <button id="bgmToggleButton" onclick="toggleBGM()">🔇 BGM OFF</button>
-      </div>
-    </div>
-
+<div id="status">
+  プレイヤーのHP: <span id="hp">100</span> / 
+  レベル: <span id="level">1</span> / 
+  EXP: <span id="exp">0</span>
+  <div id="bgmToggleContainer">
+    <button id="bgmToggleButton" onclick="toggleBGM()">🔇 BGM OFF</button>
+  </div>
+</div>
     <!-- ---------- フィールド画面 ---------- -->
     <div id="gameArea">
       <img id="player" src="https://lh3.googleusercontent.com/d/1peHOi70oOmL8c9v3OQydE5N-9R0PB6vh" alt="hero">
@@ -258,11 +259,33 @@ function checkLevelUp() {
 
 function updatePlayerStatusUI() {
     document.getElementById("level").textContent = playerData.level;
+    function updatePlayerStatusUI() {
+    document.getElementById("level").textContent = playerData.level;
+    document.getElementById("exp").textContent = playerData.exp;
+}
 }
     
     const API_KEY = "AIzaSyBszPu-BQ2_Aq9C3lhAiW--kyenM5vQsjs";
 
     // Google Sheets関連
+function savePlayerData() {
+    const params = new URLSearchParams();
+    params.append("name", playerData.name);
+    params.append("level", playerData.level);
+    params.append("exp", playerData.exp);
+
+    fetch(GAS_URL + "?" + params.toString(), { method: "POST" })
+    .then(response => response.json())
+    .then(data => {
+        console.log("✅ プレイヤーデータ保存成功:", data);
+        playerData.level = parseInt(data.level, 10);
+playerData.exp = parseInt(data.exp, 10);
+updatePlayerStatusUI();
+    })
+    .catch(error => {
+        console.error("⛔ プレイヤーデータ保存エラー:", error);
+    });
+}
     const QUIZ_SHEET_ID = "1GyKDfVQCNrBlkxjsrQDv_ouIio9yjO3mVQy6Ds5uQzg";
     const MONSTER_SHEET_ID = "1t08cjUMrug0nvIpredcxjuoxejDRazqqzLTqjVraJhw";
     const SHEET_NAME_QUIZ = "sheet1";
@@ -670,9 +693,11 @@ function updatePlayerStatusUI() {
     function handleAnswer(selected, quiz) {
       const topTextBox = document.getElementById("top-text-box");
       if (selected === quiz.correct) {
-        correctCount++;
-        topTextBox.textContent = "✅ 正解！ " + quiz.explanation;
-        shakeAndRemoveMonster();
+    correctCount++;
+    addExp(5);  // 正解時にEXPを+5
+    topTextBox.textContent = "✅ 正解！ " + quiz.explanation;
+    shakeAndRemoveMonster();
+}
       } else {
         missCount++;
         topTextBox.textContent = "❌ 不正解！ " + quiz.explanation;
@@ -682,9 +707,11 @@ function updatePlayerStatusUI() {
       }
       setTimeout(() => {
         if (correctCount >= MAX_CORRECT) {
-          topTextBox.textContent = "mamは安心して去っていった！";
-          stopQuizBGM();
-          endBattle();
+    topTextBox.textContent = "mamは安心して去っていった！";
+    addExp(20);  // クイズバトル勝利でボーナスEXP
+    stopQuizBGM();
+    endBattle();
+}
         } else if (missCount >= MAX_MISS) {
           // 4問間違えたらすぐにDQ down long.mp3を再生
           topTextBox.textContent = "mamは復習を求めた。";
