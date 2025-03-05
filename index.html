@@ -239,6 +239,27 @@
   <!-- ============== メインのスクリプト ============== -->
   <script>
     // ===================== グローバル変数 =====================
+    function addExp(amount) {
+    playerData.exp += amount;
+    checkLevelUp();
+    updatePlayerStatusUI();
+    savePlayerData();
+}
+
+function checkLevelUp() {
+    let expToNextLevel = playerData.level * 10;
+    while (playerData.exp >= expToNextLevel) {
+        playerData.exp -= expToNextLevel;
+        playerData.level++;
+        expToNextLevel = playerData.level * 10;
+        console.log(`🎉 レベルアップ！現在のレベル: ${playerData.level}`);
+    }
+}
+
+function updatePlayerStatusUI() {
+    document.getElementById("level").textContent = playerData.level;
+}
+    
     const API_KEY = "AIzaSyBszPu-BQ2_Aq9C3lhAiW--kyenM5vQsjs";
 
     // Google Sheets関連
