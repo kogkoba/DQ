@@ -266,7 +266,7 @@ function hideLoadingOverlay() {
     
    // ===================== プレイヤーデーターの管理 =====================
 function doGet(e) {
-  const sheet = S851("1lI7T_OkeeeC9xGtOdS7g4IBxGrmHzEw7UY9f2SWNOKE").getSheetByName("SHEET1");
+  const sheet = SpreadsheetApp.openById("1lI7T_OkeeeC9xGtOdS7g4IBxGrmHzEw7UY9f2SWNOKE").getSheetByName("SHEET1");
   const name = e.parameter.name;
   const data = sheet.getDataRange().getValues();
 
@@ -277,14 +277,17 @@ function doGet(e) {
         exp: data[i][2],
         g: data[i][3],
         hp: data[i][4]
-      })).setMimeType(ContentService.MimeType.JSON);
+      }))
+      .setMimeType(ContentService.MimeType.JSON)
+      .setHeader("Access-Control-Allow-Origin", "*");  // ✅ 追加
     }
   }
   
   // 新規プレイヤーなら初期データを追加
   sheet.appendRow([name, 1, 0, 100, 100]);
   return ContentService.createTextOutput(JSON.stringify({ level: 1, exp: 0, g: 100, hp: 100 }))
-    .setMimeType(ContentService.MimeType.JSON);
+    .setMimeType(ContentService.MimeType.JSON)
+    .setHeader("Access-Control-Allow-Origin", "*");  // ✅ 追加
 }
 
 function doPost(e) {
@@ -295,20 +298,18 @@ function doPost(e) {
 
   for (let i = 1; i < data.length; i++) {
     if (data[i][0] === name) {
-      sheet.getRange(i + 1, 2, 1, 4).setValues([
-        [
-          parseInt(params.level, 10),
-          parseInt(params.exp, 10),
-          parseInt(params.g, 10),
-          parseInt(params.hp, 10)
-        ]
-      ]);
-      return ContentService.createTextOutput("Success").setMimeType(ContentService.MimeType.TEXT);
+      sheet.getRange(i + 1, 2, 1, 4).setValues([[params.level, params.exp, params.g, params.hp]]);
+      return ContentService.createTextOutput("Success")
+        .setMimeType(ContentService.MimeType.TEXT)
+        .setHeader("Access-Control-Allow-Origin", "*");  // ✅ 追加
     }
   }
 
-  return ContentService.createTextOutput("User not found").setMimeType(ContentService.MimeType.TEXT);
+  return ContentService.createTextOutput("User not found")
+    .setMimeType(ContentService.MimeType.TEXT)
+    .setHeader("Access-Control-Allow-Origin", "*");  // ✅ 追加
 }
+
 // ===================== レイヤー情報をUIに反映 =====================
 function updatePlayerStatusUI() {
     document.getElementById("level").textContent = playerData.level;
