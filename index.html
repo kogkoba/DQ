@@ -256,9 +256,6 @@ function checkLevelUp() {
         console.log(`🎉 レベルアップ！現在のレベル: ${playerData.level}`);
     }
 }
-
-function updatePlayerStatusUI() {
-    document.getElementById("level").textContent = playerData.level;
     function updatePlayerStatusUI() {
     document.getElementById("level").textContent = playerData.level;
     document.getElementById("exp").textContent = playerData.exp;
@@ -274,13 +271,17 @@ function savePlayerData() {
     params.append("level", playerData.level);
     params.append("exp", playerData.exp);
 
-    fetch(GAS_URL + "?" + params.toString(), { method: "POST" })
+fetch(GAS_URL + "?" + params.toString(), { method: "POST" })
     .then(response => response.json())
     .then(data => {
         console.log("✅ プレイヤーデータ保存成功:", data);
-        playerData.level = parseInt(data.level, 10);
-playerData.exp = parseInt(data.exp, 10);
-updatePlayerStatusUI();
+        if (data.level !== undefined && data.exp !== undefined) {
+            playerData.level = parseInt(data.level, 10);
+            playerData.exp = parseInt(data.exp, 10);
+            updatePlayerStatusUI();
+        } else {
+            console.warn("⚠️ サーバーからのレスポンスにレベルまたはEXPがありません:", data);
+        }
     })
     .catch(error => {
         console.error("⛔ プレイヤーデータ保存エラー:", error);
@@ -690,45 +691,44 @@ updatePlayerStatusUI();
         btn.style.opacity = "0.5";
       });
     }
-    function handleAnswer(selected, quiz) {
-      const topTextBox = document.getElementById("top-text-box");
-      if (selected === quiz.correct) {
-    correctCount++;
-    addExp(5);  // 正解時にEXPを+5
-    topTextBox.textContent = "✅ 正解！ " + quiz.explanation;
-    shakeAndRemoveMonster();
-}
-      } else {
+    
+function handleAnswer(selected, quiz) {
+    const topTextBox = document.getElementById("top-text-box");
+    disableChoiceButtons();
+
+    if (selected === quiz.correct) {
+        correctCount++;
+        addExp(5);
+        topTextBox.textContent = "✅ 正解！ " + quiz.explanation;
+        shakeAndRemoveMonster();
+    } else {
         missCount++;
         topTextBox.textContent = "❌ 不正解！ " + quiz.explanation;
-        // 画面シェイクで不正解を視覚的に伝える
         shakeGameScreen();
         shakeAndRemoveHeart();
-      }
-      setTimeout(() => {
-        if (correctCount >= MAX_CORRECT) {
-    topTextBox.textContent = "mamは安心して去っていった！";
-    addExp(20);  // クイズバトル勝利でボーナスEXP
-    stopQuizBGM();
-    endBattle();
-}
-        } else if (missCount >= MAX_MISS) {
-          // 4問間違えたらすぐにDQ down long.mp3を再生
-          topTextBox.textContent = "mamは復習を求めた。";
-          stopQuizBGM();
-          const dqAudio = document.getElementById("dqDownAudio");
-          dqAudio.pause();
-          dqAudio.currentTime = 0;
-          if (isBgmPlaying) {
-            dqAudio.play().catch(err => console.warn("DQ Down Audio play error:", err));
-          }
-          // ザオリクボタンを表示（クリックで全音停止＆フィールドへ戻る）
-          document.getElementById("zaorikuButton").style.display = "inline-block";
-        } else {
-          showQuiz();
-        }
-      }, 3000);
     }
+
+    setTimeout(() => {
+        if (correctCount >= MAX_CORRECT) {
+            topTextBox.textContent = "mamは安心して去っていった！";
+            addExp(20);
+            stopQuizBGM();
+            endBattle();
+        } else if (missCount >= MAX_MISS) {
+            topTextBox.textContent = "mamは復習を求めた。";
+            stopQuizBGM();
+            const dqAudio = document.getElementById("dqDownAudio");
+            dqAudio.pause();
+            dqAudio.currentTime = 0;
+            if (isBgmPlaying) {
+                dqAudio.play().catch(err => console.warn("DQ Down Audio play error:", err));
+            }
+            document.getElementById("zaorikuButton").style.display = "inline-block";
+        } else {
+            showQuiz();
+        }
+    }, 3000);
+}
     // ザオリクボタン押下時：全ての音を停止してフィールドに戻る
     function onZaoriku() {
       document.getElementById("zaorikuButton").style.display = "none";
