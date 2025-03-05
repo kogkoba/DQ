@@ -238,6 +238,30 @@
 
   <!-- ============== メインのスクリプト ============== -->
   <script>
+    function gapiLoaded() {
+      console.log("✅ gapiLoaded");
+      // ここで gapi.load(...) など初期化処理を行う
+      gapi.load("client", initClient);
+    }
+
+async function initClient() {
+  try {
+    console.log("🔄 initClient() 開始...");
+    await gapi.client.init({
+      apiKey: API_KEY,
+      discoveryDocs: ["https://sheets.googleapis.com/$discovery/rest?version=v4"]
+    });
+    console.log("✅ GAPI Initialized");
+    // loadQuizData() とか loadMonsterData() とか呼び出す
+  } catch (err) {
+    console.error("⛔ GAPI Init Error:", err.message || err);
+  }
+}
+
+
+
+
+    
     // プレイヤーが1回の移動で動くピクセル数
     const STEP = 20;
 
