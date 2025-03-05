@@ -161,24 +161,20 @@
     }
   </style>
 </head>
-
 <body>
   <!-- ローディングオーバーレイ -->
   <div id="loadingOverlay">Loading…</div>
-
   <!-- ---------- ログイン画面 ---------- -->
   <div id="loginScreen">
     <h2>プレイヤー名を入力してください</h2>
     <input type="text" id="playerNameInput" placeholder="名前を入力">
     <button id="loginButton">ログイン</button>
   </div>
-
   <!-- ---------- タイトル画面 ---------- -->
   <div id="titleScreen">
     <h1>ドラクエ風クイズRPG</h1>
     <button id="startButton" onclick="startGame()">▶ ゲームスタート</button>
   </div>
-
   <!-- ---------- ゲーム画面全体 ---------- -->
   <div id="gameContainer">
     <!-- ステータス表示 -->
@@ -214,7 +210,6 @@
       <button id="zaorikuButton" onclick="onZaoriku()">ザオリク</button>
     </div>
   </div>
-
   <!-- ============== BGM用オーディオタグ ============== -->
   <audio id="fieldBGM" loop preload="auto">
     <source src="./kouyawoiku.mp3" type="audio/mpeg">
@@ -228,22 +223,19 @@
   <audio id="dqDownAudio" preload="auto">
     <source src="./DQ down long.mp3" type="audio/mpeg">
   </audio>
-
   <!-- ============== Google API のスクリプト ============== -->
   <script async defer
     src="https://apis.google.com/js/api.js"
     onload="gapiLoaded()"
     onerror="console.error('❌ Google APIの読み込みに失敗しました');">
   </script>
-
   <!-- ============== メインのスクリプト ============== -->
   <script>
-    // ============== gapiロード後の初期化 ==============
+    // gapiロード後の初期化
     function gapiLoaded() {
       console.log("✅ gapiLoaded");
       gapi.load("client", initClient);
     }
-    
     async function initClient() {
       try {
         console.log("🔄 initClient() 開始...");
@@ -252,13 +244,11 @@
           discoveryDocs: ["https://sheets.googleapis.com/$discovery/rest?version=v4"]
         });
         console.log("✅ GAPI Initialized");
-        // (必要なデータ取得処理など)
       } catch (err) {
         console.error("⛔ GAPI Init Error:", err.message || err);
       }
     }
-    
-    // ============== 定数・グローバル変数 ==============
+    // 定数・グローバル変数
     const STEP = 20;
     const API_KEY = "AIzaSyBszPu-BQ2_Aq9C3lhAiW--kyenM5vQsjs";
     const QUIZ_SHEET_ID = "1GyKDfVQCNrBlkxjsrQDv_ouIio9yjO3mVQy6Ds5uQzg";
@@ -266,7 +256,6 @@
     const SHEET_NAME_QUIZ = "sheet1";
     const SHEET_NAME_MONSTER = "sheet1";
     const GAS_URL = "https://script.google.com/macros/s/AKfycbxOtWDcvXfPCUj8YlJVzVIkGYbLidFzoLnUNPmZWIRwpPH7vTHlaTImwp4gIGqZgckIXA/exec";
-    
     let playerData = { name: "", level: 1, exp: 0, g: 100, hp: 100 };
     let quizData = [];
     let monsterData = [];
@@ -278,14 +267,18 @@
     const MAX_CORRECT = 4;
     const MAX_MISS = 4;
     let currentImageIndex = 0;
-    
-    // ============== タイトル画面表示用関数 ==============
+    // プレイヤーアニメーション用画像（指定されたURL）
+    const playerImages = [
+      "https://lh3.googleusercontent.com/d/1peHOi70oOmL8c9v3OQydE5N-9R0PB6vh",
+      "https://lh3.googleusercontent.com/d/1iuVZiT6Eh9mp2Ta__Cpm5z28HZ2k0YA0",
+      "https://lh3.googleusercontent.com/d/1fCmul9iotoUh4MLa_qzHvaOUDYMvng8C"
+    ];
+    // タイトル画面表示用関数
     function showTitleScreen() {
       document.getElementById("loginScreen").style.display = "none";
       document.getElementById("titleScreen").style.display = "flex";
     }
-    
-    // ============== ローディングオーバーレイ制御 ==============
+    // ローディングオーバーレイ制御
     function showLoadingOverlay() {
       const overlay = document.getElementById("loadingOverlay");
       if (overlay) {
@@ -300,15 +293,13 @@
         overlay.style.display = "none";
       }
     }
-    
-    // ============== プレイヤーデータUI更新 ==============
+    // プレイヤーデータUI更新
     function updatePlayerStatusUI() {
       document.getElementById("level").textContent = playerData.level;
       document.getElementById("exp").textContent = playerData.exp;
       document.getElementById("hp").textContent = playerData.hp;
     }
-    
-    // ============== 経験値・レベルアップロジック ==============
+    // 経験値・レベルアップロジック
     function checkLevelUp() {
       while (playerData.exp >= 100 && playerData.level < 100) {
         playerData.exp -= 100;
@@ -327,8 +318,7 @@
       updatePlayerStatusUI();
       savePlayerData();
     }
-    
-    // ============== サーバー連携 ==============
+    // サーバー連携
     function savePlayerData() {
       const params = new URLSearchParams();
       params.append("name", playerData.name);
@@ -348,12 +338,10 @@
           console.error("⛔ プレイヤーデータ保存エラー:", error);
         });
     }
-    
-    // ============== BGM管理 ==============
+    // BGM管理
     let isBgmPlaying = false;
     let isBattleBGMPlaying = false;
     let quizBGM = null;
-    
     function updateBgmButton() {
       const button = document.getElementById("bgmToggleButton");
       if (!button) return;
@@ -410,11 +398,9 @@
       quizBGM.currentTime = 0;
       console.log("⏹ クイズBGM停止");
     }
-    
-    // ============== ゲーム開始関連 ==============
+    // ゲーム開始関連
     document.addEventListener("DOMContentLoaded", () => {
       console.log("✅ DOMContentLoaded");
-      // 初期BGM設定
       stopFieldBGM();
       stopBattleBGM();
       stopQuizBGM();
@@ -426,7 +412,6 @@
       else { console.warn("❌ quizBGMが見つかりませんでした"); }
       updateBgmButton();
       
-      // ログインボタンのイベント登録
       document.getElementById("loginButton").addEventListener("click", async () => {
         const enteredName = document.getElementById("playerNameInput").value.trim();
         if (!enteredName) {
@@ -474,7 +459,7 @@
       console.log("🎲 初期化完了！");
     }
     
-    // ============== 移動関連 ==============
+    // 移動関連
     function updatePlayerPosition() {
       const playerElement = document.getElementById("player");
       playerElement.style.left = player.x + "px";
@@ -500,7 +485,6 @@
       if (player.y > maxY) player.y = maxY;
       updatePlayerPosition();
       player.steps++;
-      // UIは playerData で更新
       document.getElementById("hp").textContent = playerData.hp;
       document.getElementById("level").textContent = playerData.level;
       console.log("歩数:", player.steps);
@@ -512,10 +496,9 @@
       return Math.floor(Math.random() * 11) + 5;
     }
     
-    // ============== 戦闘関連 ==============
+    // 戦闘関連
     let lastEncounterSteps = 0;
     let encounterThreshold = 5;
-    
     function startEncounter() {
       inBattle = true;
       stopFieldBGM();
