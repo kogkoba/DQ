@@ -401,6 +401,7 @@
       if (!quizBGM) return;
       if (!isBgmPlaying) return;
       if (!quizBGM.paused) return;
+      quizBGM.currentTime = 0;
       quizBGM.play().catch(err => console.warn("クイズBGM再生エラー:", err));
     }
     function stopQuizBGM() {
@@ -518,7 +519,7 @@
         document.getElementById("battle-screen").style.display = "block";
         overlay.style.display = "none";
         circle.classList.remove("active");
-        if (isBgmPlaying) { playBattleBGM(); }
+        // ※ battleBGM の呼び出しを削除して、クイズ戦闘では quizBGM のみ再生する
         playQuizBGM();
         startBattle();
       }, 800);
@@ -620,7 +621,6 @@
           // 4問間違えたらすぐにDQ down long.mp3を再生
           topTextBox.textContent = "mamは復習を求めた。";
           stopQuizBGM();
-          stopBattleBGM();
           const dqAudio = document.getElementById("dqDownAudio");
           dqAudio.pause();
           dqAudio.currentTime = 0;
@@ -636,7 +636,6 @@
     }
     // ザオリクボタン押下時：全ての音を停止してフィールドに戻る
     function onZaoriku() {
-      // ザオリクボタンをすぐ非表示にする
       document.getElementById("zaorikuButton").style.display = "none";
       const dqAudio = document.getElementById("dqDownAudio");
       dqAudio.pause();
@@ -645,7 +644,6 @@
       stopBattleBGM();
       stopQuizBGM();
       document.getElementById("top-text-box").textContent = "ザオリクが唱えられた！";
-      // 少し短い遅延（500ms）でフィールドに戻る
       setTimeout(() => { endBattle(); }, 500);
     }
     function endBattle() {
@@ -655,7 +653,6 @@
       document.getElementById("gameArea").style.display = "block";
       inBattle = false;
       updateBgmButton();
-      // フィールドに戻ったとき、ミュートでなければフィールドBGMを再生
       setTimeout(() => {
         if (isBgmPlaying) { playFieldBGM(); }
       }, 1000);
