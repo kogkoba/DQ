@@ -530,34 +530,6 @@ async function initClient() {
     ];
     let currentImageIndex = 0;
 
-
-  // 画面端の制限
-  const pw = playerElement.offsetWidth;
-  const ph = playerElement.offsetHeight;
-  const maxX = document.getElementById("gameArea").clientWidth - pw;
-  const maxY = document.getElementById("gameArea").clientHeight - ph;
-  if (player.x < 0) player.x = 0;
-  if (player.y < 0) player.y = 0;
-  if (player.x > maxX) player.x = maxX;
-  if (player.y > maxY) player.y = maxY;
-
-  // 実際に描画を更新
-  updatePlayerPosition();
-
-  // 歩数増加
-  player.steps++;
-  document.getElementById("hp").textContent = player.hp;
-  document.getElementById("level").textContent = player.level;
-
-  // エンカウント判定
-  if (player.steps - lastEncounterSteps >= encounterThreshold) {
-    startEncounter();
-  }
-
-    function getRandomEncounterThreshold() {
-      return Math.floor(Math.random() * 11) + 5;
-    }
-    
     // ===================== 戦闘関連 =====================
     function startEncounter() {
       inBattle = true;
