@@ -90,6 +90,12 @@
     }
     .choice-button {
       display: block; margin: 5px auto; padding: 5px; width: 150px; font-size: 16px;
+      cursor: pointer;
+    }
+    /* ---------- 選択肢無効時の見た目 ---------- */
+    .choice-button:disabled {
+      opacity: 0.5;
+      cursor: default;
     }
     #hearts-container {
       position: absolute; bottom: 10px; left: 50%; transform: translateX(-50%);
@@ -118,27 +124,30 @@
     /* ---------- シェイクアニメーション ---------- */
     @keyframes shake {
       0% { transform: translate(0, 0); }
-      20% { transform: translate(-5px, 0); }
-      40% { transform: translate(5px, 0); }
-      60% { transform: translate(-5px, 0); }
-      80% { transform: translate(5px, 0); }
+      20% { transform: translate(-10px, 0); }
+      40% { transform: translate(10px, 0); }
+      60% { transform: translate(-10px, 0); }
+      80% { transform: translate(10px, 0); }
       100% { transform: translate(0, 0); }
     }
     .shake {
       animation: shake 0.5s;
     }
-    /* ---------- ハート表示用コンテナ ---------- */
-    #hearts-container {
-      position: absolute;
-      bottom: 10px;
-      left: 50%;
-      transform: translateX(-50%);
+    /* ---------- ローディングオーバーレイ ---------- */
+    #loadingOverlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.6);
       display: flex;
-      gap: 10px;
-    }
-    .heart {
+      align-items: center;
+      justify-content: center;
       font-size: 24px;
-      color: red;
+      color: #fff;
+      z-index: 300;
+      display: none;
     }
     /* ---------- レスポンシブ調整 ---------- */
     @media (max-width: 600px) {
@@ -154,6 +163,9 @@
 </head>
 
 <body>
+  <!-- ローディングオーバーレイ -->
+  <div id="loadingOverlay">Loading…</div>
+
   <!-- ---------- ログイン画面 ---------- -->
   <div id="loginScreen">
     <h2>プレイヤー名を入力してください</h2>
@@ -267,6 +279,14 @@
       "https://lh3.googleusercontent.com/d/1fCmul9iotoUh4MLa_qzHvaOUDYMvng8C"
     ];
     let currentImageIndex = 0;
+
+    // ===================== ローディングオーバーレイ制御 =====================
+    function showLoadingOverlay() {
+      document.getElementById("loadingOverlay").style.display = "flex";
+    }
+    function hideLoadingOverlay() {
+      document.getElementById("loadingOverlay").style.display = "none";
+    }
 
     // ===================== Google APIロード後に呼ばれる =====================
     function gapiLoaded() {
@@ -431,6 +451,7 @@
         const enteredName = document.getElementById("playerNameInput").value.trim();
         if (!enteredName) { alert("名前を入力してください！"); return; }
         try {
+          showLoadingOverlay();
           const response = await fetch(GAS_URL + "?name=" + encodeURIComponent(enteredName), { method: "GET" });
           if (!response.ok) { throw new Error("ネットワークエラーです"); }
           const data = await response.json();
@@ -440,10 +461,15 @@
           playerData.exp = parseInt(data.exp, 10);
           playerData.g = parseInt(data.g, 10);
           console.log("取得したプレイヤーデータ:", playerData);
-          document.getElementById("loginScreen").style.display = "none";
-          document.getElementById("titleScreen").style.display = "flex";
+          // 少し待ってから画面切り替え
+          setTimeout(() => {
+            hideLoadingOverlay();
+            document.getElementById("loginScreen").style.display = "none";
+            document.getElementById("titleScreen").style.display = "flex";
+          }, 500);
         } catch (err) {
           console.error("データ取得エラー:", err);
+          hideLoadingOverlay();
           alert("ログインエラーが発生しました。再度お試しください。");
         }
       });
@@ -519,7 +545,7 @@
         document.getElementById("battle-screen").style.display = "block";
         overlay.style.display = "none";
         circle.classList.remove("active");
-        // ※ battleBGM の呼び出しを削除して、クイズ戦闘では quizBGM のみ再生する
+        // 戦闘では quizBGM のみ再生する
         playQuizBGM();
         startBattle();
       }, 800);
@@ -573,6 +599,13 @@
         }, 500);
       }
     }
+    function shakeGameScreen() {
+      const battleScreen = document.getElementById("battle-screen");
+      battleScreen.classList.add("shake");
+      setTimeout(() => {
+        battleScreen.classList.remove("shake");
+      }, 500);
+    }
     function shakeAndRemoveMonster() {
       const container = document.getElementById("enemy-container");
       if (container.children.length > 0) {
@@ -597,8 +630,20 @@
         let btn = document.createElement("button");
         btn.className = "choice-button";
         btn.textContent = choice;
-        btn.onclick = () => handleAnswer(index + 1, quiz);
+        // 選択肢が押されたらすぐに全ボタンを無効化する
+        btn.onclick = () => {
+          disableChoiceButtons();
+          handleAnswer(index + 1, quiz);
+        };
         choiceArea.appendChild(btn);
+      });
+    }
+    // 選択肢ボタンを無効化し、見た目を薄くする
+    function disableChoiceButtons() {
+      const buttons = document.querySelectorAll("#choice-area button");
+      buttons.forEach(btn => {
+        btn.disabled = true;
+        btn.style.opacity = "0.5";
       });
     }
     function handleAnswer(selected, quiz) {
@@ -610,6 +655,8 @@
       } else {
         missCount++;
         topTextBox.textContent = "❌ 不正解！ " + quiz.explanation;
+        // 画面シェイクで不正解を視覚的に伝える
+        shakeGameScreen();
         shakeAndRemoveHeart();
       }
       setTimeout(() => {
