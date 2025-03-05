@@ -550,7 +550,6 @@ async function initClient() {
   if (player.steps - lastEncounterSteps >= encounterThreshold) {
     startEncounter();
   }
-}
 
     function getRandomEncounterThreshold() {
       return Math.floor(Math.random() * 11) + 5;
