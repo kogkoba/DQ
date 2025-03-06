@@ -327,7 +327,7 @@
     <source src="./DQ down long.mp3" type="audio/mpeg">
   </audio>
 
-<script async defer src="https://apis.google.com/js/api.js"></script>
+
 <script>
   function gapiLoaded() {
     console.log("✅ gapiLoaded");
@@ -349,16 +349,10 @@
 </script>
 <script src="https://apis.google.com/js/api.js" onload="gapiLoaded()"></script>
 
-</script>
-
  
   <!-- メインスクリプト -->
   <script>
     // --- gapi読み込み後に呼ばれる ---
-    function gapiLoaded() {
-      console.log("✅ gapiLoaded");
-      gapi.load("client", initClient);
-    }
 async function initClient() {
   try {
     console.log("🔄 initClient() 開始...");
@@ -558,30 +552,38 @@ function showGameOverOptions() {
   const choiceArea = document.getElementById("choice-area");
   choiceArea.innerHTML = ""; // 既存のボタンを消去
 
+  // 🔹 再挑戦ボタンを作成
+  const retryButton = document.createElement("button");
+  retryButton.textContent = "再挑戦する";
+  retryButton.className = "choice-button";
+  retryButton.onclick = retryBattle; // ✅ 修正
 
+  // 🔹 教会から再開ボタンを作成
   const churchButton = document.createElement("button");
   churchButton.textContent = "教会から再開";
   churchButton.className = "choice-button";
-  churchButton.onclick = restartFromChurch; // 教会から再開する関数を実行
+  churchButton.onclick = restartFromChurch; // ✅ 修正
 
   choiceArea.appendChild(retryButton);
   choiceArea.appendChild(churchButton);
 }
+
 function retryBattle() {
   const topTextBox = document.getElementById("top-text-box");
   topTextBox.textContent = "再挑戦します！";
 
-  // 🔹 HPをバトル開始時のHPに戻す（確実に50以上にならないよう調整）
-  playerData.hp = Math.min(battleStartHp, 50);  
+  // HPをバトル開始時のHPに戻す
+  playerData.hp = Math.min(battleStartHp, 50);
   updatePlayerStatusUI();
   savePlayerData();
 
-  // 🔹 クイズを再スタート
+  // クイズを再スタート
   setTimeout(() => {
     startBattleInit();
     showQuiz();
   }, 1000);
 }
+
 
   // クイズ画面のHPを更新
   const quizHpElement = document.getElementById("quiz-hp");
@@ -757,36 +759,48 @@ function changeHp(amount) {
       return Math.floor(Math.random() * 11) + 5; // 5～15
     }
 function showGameOverOptions() {
+  stopQuizBgm(); // クイズBGMを停止
+  stopBattleBgm(); // 戦闘BGMを停止
+
   const topTextBox = document.getElementById("top-text-box");
   topTextBox.textContent = "💀 HPが尽きた…どうする？";
 
+  // 選択肢のボタンを作成
   const choiceArea = document.getElementById("choice-area");
   choiceArea.innerHTML = ""; // 既存のボタンを消去
 
-function showGameOverOptions() {
-  const topTextBox = document.getElementById("top-text-box");
-  topTextBox.textContent = "💀 HPが尽きた…どうする？";
-
-  const choiceArea = document.getElementById("choice-area");
-  choiceArea.innerHTML = ""; // 既存のボタンを消去
-
+  // 🔹 再挑戦ボタンを作成
   const retryButton = document.createElement("button");
   retryButton.textContent = "再挑戦する";
   retryButton.className = "choice-button";
-  retryButton.onclick = () => retryBattle(); // ✅ 修正
+  retryButton.onclick = retryBattle; // ✅ 修正
 
+  // 🔹 教会から再開ボタンを作成
   const churchButton = document.createElement("button");
   churchButton.textContent = "教会から再開";
   churchButton.className = "choice-button";
-  churchButton.onclick = () => restartFromChurch(); // ✅ 修正
+  churchButton.onclick = restartFromChurch; // ✅ 修正
 
   choiceArea.appendChild(retryButton);
   choiceArea.appendChild(churchButton);
 }
 
+function retryBattle() {
+  const topTextBox = document.getElementById("top-text-box");
+  topTextBox.textContent = "再挑戦します！";
 
+  // HPをバトル開始時のHPに戻す
+  playerData.hp = Math.min(battleStartHp, 50);
+  updatePlayerStatusUI();
+  savePlayerData();
 
-// 「教会からスタート」関数
+  // クイズを再スタート
+  setTimeout(() => {
+    startBattleInit();
+    showQuiz();
+  }, 1000);
+}
+
 function restartFromChurch() {
   const topTextBox = document.getElementById("top-text-box");
   topTextBox.textContent = "教会で復活… お金が半分になりました！";
