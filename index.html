@@ -761,6 +761,12 @@
       // ★ バトル開始時の HP を保存
       battleStartHp = playerData.hp;
 
+  // ▼ ここで quiz-area 全体を非表示にする
+  const quizArea = document.getElementById("quiz-area");
+  quizArea.style.display = "none";
+
+
+
       // UI リセット
       document.getElementById("quiz-image").style.display = "none";
       document.getElementById("choice-area").innerHTML = "";
