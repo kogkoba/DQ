@@ -540,6 +540,20 @@ function showGameOverOptions() {
   choiceArea.appendChild(retryButton);
   choiceArea.appendChild(churchButton);
 }
+function retryBattle() {
+  const topTextBox = document.getElementById("top-text-box");
+  topTextBox.textContent = "再挑戦します！";
+
+  // 🔹 HPをバトル開始時のHPに戻す
+  playerData.hp = battleStartHp;
+  updatePlayerStatusUI();
+  savePlayerData();
+
+  // 🔹 クイズを再スタート
+  startBattleInit();
+  showQuiz(); // クイズを最初から開始
+}
+
 
   // クイズ画面のHPを更新
   const quizHpElement = document.getElementById("quiz-hp");
