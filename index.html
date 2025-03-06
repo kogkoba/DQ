@@ -411,29 +411,30 @@
     let quizBgm = null;
 
     // --- クイズ＆モンスターのデータ取得 ---
-    async function loadQuizData() {
-      try {
-        const resp = await gapi.client.sheets.spreadsheets.values.get({
-          spreadsheetId: QUIZ_SHEET_ID,
-          range: `sheet1!A2:K1000`
-        });
-        if (!resp.result.values) {
-          console.warn("クイズデータが存在しません。");
-          return;
-        }
-        quizData = resp.result.values.map(row => ({
-          questionId: row[0] || "",         
-          question: row[1] || "",
-          imageUrl: row[2] || "",
-          choices: [row[3], row[4], row[5], row[6]],
-          correct: parseInt(row[7] || "1", 10),
-          explanation: row[9] || ""
-        }));
-        console.log("Quiz Data:", quizData);
-      } catch (err) {
-        console.error("Quiz Data Error:", err);
-      }
+async function loadQuizData() {
+  try {
+    const resp = await gapi.client.sheets.spreadsheets.values.get({
+      spreadsheetId: QUIZ_SHEET_ID,
+      range: `sheet1!A2:K1000`
+    });
+    if (!resp.result.values) {
+      console.warn("クイズデータが存在しません。");
+      return;
     }
+    quizData = resp.result.values.map(row => ({
+      questionId: row[0] || "",
+      question: row[1] || "",
+      imageUrl: row[2] || "",
+      choices: [row[3], row[4], row[5], row[6]],
+      correct: parseInt(row[7] || "1", 10),
+      explanation: row[9] || ""
+    }));
+    console.log("✅ Quiz Data:", quizData);
+  } catch (err) {
+    console.error("⛔ Quiz Data Error:", err);
+  }
+}
+
     async function loadMonsterData() {
       try {
         const resp = await gapi.client.sheets.spreadsheets.values.get({
