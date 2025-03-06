@@ -758,19 +758,27 @@ function showGameOverOptions() {
   const choiceArea = document.getElementById("choice-area");
   choiceArea.innerHTML = ""; // 既存のボタンを消去
 
+function showGameOverOptions() {
+  const topTextBox = document.getElementById("top-text-box");
+  topTextBox.textContent = "💀 HPが尽きた…どうする？";
+
+  const choiceArea = document.getElementById("choice-area");
+  choiceArea.innerHTML = ""; // 既存のボタンを消去
+
   const retryButton = document.createElement("button");
   retryButton.textContent = "再挑戦する";
   retryButton.className = "choice-button";
-  retryButton.onclick = retryBattle; // 修正
+  retryButton.onclick = () => retryBattle(); // ✅ 修正
 
   const churchButton = document.createElement("button");
   churchButton.textContent = "教会から再開";
   churchButton.className = "choice-button";
-  churchButton.onclick = restartFromChurch; // 修正
+  churchButton.onclick = () => restartFromChurch(); // ✅ 修正
 
   choiceArea.appendChild(retryButton);
   choiceArea.appendChild(churchButton);
 }
+
 
 
 // 「教会からスタート」関数
