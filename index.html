@@ -506,23 +506,32 @@
       document.getElementById("level").textContent = playerData.level;
       document.getElementById("hp").textContent = playerData.hp;
     }
-    function savePlayerData() {
-      const params = new URLSearchParams();
-      params.append("name", playerData.name);
-      params.append("level", playerData.level);
-      params.append("exp", playerData.exp);
-      params.append("g", playerData.g);
-      params.append("hp", playerData.hp);
+function savePlayerData() {
+  const params = new URLSearchParams();
+  params.append("name", playerData.name);
+  params.append("level", playerData.level);
+  params.append("exp", playerData.exp);
+  params.append("g", playerData.g);
+  params.append("hp", playerData.hp);
 
-      fetch(GAS_URL, { method: "POST", body: params })
-        .then(res => res.text())
-        .then(data => {
-          console.log("✅ プレイヤーデータ保存成功:", data);
-        })
-        .catch(err => {
-          console.error("⛔ プレイヤーデータ保存エラー:", err);
-        });
+  fetch(GAS_URL, {
+    method: "POST",
+    headers: { "Content-Type": "application/x-www-form-urlencoded" }, // ヘッダーを追加
+    body: params
+  })
+  .then(response => response.json()) // JSONとしてレスポンスを処理
+  .then(data => {
+    if (data.success) {
+      console.log("✅ プレイヤーデータ保存成功");
+    } else {
+      console.error("⛔ プレイヤーデータ保存エラー:", data.error || "不明なエラー");
     }
+  })
+  .catch(error => {
+    console.error("⛔ ネットワークエラー:", error);
+  });
+}
+
     function checkLevelUp() {
       while (playerData.exp >= 100 && playerData.level < 100) {
         playerData.exp -= 100;
