@@ -898,9 +898,10 @@ function restartFromChurch() {
         container.appendChild(img);
       });
     }
-setTimeout(() => {
-  if (playerData.hp === 0) {
-    showGameOverOptions();  // 🔥 HPが0ならゲームオーバー選択肢を表示
+function showQuiz() {
+  // 🚨 HPが0ならクイズを開始せずにゲームオーバー画面へ
+  if (playerData.hp === 0) { 
+    showGameOverOptions();
     return;
   }
 
@@ -914,13 +915,12 @@ setTimeout(() => {
     return;
   }
 
-  // 🔽 新しい問題を表示する前に、画像をリセット
+  // 🔽 画像をリセット
   quizImage.src = "";
   quizImage.style.display = "none";
 
   topTextBox.textContent = quiz.question;
 
-  // 🔽 新しい画像がある場合のみ表示する
   if (quiz.imageUrl) {
     setTimeout(() => {
       quizImage.src = quiz.imageUrl;
@@ -928,7 +928,7 @@ setTimeout(() => {
     }, 100);
   }
 
-  // 選択肢をリセットして、新しい選択肢を表示
+  // 選択肢を作成
   choiceArea.innerHTML = "";
   quiz.choices.forEach((choice, index) => {
     const btn = document.createElement("button");
