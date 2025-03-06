@@ -605,7 +605,7 @@ function retryBattle() {
   const topTextBox = document.getElementById("top-text-box");
   topTextBox.textContent = "再挑戦します！";
 
-  // 🔹 HPはそのまま（修正済み）
+  // HPはバトル開始時のものを維持
   updatePlayerStatusUI();
   savePlayerData();
 
@@ -613,7 +613,7 @@ function retryBattle() {
   playQuizBgm();
 
   setTimeout(() => {
-    startBattleInit();
+    startBattleInit();  // 🔹 修正後の `startBattleInit()` を呼び出す
     showQuiz();
   }, 1000);
 }
@@ -884,29 +884,35 @@ function restartFromChurch() {
   correctCount = 0;
   missCount = 0;
 
-  // 🔹 クイズ開始時のHPを記録
+  // 🔹 HPをバトル開始時の値にする
   battleStartHp = playerData.hp;
 
   document.getElementById("quiz-image").style.display = "none";
   document.getElementById("choice-area").innerHTML = "";
   document.getElementById("zaorikuButton").style.display = "none";
-  
+
+  // 🔹 戦闘開始時にHPを更新
   updateBattleHp();
+
+  // 🔹 モンスターの生成処理をここに移動！（再挑戦時も更新される）
+  const currentMonsters = getRandomMonsters();
+  showMonsters(currentMonsters);
+
+  // 🔹 戦闘開始時のテキスト表示
+  const topTextBox = document.getElementById("top-text-box");
+  topTextBox.textContent = "mamがあらわれた！";
+  
+  setTimeout(() => { topTextBox.textContent = ""; }, 2000);
+  setTimeout(() => { topTextBox.textContent = "mamの復習攻撃！"; }, 3000);
+  setTimeout(() => {
+    topTextBox.textContent = "クイズ開始！";
+    showQuiz();
+  }, 5000);
+
+  // 🔹 クイズBGMを開始
+  playQuizBgm();
 }
-function updateBattleHp() {
-  document.getElementById("hp").textContent = playerData.hp;
-}
-    const currentMonsters = getRandomMonsters();
-      showMonsters(currentMonsters);
-      const topTextBox = document.getElementById("top-text-box");
-      topTextBox.textContent = "mamがあらわれた！";
-      setTimeout(() => { topTextBox.textContent = ""; }, 2000);
-      setTimeout(() => { topTextBox.textContent = "mamの復習攻撃！"; }, 3000);
-      setTimeout(() => {
-        topTextBox.textContent = "クイズ開始！";
-        showQuiz();
-      }, 5000);
-    }
+
 function decreaseHp() {
   changeHp(-10);
   updateBattleHp();
