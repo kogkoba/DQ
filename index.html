@@ -958,48 +958,46 @@ function decreaseHp() {
         container.appendChild(img);
       });
     }
-function showQuiz() {
-  // 🚨 HPが0ならクイズを開始せずにゲームオーバー画面へ
-  if (playerData.hp === 0) { 
-    showGameOverOptions();
-    return;
-  }
+function function handleAnswer(selected, quiz) {
+  console.log("🔍 handleAnswer() 開始: 選択肢 =", quiz.choices); // ← 追加
 
-  const quiz = getRandomQuiz();
   const topTextBox = document.getElementById("top-text-box");
-  const quizImage = document.getElementById("quiz-image");
-  const choiceArea = document.getElementById("choice-area");
+  disableChoiceButtons();
 
-  if (!quiz) {
-    topTextBox.textContent = "クイズデータがありません";
-    return;
+  if (selected === quiz.correct) {
+    correctCount++;
+    topTextBox.textContent = "✅ 正解！ " + (quiz.explanation || "");
+    shakeAndRemoveMonster();
+    addExp(20);
+    playerData.g += 5;
+    savePlayerData();
+  } else {
+    missCount++;
+    topTextBox.textContent = "❌ 不正解！ " + (quiz.explanation || "");
+    shakeGameScreen();
+
+    // 🎯 HPを減らす
+    decreaseHp();
+
+    if (quiz.questionId) {
+      recordMistake(playerData.name, quiz.questionId);
+    }
   }
 
-  // 🔽 画像をリセット
-  quizImage.src = "";
-  quizImage.style.display = "none";
+  setTimeout(() => {
+    if (playerData.hp === 0) {
+      showGameOverOptions();
+      return;
+    }
 
-  topTextBox.textContent = quiz.question;
-
-  if (quiz.imageUrl) {
-    setTimeout(() => {
-      quizImage.src = quiz.imageUrl;
-      quizImage.style.display = "block";
-    }, 100);
-  }
-
-  // 選択肢を作成
-  choiceArea.innerHTML = "";
-  quiz.choices.forEach((choice, index) => {
-    const btn = document.createElement("button");
-    btn.className = "choice-button";
-    btn.textContent = choice;
-    btn.onclick = () => {
-      disableChoiceButtons();
-      handleAnswer(index + 1, quiz);
-    };
-    choiceArea.appendChild(btn);
-  });
+    if (correctCount >= MAX_CORRECT) {
+      topTextBox.textContent = "mamは安心して去っていった！";
+      stopQuizBgm();
+      endBattle();
+    } else {
+      showQuiz();
+    }
+  }, 3000);
 }
 
     function disableChoiceButtons() {
@@ -1012,6 +1010,8 @@ function showQuiz() {
     
     
 function handleAnswer(selected, quiz) {
+  console.log("🔍 handleAnswer() 開始: 選択肢 =", quiz.choices); // ← 追加
+
   const topTextBox = document.getElementById("top-text-box");
   disableChoiceButtons();
 
