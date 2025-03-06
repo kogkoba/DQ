@@ -550,10 +550,11 @@ function retryBattle() {
   savePlayerData();
 
   // 🔹 クイズを再スタート
-  startBattleInit();
-  showQuiz(); // クイズを最初から開始
+  setTimeout(() => {
+    startBattleInit();
+    showQuiz();
+  }, 1000);
 }
-
 
   // クイズ画面のHPを更新
   const quizHpElement = document.getElementById("quiz-hp");
@@ -755,20 +756,6 @@ if (playerData.hp === 0) {
   choiceArea.appendChild(churchButton);
 }
 
-// --- ここから再挑戦・教会復帰の関数を追加 ---
-// 「再挑戦する」関数
-function retryBattle() {
-  const topTextBox = document.getElementById("top-text-box");
-  topTextBox.textContent = "再挑戦します！";
-
-  // HPを全回復
-  playerData.hp = 100;
-  updatePlayerStatusUI();
-  savePlayerData();
-
-  // バトル画面をリセットしてクイズを再開
-  startBattleInit();
-}
 
 // 「教会からスタート」関数
 function restartFromChurch() {
