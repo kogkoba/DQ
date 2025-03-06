@@ -983,8 +983,7 @@ if (selected === quiz.correct) {
     if (quiz.questionId) {
       recordMistake(playerData.name, quiz.questionId);
     }
-  }
-
+  
   setTimeout(() => {
     if (playerData.hp === 0) {
       showGameOverOptions();
