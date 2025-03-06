@@ -144,6 +144,13 @@
       height: 150px;
       margin: 5px auto;
     }
+    /* 🆕 新: 戦闘画面のHP表示用 */
+    #battle-hp-container {
+      display: flex;
+      justify-content: center;
+      font-size: 18px;
+      margin-top: 20px;
+    }    
     .choice-button {
       display: block;
       margin: 5px auto;
@@ -156,14 +163,7 @@
       opacity: 0.5;
       cursor: default;
     }
-/* ハートコンテナのスタイル調整 */
-#hearts-container {
-  display: flex;
-  justify-content: center; /* 中央配置 */
-  gap: 10px;
-  margin-top: 20px;
-  min-height: 30px; /* ハートが動かないように最低の高さを固定 */
-}
+
 
 /* 選択肢エリア（quiz-area）の調整 */
 #quiz-area {
@@ -292,10 +292,10 @@
 <div id="battle-screen">
   <div id="top-text-box">mamがあらわれた！</div>
 
-  <!-- 🔽 クイズ画面のHP表示をここに追加 -->
-  <div id="quiz-hp-container">
-    HP: <span id="quiz-hp">50</span>
-  </div>
+<!-- 🔽 これを追加（戦闘画面のHP表示用） -->
+<div id="battle-hp-container">
+  HP: <span id="hp">50</span>
+</div>
 
   <div id="enemy-container"></div>
   <img id="quiz-image" src="">
@@ -611,6 +611,9 @@ function retryBattle() {
   updatePlayerStatusUI();
   savePlayerData();
 
+  //クイズBGM再開
+  playQuizBgm();
+
   // クイズを再スタート
   setTimeout(() => {
     startBattleInit();
@@ -891,16 +894,10 @@ function restartFromChurch() {
   document.getElementById("zaorikuButton").style.display = "none";
   initHearts();
 }
-      function initHearts() {
-      const heartsContainer = document.getElementById("hearts-container");
-      heartsContainer.innerHTML = "";
-      for (let i = 0; i < 4; i++) {
-        const heart = document.createElement("span");
-        heart.className = "heart";
-        heart.textContent = "♡";
-        heartsContainer.appendChild(heart);
-      }
-      const currentMonsters = getRandomMonsters();
+function updateBattleHp() {
+  document.getElementById("hp").textContent = playerData.hp;
+}
+    const currentMonsters = getRandomMonsters();
       showMonsters(currentMonsters);
       const topTextBox = document.getElementById("top-text-box");
       topTextBox.textContent = "mamがあらわれた！";
@@ -911,18 +908,10 @@ function restartFromChurch() {
         showQuiz();
       }, 5000);
     }
-    function shakeAndRemoveHeart() {
-      const heartsContainer = document.getElementById("hearts-container");
-      if (heartsContainer.children.length > 0) {
-        const firstHeart = heartsContainer.children[0];
-        firstHeart.classList.add("shake");
-        setTimeout(() => {
-          if (heartsContainer.contains(firstHeart)) {
-            heartsContainer.removeChild(firstHeart);
-          }
-        }, 500);
-      }
-    }
+function decreaseHp() {
+  changeHp(-10);
+  updateBattleHp();
+}
     function shakeGameScreen() {
       const battleScreen = document.getElementById("battle-screen");
       battleScreen.classList.add("shake");
@@ -1014,7 +1003,6 @@ function handleAnswer(selected, quiz) {
     correctCount++;
     topTextBox.textContent = "✅ 正解！ " + (quiz.explanation || "");
     shakeAndRemoveMonster();
-
     addExp(20);
     playerData.g += 5;
     savePlayerData();
@@ -1022,31 +1010,26 @@ function handleAnswer(selected, quiz) {
     missCount++;
     topTextBox.textContent = "❌ 不正解！ " + (quiz.explanation || "");
     shakeGameScreen();
-    shakeAndRemoveHeart();
 
-    changeHp(-10); // ❌ ミスしたらHP減少
+    // 🎯 HPを減らす
+    decreaseHp();
 
     if (quiz.questionId) {
       recordMistake(playerData.name, quiz.questionId);
-    } else {
-      console.error("⛔ エラー: `quiz.questionId` が `undefined` です！", quiz);
     }
   }
 
   setTimeout(() => {
     if (playerData.hp === 0) {
-      // 🎯 HPが0になったらクイズを進めず、ゲームオーバーの選択肢を表示
       showGameOverOptions();
       return;
     }
 
     if (correctCount >= MAX_CORRECT) {
-      // 🎯 4問正解したら戦闘終了
       topTextBox.textContent = "mamは安心して去っていった！";
       stopQuizBgm();
       endBattle();
     } else {
-      // 🎯 まだクイズを続ける
       showQuiz();
     }
   }, 3000);
