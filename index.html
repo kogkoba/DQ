@@ -834,6 +834,11 @@
 
     // ======================= 10) クイズ出題・解答処理 =======================
     function showQuiz() {
+    // ▼ ここで quiz-area を表示に戻す
+      const quizArea = document.getElementById("quiz-area");
+      quizArea.style.display = "flex";  // 元々の CSS で flex-direction: column; などがあれば "flex"
+
+
       // クイズを取得
       const quiz = getRandomQuiz();
       if (!quiz) {
