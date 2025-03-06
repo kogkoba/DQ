@@ -566,8 +566,8 @@ function retryBattle() {
   const topTextBox = document.getElementById("top-text-box");
   topTextBox.textContent = "再挑戦します！";
 
-  // 🔹 HPをバトル開始時のHPに戻す
-  playerData.hp = battleStartHp;
+  // 🔹 HPをバトル開始時のHPに戻す（確実に50以上にならないよう調整）
+  playerData.hp = Math.min(battleStartHp, 50);  
   updatePlayerStatusUI();
   savePlayerData();
 
@@ -631,21 +631,17 @@ function savePlayerData() {
     }
     
 function changeHp(amount) {
-  // HPを増減
   playerData.hp += amount;
+  playerData.hp = Math.max(0, Math.min(50, playerData.hp)); // 0～50の範囲に制限
+  updatePlayerStatusUI();
+  savePlayerData();
 
-  // HPの上限・下限を設定（0以下にならないよう制御）
-  playerData.hp = Math.max(0, Math.min(100, playerData.hp)); // 0～100の範囲に制限
-
-  updatePlayerStatusUI(); // HPの表示を更新
-  savePlayerData(); // スプレッドシートに保存
-
-// 🔽 HPが0になったらゲームオーバー選択肢を表示して処理を終了
-if (playerData.hp === 0) {
-  showGameOverOptions();
-  return; // ここで処理を終了
+  if (playerData.hp === 0) {
+    showGameOverOptions();
+    return;
+  }
 }
-}
+
 
     // --- ログイン後の開始処理 ---
     document.addEventListener("DOMContentLoaded", () => {
@@ -755,26 +751,24 @@ if (playerData.hp === 0) {
     function getRandomEncounterThreshold() {
       return Math.floor(Math.random() * 11) + 5; // 5～15
     }
-    function showGameOverOptions() {
+function showGameOverOptions() {
   const topTextBox = document.getElementById("top-text-box");
-  topTextBox.textContent = "💀 HPが0になった！どうする？";
+  topTextBox.textContent = "💀 HPが尽きた…どうする？";
 
-  // 選択肢ボタンを作成
   const choiceArea = document.getElementById("choice-area");
-  choiceArea.innerHTML = ""; // 既存の選択肢をクリア
+  choiceArea.innerHTML = ""; // 既存のボタンを消去
 
-  // 「再挑戦」ボタン
   const retryButton = document.createElement("button");
   retryButton.textContent = "再挑戦する";
   retryButton.className = "choice-button";
-  retryButton.onclick = () => retryBattle();
-  choiceArea.appendChild(retryButton);
+  retryButton.onclick = retryBattle; // 修正
 
-  // 「教会からスタート」ボタン
   const churchButton = document.createElement("button");
-  churchButton.textContent = "教会からスタート";
+  churchButton.textContent = "教会から再開";
   churchButton.className = "choice-button";
-  churchButton.onclick = () => restartFromChurch();
+  churchButton.onclick = restartFromChurch; // 修正
+
+  choiceArea.appendChild(retryButton);
   choiceArea.appendChild(churchButton);
 }
 
