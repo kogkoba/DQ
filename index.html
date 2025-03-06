@@ -919,14 +919,12 @@ function decreaseHp() {
   updatePlayerStatusUI();  // 🔹 追加！
 }
 function updateBattleHp() {
--  const battleHpElement = document.getElementById("hp");
-+  const battleHpElement = document.getElementById("hp");
-   if (battleHpElement) {
-     battleHpElement.textContent = playerData.hp;
-   } else {
--    console.error("⛔ Error: HP表示要素が見つかりません (id='hp')");
-+    console.error("⛔ Error: HP表示要素が見つかりません (id='hp')");
-   }
+  const battleHpElement = document.getElementById("hp");
+  if (battleHpElement) {
+    battleHpElement.textContent = playerData.hp;
+  } else {
+    console.error("⛔ Error: HP表示要素が見つかりません (id='hp')");
+  }
 }
 
 
@@ -1009,22 +1007,8 @@ function updateBattleHp() {
         btn.style.opacity = "0.5";
       });
     }
-    
-    
-function handleAnswer(selected, quiz) {
-  console.log("🔍 handleAnswer() 開始: 選択肢 =", quiz.choices); // ← 追加
 
-  const topTextBox = document.getElementById("top-text-box");
-  disableChoiceButtons();
-
-  if (selected === quiz.correct) {
-    correctCount++;
-    topTextBox.textContent = "✅ 正解！ " + (quiz.explanation || "");
-    shakeAndRemoveMonster();
-    addExp(20);
-    playerData.g += 5;
-    savePlayerData();
-  } else {
+  else {
     missCount++;
     topTextBox.textContent = "❌ 不正解！ " + (quiz.explanation || "");
     shakeGameScreen();
