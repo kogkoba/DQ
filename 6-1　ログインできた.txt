@@ -80,8 +80,8 @@
     /* ---------- D-Pad ---------- */
     #dpad {
       position: absolute;
-      bottom: 10px;
-      right: 10px;
+      bottom: 70px;
+      right: 50px;
       width: 150px;
       height: 150px;
       display: grid;
@@ -155,18 +155,22 @@
       opacity: 0.5;
       cursor: default;
     }
+/* ハートコンテナのスタイル調整 */
 #hearts-container {
-  position: relative; /* 絶対配置から相対配置へ変更 */
   display: flex;
-  justify-content: center; /* 中央寄せ */
+  justify-content: center; /* 中央配置 */
   gap: 10px;
-  margin-top: 20px; /* 選択肢とハートの間に余白を追加 */
+  margin-top: 20px;
+  min-height: 30px; /* ハートが動かないように最低の高さを固定 */
 }
 
-    .heart {
-      font-size: 24px;
-      color: red;
-    }
+/* 選択肢エリア（quiz-area）の調整 */
+#quiz-area {
+  display: flex;
+  flex-direction: column;
+  align-items: center; /* 中央配置 */
+}
+
     #explanation { display: none; }
     #zaorikuButton {
       display: none;
@@ -281,16 +285,29 @@
         <div id="transition-circle"></div>
       </div>
     </div>
-    <!-- 戦闘画面 -->
-    <div id="battle-screen">
-      <div id="top-text-box">mamがあらわれた！</div>
-      <div id="enemy-container"></div>
-      <img id="quiz-image" src="">
-      <div id="choice-area"></div>
-      <div id="hearts-container"></div>
-      <button id="zaorikuButton" onclick="onZaoriku()">ザオリク</button>
-    </div>
+    
+    <!-- クイズ画面のHP表示 -->
+<div id="quiz-hp-container">
+  HP: <span id="quiz-hp">100</span>
+</div>
+    
+<!-- 戦闘画面 -->
+<div id="battle-screen">
+  <div id="top-text-box">mamがあらわれた！</div>
+  <div id="enemy-container"></div>
+  <img id="quiz-image" src="">
+  
+  <!-- 問題と選択肢エリア -->
+  <div id="quiz-area">
+    <div id="choice-area"></div>
   </div>
+
+  <!-- ハートをここに移動（問題とは別にする） -->
+  <div id="hearts-container"></div>
+
+  <button id="zaorikuButton" onclick="onZaoriku()">ザオリク</button>
+</div>
+
 
   <!-- BGM用オーディオタグ -->
   <audio id="fieldBGM" loop preload="auto">
@@ -495,23 +512,32 @@
       document.getElementById("level").textContent = playerData.level;
       document.getElementById("hp").textContent = playerData.hp;
     }
-    function savePlayerData() {
-      const params = new URLSearchParams();
-      params.append("name", playerData.name);
-      params.append("level", playerData.level);
-      params.append("exp", playerData.exp);
-      params.append("g", playerData.g);
-      params.append("hp", playerData.hp);
+function savePlayerData() {
+  const params = new URLSearchParams();
+  params.append("name", playerData.name);
+  params.append("level", playerData.level);
+  params.append("exp", playerData.exp);
+  params.append("g", playerData.g);
+  params.append("hp", playerData.hp);
 
-      fetch(GAS_URL, { method: "POST", body: params })
-        .then(res => res.text())
-        .then(data => {
-          console.log("✅ プレイヤーデータ保存成功:", data);
-        })
-        .catch(err => {
-          console.error("⛔ プレイヤーデータ保存エラー:", err);
-        });
+  fetch(GAS_URL, {
+    method: "POST",
+    headers: { "Content-Type": "application/x-www-form-urlencoded" }, // ヘッダーを追加
+    body: params
+  })
+  .then(response => response.json()) // JSONとしてレスポンスを処理
+  .then(data => {
+    if (data.success) {
+      console.log("✅ プレイヤーデータ保存成功");
+    } else {
+      console.error("⛔ プレイヤーデータ保存エラー:", data.error || "不明なエラー");
     }
+  })
+  .catch(error => {
+    console.error("⛔ ネットワークエラー:", error);
+  });
+}
+
     function checkLevelUp() {
       while (playerData.exp >= 100 && playerData.level < 100) {
         playerData.exp -= 100;
@@ -758,39 +784,46 @@
         btn.style.opacity = "0.5";
       });
     }
-    function handleAnswer(selected, quiz) {
-      const topTextBox = document.getElementById("top-text-box");
-      disableChoiceButtons();
-      if (selected === quiz.correct) {
-        correctCount++;
-        topTextBox.textContent = "✅ 正解！ " + (quiz.explanation || "");
-        shakeAndRemoveMonster();
-      } else {
-        missCount++;
-        topTextBox.textContent = "❌ 不正解！ " + (quiz.explanation || "");
-        shakeGameScreen();
-        shakeAndRemoveHeart();
+function handleAnswer(selected, quiz) {
+  const topTextBox = document.getElementById("top-text-box");
+  disableChoiceButtons();
+
+  if (selected === quiz.correct) {
+    correctCount++;
+    topTextBox.textContent = "✅ 正解！ " + (quiz.explanation || "");
+    shakeAndRemoveMonster();
+    
+    // ⭐ 修正: 正解時に経験値 & ゴールド獲得
+    addExp(20); // 20EXPを追加
+    playerData.g += 5; // 5G追加
+    savePlayerData();  // データを保存（スプレッドシートへ送信）
+  } else {
+    missCount++;
+    topTextBox.textContent = "❌ 不正解！ " + (quiz.explanation || "");
+    shakeGameScreen();
+    shakeAndRemoveHeart();
+  }
+
+  setTimeout(() => {
+    if (correctCount >= MAX_CORRECT) {
+      topTextBox.textContent = "mamは安心して去っていった！";
+      stopQuizBgm();
+      endBattle();
+    } else if (missCount >= MAX_MISS) {
+      topTextBox.textContent = "mamは復習を求めた。";
+      stopQuizBgm();
+      const dqAudio = document.getElementById("dqDownAudio");
+      dqAudio.pause();
+      dqAudio.currentTime = 0;
+      if (isBgmPlaying) {
+        dqAudio.play().catch(err => console.warn("DQ Down Audio play error:", err));
       }
-      setTimeout(() => {
-        if (correctCount >= MAX_CORRECT) {
-          topTextBox.textContent = "mamは安心して去っていった！";
-          stopQuizBgm();
-          endBattle();
-        } else if (missCount >= MAX_MISS) {
-          topTextBox.textContent = "mamは復習を求めた。";
-          stopQuizBgm();
-          const dqAudio = document.getElementById("dqDownAudio");
-          dqAudio.pause();
-          dqAudio.currentTime = 0;
-          if (isBgmPlaying) {
-            dqAudio.play().catch(err => console.warn("DQ Down Audio play error:", err));
-          }
-          document.getElementById("zaorikuButton").style.display = "inline-block";
-        } else {
-          showQuiz();
-        }
-      }, 3000);
+      document.getElementById("zaorikuButton").style.display = "inline-block";
+    } else {
+      showQuiz();
     }
+  }, 3000);
+}
     function onZaoriku() {
       document.getElementById("zaorikuButton").style.display = "none";
       const dqAudio = document.getElementById("dqDownAudio");
