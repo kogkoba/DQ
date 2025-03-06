@@ -778,39 +778,46 @@ function savePlayerData() {
         btn.style.opacity = "0.5";
       });
     }
-    function handleAnswer(selected, quiz) {
-      const topTextBox = document.getElementById("top-text-box");
-      disableChoiceButtons();
-      if (selected === quiz.correct) {
-        correctCount++;
-        topTextBox.textContent = "✅ 正解！ " + (quiz.explanation || "");
-        shakeAndRemoveMonster();
-      } else {
-        missCount++;
-        topTextBox.textContent = "❌ 不正解！ " + (quiz.explanation || "");
-        shakeGameScreen();
-        shakeAndRemoveHeart();
+function handleAnswer(selected, quiz) {
+  const topTextBox = document.getElementById("top-text-box");
+  disableChoiceButtons();
+
+  if (selected === quiz.correct) {
+    correctCount++;
+    topTextBox.textContent = "✅ 正解！ " + (quiz.explanation || "");
+    shakeAndRemoveMonster();
+    
+    // ⭐ 修正: 正解時に経験値 & ゴールド獲得
+    addExp(20); // 20EXPを追加
+    playerData.g += 5; // 5G追加
+    savePlayerData();  // データを保存（スプレッドシートへ送信）
+  } else {
+    missCount++;
+    topTextBox.textContent = "❌ 不正解！ " + (quiz.explanation || "");
+    shakeGameScreen();
+    shakeAndRemoveHeart();
+  }
+
+  setTimeout(() => {
+    if (correctCount >= MAX_CORRECT) {
+      topTextBox.textContent = "mamは安心して去っていった！";
+      stopQuizBgm();
+      endBattle();
+    } else if (missCount >= MAX_MISS) {
+      topTextBox.textContent = "mamは復習を求めた。";
+      stopQuizBgm();
+      const dqAudio = document.getElementById("dqDownAudio");
+      dqAudio.pause();
+      dqAudio.currentTime = 0;
+      if (isBgmPlaying) {
+        dqAudio.play().catch(err => console.warn("DQ Down Audio play error:", err));
       }
-      setTimeout(() => {
-        if (correctCount >= MAX_CORRECT) {
-          topTextBox.textContent = "mamは安心して去っていった！";
-          stopQuizBgm();
-          endBattle();
-        } else if (missCount >= MAX_MISS) {
-          topTextBox.textContent = "mamは復習を求めた。";
-          stopQuizBgm();
-          const dqAudio = document.getElementById("dqDownAudio");
-          dqAudio.pause();
-          dqAudio.currentTime = 0;
-          if (isBgmPlaying) {
-            dqAudio.play().catch(err => console.warn("DQ Down Audio play error:", err));
-          }
-          document.getElementById("zaorikuButton").style.display = "inline-block";
-        } else {
-          showQuiz();
-        }
-      }, 3000);
+      document.getElementById("zaorikuButton").style.display = "inline-block";
+    } else {
+      showQuiz();
     }
+  }, 3000);
+}
     function onZaoriku() {
       document.getElementById("zaorikuButton").style.display = "none";
       const dqAudio = document.getElementById("dqDownAudio");
