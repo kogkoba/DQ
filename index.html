@@ -155,18 +155,21 @@
       opacity: 0.5;
       cursor: default;
     }
+/* ハートコンテナのスタイル調整 */
 #hearts-container {
-  position: relative; /* 絶対配置から相対配置へ変更 */
   display: flex;
-  justify-content: center; /* 中央寄せ */
-  gap: 10px;
-  margin-top: 20px; /* 選択肢とハートの間に余白を追加 */
+  justify-content: center; /* 中央配置 */
+  gap: 10px; /* ハートの間隔 */
+  margin-top: 10px; /* 上に少し余白を追加 */
 }
 
-    .heart {
-      font-size: 24px;
-      color: red;
-    }
+/* 選択肢エリア（quiz-area）の調整 */
+#quiz-area {
+  display: flex;
+  flex-direction: column;
+  align-items: center; /* 中央配置 */
+}
+
     #explanation { display: none; }
     #zaorikuButton {
       display: none;
@@ -281,16 +284,23 @@
         <div id="transition-circle"></div>
       </div>
     </div>
-    <!-- 戦闘画面 -->
-    <div id="battle-screen">
-      <div id="top-text-box">mamがあらわれた！</div>
-      <div id="enemy-container"></div>
-      <img id="quiz-image" src="">
-      <div id="choice-area"></div>
-      <div id="hearts-container"></div>
-      <button id="zaorikuButton" onclick="onZaoriku()">ザオリク</button>
-    </div>
+<!-- 戦闘画面 -->
+<div id="battle-screen">
+  <div id="top-text-box">mamがあらわれた！</div>
+  <div id="enemy-container"></div>
+  <img id="quiz-image" src="">
+  
+  <!-- 問題と選択肢エリア -->
+  <div id="quiz-area">
+    <div id="choice-area"></div>
   </div>
+
+  <!-- ハートをここに移動（問題とは別にする） -->
+  <div id="hearts-container"></div>
+
+  <button id="zaorikuButton" onclick="onZaoriku()">ザオリク</button>
+</div>
+
 
   <!-- BGM用オーディオタグ -->
   <audio id="fieldBGM" loop preload="auto">
