@@ -570,17 +570,17 @@ function savePlayerData() {
       savePlayerData();
     }
     
-    function changeHp(amount) {
+function changeHp(amount) {
+  // HPを増減
   playerData.hp += amount;
 
-  // HP の上限・下限を設定
-  if (playerData.hp > 100) playerData.hp = 100; // 最大HP100
-  if (playerData.hp < 0) playerData.hp = 0; // 最小HP0
+  // HPの上限・下限を設定
+  playerData.hp = Math.max(0, Math.min(100, playerData.hp)); // 0～100の範囲に制限
 
   updatePlayerStatusUI(); // HPの表示を更新
   savePlayerData(); // スプレッドシートに保存
 }
-    
+
     
 
     // --- ログイン後の開始処理 ---
