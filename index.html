@@ -305,8 +305,7 @@
     <div id="choice-area"></div>
   </div>
 
-  <!-- ハートをここに移動（問題とは別にする） -->
-  <div id="hearts-container"></div>
+
 
   <button id="zaorikuButton" onclick="onZaoriku()">ザオリク</button>
 </div>
@@ -892,7 +891,7 @@ function restartFromChurch() {
   document.getElementById("quiz-image").style.display = "none";
   document.getElementById("choice-area").innerHTML = "";
   document.getElementById("zaorikuButton").style.display = "none";
-  initHearts();
+
 }
 function updateBattleHp() {
   document.getElementById("hp").textContent = playerData.hp;
