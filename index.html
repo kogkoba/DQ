@@ -866,6 +866,29 @@ function handleAnswer(selected, quiz) {
     }
   }, 3000);
 }
+    function recordMistake(playerName, questionId) {
+  const params = new URLSearchParams();
+  params.append("player", playerName);
+  params.append("questionId", questionId);
+
+  fetch(GAS_PERSONAL_URL, {
+    method: "POST",
+    headers: { "Content-Type": "application/x-www-form-urlencoded" },
+    body: params
+  })
+  .then(response => response.json())
+  .then(data => {
+    if (data.success) {
+      console.log(`✅ ${playerName} の間違い記録を更新: 問題 ${questionId}`);
+    } else {
+      console.error("⛔ 記録エラー:", data.error || "不明なエラー");
+    }
+  })
+  .catch(error => {
+    console.error("⛔ ネットワークエラー:", error);
+  });
+}
+    
 
     function onZaoriku() {
       document.getElementById("zaorikuButton").style.display = "none";
