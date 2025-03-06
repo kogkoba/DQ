@@ -899,7 +899,12 @@ function restartFromChurch() {
         container.appendChild(img);
       });
     }
-  function showQuiz() {
+function showQuiz() {
+  // 🚨 HPが0ならクイズを開始しない
+  if (playerData.hp === 0) {
+    return;
+  }
+
   const quiz = getRandomQuiz();
   const topTextBox = document.getElementById("top-text-box");
   const quizImage = document.getElementById("quiz-image");
@@ -909,7 +914,8 @@ function restartFromChurch() {
     topTextBox.textContent = "クイズデータがありません";
     return;
   }
-    // 🔽 新しい問題を表示する前に、画像をリセット
+
+  // 🔽 新しい問題を表示する前に、画像をリセット
   quizImage.src = "";
   quizImage.style.display = "none";
 
