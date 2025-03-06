@@ -145,7 +145,7 @@
       margin: 5px auto;
     }
     /* 🆕 新: 戦闘画面のHP表示用 */
-    #battle-hp-container {
+    #hp-container {
       display: flex;
       justify-content: center;
       font-size: 18px;
@@ -292,8 +292,8 @@
 <div id="battle-screen">
   <div id="top-text-box">mamがあらわれた！</div>
 
-<div id="battle-hp-container">
-  HP: <span id="battle-hp">50</span>
+<div id="hp-container">
+  HP: <span id="hp">50</span>
 </div>
 
 
@@ -621,7 +621,7 @@ function retryBattle() {
 
 
   // クイズ画面のHPを更新
-  const quizHpElement = document.getElementById("quiz-hp");
+  const quizHpElement = document.getElementById("hp");
   if (quizHpElement) {
     quizHpElement.textContent = playerData.hp;
   }
@@ -918,14 +918,17 @@ function decreaseHp() {
   updateBattleHp();
   updatePlayerStatusUI();  // 🔹 追加！
 }
-    function updateBattleHp() {
-      const battleHpElement = document.getElementById("hp");
-      if (battleHpElement) {
-        battleHpElement.textContent = playerData.hp;
-      } else {
-        console.error("⛔ Error: HP表示要素が見つかりません (id='hp')");
-      }
-    }
+function updateBattleHp() {
+-  const battleHpElement = document.getElementById("hp");
++  const battleHpElement = document.getElementById("hp");
+   if (battleHpElement) {
+     battleHpElement.textContent = playerData.hp;
+   } else {
+-    console.error("⛔ Error: HP表示要素が見つかりません (id='hp')");
++    console.error("⛔ Error: HP表示要素が見つかりません (id='hp')");
+   }
+}
+
 
 
     function shakeGameScreen() {
@@ -958,8 +961,7 @@ function decreaseHp() {
         container.appendChild(img);
       });
     }
-function function handleAnswer(selected, quiz) {
-  console.log("🔍 handleAnswer() 開始: 選択肢 =", quiz.choices); // ← 追加
+
 
   const topTextBox = document.getElementById("top-text-box");
   disableChoiceButtons();
