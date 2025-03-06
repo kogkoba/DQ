@@ -518,6 +518,32 @@ function updatePlayerStatusUI() {
   document.getElementById("level").textContent = playerData.level;
   document.getElementById("hp").textContent = playerData.hp;
 
+// 🎯 HP 0 のときに再挑戦 or 教会の選択肢を表示する
+function showGameOverOptions() {
+  stopQuizBgm(); // クイズBGMを停止
+  stopBattleBgm(); // 戦闘BGMを停止
+
+  const topTextBox = document.getElementById("top-text-box");
+  topTextBox.textContent = "💀 HPが尽きた…どうする？";
+
+  // 選択肢のボタンを作成
+  const choiceArea = document.getElementById("choice-area");
+  choiceArea.innerHTML = ""; // 既存のボタンを消去
+
+  const retryButton = document.createElement("button");
+  retryButton.textContent = "再挑戦する";
+  retryButton.className = "choice-button";
+  retryButton.onclick = retryBattle; // 再挑戦関数を実行
+
+  const churchButton = document.createElement("button");
+  churchButton.textContent = "教会から再開";
+  churchButton.className = "choice-button";
+  churchButton.onclick = restartFromChurch; // 教会から再開する関数を実行
+
+  choiceArea.appendChild(retryButton);
+  choiceArea.appendChild(churchButton);
+}
+
   // クイズ画面のHPを更新
   const quizHpElement = document.getElementById("quiz-hp");
   if (quizHpElement) {
