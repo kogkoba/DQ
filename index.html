@@ -820,8 +820,7 @@ function savePlayerData() {
         btn.disabled = true;
         btn.style.opacity = "0.5";
       });
-    }
-function handleAnswer(selected, quiz) {
+    }function handleAnswer(selected, quiz) {
   const topTextBox = document.getElementById("top-text-box");
   disableChoiceButtons();
 
@@ -843,8 +842,12 @@ function handleAnswer(selected, quiz) {
     // ⭐ 修正: 不正解時にHPを減らす (-10)
     changeHp(-10);
 
-    // 🔽 間違えた問題をスプレッドシートに記録する
-    recordMistake(playerData.name, quiz.questionId);
+    // 🔽 修正: 問題IDが `undefined` の場合のエラーを防ぐ
+    if (quiz.questionId) {
+      recordMistake(playerData.name, quiz.questionId);
+    } else {
+      console.error("⛔ エラー: `quiz.questionId` が `undefined` です！", quiz);
+    }
   }
 
   setTimeout(() => {
@@ -867,6 +870,7 @@ function handleAnswer(selected, quiz) {
     }
   }, 3000);
 }
+
     function recordMistake(playerName, questionId) {
   const params = new URLSearchParams();
   params.append("player", playerName);
