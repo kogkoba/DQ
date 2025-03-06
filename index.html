@@ -399,6 +399,7 @@
           return;
         }
         quizData = resp.result.values.map(row => ({
+          questionId: row[0] || "",         
           question: row[1] || "",
           imageUrl: row[2] || "",
           choices: [row[3], row[4], row[5], row[6]],
