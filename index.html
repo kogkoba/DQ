@@ -358,21 +358,24 @@
       console.log("✅ gapiLoaded");
       gapi.load("client", initClient);
     }
-    async function initClient() {
-      try {
-        console.log("🔄 initClient() 開始...");
-        await gapi.client.init({
-          apiKey: API_KEY,
-          discoveryDocs: ["https://sheets.googleapis.com/$discovery/rest?version=v4"]
-        });
-        console.log("✅ GAPI Initialized");
-        await loadQuizData();
-        await loadMonsterData();
-        console.log("✅ Data Loaded");
-      } catch (err) {
-        console.error("⛔ GAPI Init Error:", err.message || err);
-      }
-    }
+async function initClient() {
+  try {
+    console.log("🔄 initClient() 開始...");
+    await gapi.client.init({
+      apiKey: API_KEY,
+      discoveryDocs: ["https://sheets.googleapis.com/$discovery/rest?version=v4"]
+    });
+    console.log("✅ GAPI Initialized");
+    
+    // ここでクイズデータをロード
+    await loadQuizData();
+    await loadMonsterData();
+
+    console.log("✅ Data Loaded");
+  } catch (err) {
+    console.error("⛔ GAPI Init Error:", err.message || err);
+  }
+}
 
     // --- 定数・グローバル変数 ---
     const API_KEY = "AIzaSyBszPu-BQ2_Aq9C3lhAiW--kyenM5vQsjs";
