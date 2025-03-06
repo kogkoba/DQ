@@ -327,14 +327,29 @@
     <source src="./DQ down long.mp3" type="audio/mpeg">
   </audio>
 
-  <script async defer src="https://apis.google.com/js/api.js"></script>
+<script async defer src="https://apis.google.com/js/api.js"></script>
 <script>
   function gapiLoaded() {
     console.log("✅ gapiLoaded");
     gapi.load("client", initClient);
   }
+
+  function initClient() {
+    gapi.client.init({
+      apiKey: "AIzaSyBszPu-BQ2_Aq9C3lhAiW--kyenM5vQsjs",  // ここを有効なAPIキーに置き換え
+      discoveryDocs: ["https://sheets.googleapis.com/$discovery/rest?version=v4"]
+    }).then(() => {
+      console.log("✅ Google Sheets API 初期化成功");
+      loadQuizData();
+      loadMonsterData();
+    }).catch(err => {
+      console.error("⛔ Google API 初期化エラー:", err);
+    });
+  }
+
   window.onload = gapiLoaded;  // スクリプト読み込み完了後に `gapiLoaded` を実行
 </script>
+
  
   <!-- メインスクリプト -->
   <script>
