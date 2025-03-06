@@ -898,9 +898,9 @@ function restartFromChurch() {
         container.appendChild(img);
       });
     }
-function showQuiz() {
-  // 🚨 HPが0ならクイズを開始しない
+setTimeout(() => {
   if (playerData.hp === 0) {
+    showGameOverOptions();  // 🔥 HPが0ならゲームオーバー選択肢を表示
     return;
   }
 
@@ -969,7 +969,7 @@ function handleAnswer(selected, quiz) {
     shakeGameScreen();
     shakeAndRemoveHeart();
 
-    changeHp(-10);
+    changeHp(-10); // ❌ ミスしたらHP減少
 
     if (quiz.questionId) {
       recordMistake(playerData.name, quiz.questionId);
@@ -979,26 +979,19 @@ function handleAnswer(selected, quiz) {
   }
 
   setTimeout(() => {
-    // 🚨 HPが0ならクイズを進めない
     if (playerData.hp === 0) {
+      // 🎯 HPが0になったらクイズを進めず、ゲームオーバーの選択肢を表示
+      showGameOverOptions();
       return;
     }
 
     if (correctCount >= MAX_CORRECT) {
+      // 🎯 4問正解したら戦闘終了
       topTextBox.textContent = "mamは安心して去っていった！";
       stopQuizBgm();
       endBattle();
-    } else if (missCount >= MAX_MISS) {
-      topTextBox.textContent = "mamは復習を求めた。";
-      stopQuizBgm();
-      const dqAudio = document.getElementById("dqDownAudio");
-      dqAudio.pause();
-      dqAudio.currentTime = 0;
-      if (isBgmPlaying) {
-        dqAudio.play().catch(err => console.warn("DQ Down Audio play error:", err));
-      }
-      document.getElementById("zaorikuButton").style.display = "inline-block";
     } else {
+      // 🎯 まだクイズを続ける
       showQuiz();
     }
   }, 3000);
