@@ -586,6 +586,7 @@
       if (playerData.hp > 50) playerData.hp = 50;
 
       updatePlayerStatusUI();
+      updateBattleHp();        // バトル画面用
       savePlayerData();
 
       // HP0 ならゲームオーバー選択肢
