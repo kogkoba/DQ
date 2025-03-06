@@ -267,7 +267,7 @@
   <div id="gameContainer">
     <!-- ステータス表示 -->
     <div id="status">
-      プレイヤーのHP: <span id="hp">100</span> / レベル: <span id="level">1</span>
+      プレイヤーのHP: <span id="hp">50</span> / レベル: <span id="level">1</span>
       <div id="bgmToggleContainer">
         <button id="bgmToggleButton" onclick="toggleBgm()">🔇 BGM OFF</button>
       </div>
@@ -294,7 +294,7 @@
 
   <!-- 🔽 クイズ画面のHP表示をここに追加 -->
   <div id="quiz-hp-container">
-    HP: <span id="quiz-hp">100</span>
+    HP: <span id="quiz-hp">50</span>
   </div>
 
   <div id="enemy-container"></div>
@@ -387,7 +387,7 @@
     let playerData = { name: "", level: 1, exp: 0, g: 0, hp: 50 }; // 初期HPを50に変更
     let quizData = [];
     let monsterData = [];
-    let player = { x: 0, y: 0, hp: 100, level: 1, steps: 0 };
+    let player = { x: 0, y: 0, hp: 50, level: 1, steps: 0 };
     let facingRight = true;
     let currentImageIndex = 0;
     const playerImages = [
@@ -403,7 +403,7 @@
     let lastEncounterSteps = 0;
     let encounterThreshold = 5;
     // 🔹 追加: バトル開始時のHPを保存する変数
-    let battleStartHp = 100;
+    let battleStartHp = 50;
 
     // --- BGM関連 ---
     let isBgmPlaying = false;
@@ -678,7 +678,7 @@ function changeHp(amount) {
           playerData.level = parseInt(data.level, 10);
           playerData.exp   = parseInt(data.exp, 10);
           playerData.g     = parseInt(data.g, 10);
-          playerData.hp    = parseInt(data.hp, 10) || 100;
+          playerData.hp    = parseInt(data.hp, 10) || 50;
 
           updatePlayerStatusUI();
 
@@ -794,7 +794,7 @@ function restartFromChurch() {
   playerData.g = Math.max(1, Math.floor(playerData.g / 2));
 
   // HP全回復
-  playerData.hp = 100;
+  playerData.hp = 50;
   updatePlayerStatusUI();
   savePlayerData();
 
