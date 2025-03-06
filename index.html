@@ -976,7 +976,10 @@ function showQuiz() {
         btn.disabled = true;
         btn.style.opacity = "0.5";
       });
-    }function handleAnswer(selected, quiz) {
+    }
+    
+    
+function handleAnswer(selected, quiz) {
   const topTextBox = document.getElementById("top-text-box");
   disableChoiceButtons();
 
@@ -984,21 +987,18 @@ function showQuiz() {
     correctCount++;
     topTextBox.textContent = "✅ 正解！ " + (quiz.explanation || "");
     shakeAndRemoveMonster();
-    
-    // ⭐ 修正: 正解時に経験値 & ゴールド獲得
-    addExp(20); // 20EXPを追加
-    playerData.g += 5; // 5G追加
-    savePlayerData();  // データを保存（スプレッドシートへ送信）
+
+    addExp(20);
+    playerData.g += 5;
+    savePlayerData();
   } else {
     missCount++;
     topTextBox.textContent = "❌ 不正解！ " + (quiz.explanation || "");
     shakeGameScreen();
     shakeAndRemoveHeart();
-    
-    // ⭐ 修正: 不正解時にHPを減らす (-10)
+
     changeHp(-10);
 
-    // 🔽 修正: 問題IDが `undefined` の場合のエラーを防ぐ
     if (quiz.questionId) {
       recordMistake(playerData.name, quiz.questionId);
     } else {
@@ -1007,6 +1007,11 @@ function showQuiz() {
   }
 
   setTimeout(() => {
+    // 🚨 HPが0ならクイズを進めない
+    if (playerData.hp === 0) {
+      return;
+    }
+
     if (correctCount >= MAX_CORRECT) {
       topTextBox.textContent = "mamは安心して去っていった！";
       stopQuizBgm();
