@@ -155,14 +155,14 @@
       opacity: 0.5;
       cursor: default;
     }
-    #hearts-container {
-      position: absolute;
-      bottom: 10px;
-      left: 50%;
-      transform: translateX(-50%);
-      display: flex;
-      gap: 10px;
-    }
+#hearts-container {
+  position: relative; /* 絶対配置から相対配置へ変更 */
+  display: flex;
+  justify-content: center; /* 中央寄せ */
+  gap: 10px;
+  margin-top: 20px; /* 選択肢とハートの間に余白を追加 */
+}
+
     .heart {
       font-size: 24px;
       color: red;
