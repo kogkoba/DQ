@@ -600,12 +600,18 @@ function changeHp(amount) {
   // HPを増減
   playerData.hp += amount;
 
-  // HPの上限・下限を設定
+  // HPの上限・下限を設定（0以下にならないよう制御）
   playerData.hp = Math.max(0, Math.min(100, playerData.hp)); // 0～100の範囲に制限
 
   updatePlayerStatusUI(); // HPの表示を更新
   savePlayerData(); // スプレッドシートに保存
 
+  // 🔽 HPが0になったらゲームオーバー選択肢を表示して処理を終了
+  if (playerData.hp === 0) {
+    showGameOverOptions();
+    return; // ここで処理を終了
+  }
+}
   // 🎯 HPが0になったらゲームオーバー処理を実行
   if (playerData.hp === 0) {
     showGameOverOptions();
@@ -719,6 +725,28 @@ function changeHp(amount) {
     function getRandomEncounterThreshold() {
       return Math.floor(Math.random() * 11) + 5; // 5～15
     }
+    function showGameOverOptions() {
+  const topTextBox = document.getElementById("top-text-box");
+  topTextBox.textContent = "💀 HPが0になった！どうする？";
+
+  // 選択肢ボタンを作成
+  const choiceArea = document.getElementById("choice-area");
+  choiceArea.innerHTML = ""; // 既存の選択肢をクリア
+
+  // 「再挑戦」ボタン
+  const retryButton = document.createElement("button");
+  retryButton.textContent = "再挑戦する";
+  retryButton.className = "choice-button";
+  retryButton.onclick = () => retryBattle();
+  choiceArea.appendChild(retryButton);
+
+  // 「教会からスタート」ボタン
+  const churchButton = document.createElement("button");
+  churchButton.textContent = "教会からスタート";
+  churchButton.className = "choice-button";
+  churchButton.onclick = () => restartFromChurch();
+  choiceArea.appendChild(churchButton);
+}
 
     // --- 戦闘関連 ---
     function startEncounter() {
