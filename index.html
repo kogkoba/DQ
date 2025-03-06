@@ -1061,8 +1061,15 @@ function handleAnswer(selected, quiz) {
     headers: { "Content-Type": "application/x-www-form-urlencoded" },
     body: params
   })
-  .then(response => response.json())
+  .then(response => {
+    console.log("📡 APIレスポンス:", response); // 🔍 追加
+    if (!response.ok) {
+      throw new Error(`HTTPエラー: ${response.status}`);
+    }
+    return response.json();
+  })
   .then(data => {
+    console.log("📊 APIデータ:", data); // 🔍 追加
     if (data.success) {
       console.log(`✅ ${playerName} の間違い記録を更新: 問題 ${questionId}`);
     } else {
@@ -1072,6 +1079,7 @@ function handleAnswer(selected, quiz) {
   .catch(error => {
     console.error("⛔ ネットワークエラー:", error);
   });
+
 }
     
 
