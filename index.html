@@ -918,6 +918,15 @@ function decreaseHp() {
   updateBattleHp();
   updatePlayerStatusUI();  // 🔹 追加！
 }
+    function updateBattleHp() {
+      const battleHpElement = document.getElementById("hp");
+      if (battleHpElement) {
+        battleHpElement.textContent = playerData.hp;
+      } else {
+        console.error("⛔ Error: HP表示要素が見つかりません (id='hp')");
+      }
+    }
+
 
     function shakeGameScreen() {
       const battleScreen = document.getElementById("battle-screen");
