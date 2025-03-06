@@ -774,30 +774,44 @@ function savePlayerData() {
         container.appendChild(img);
       });
     }
-    function showQuiz() {
-      const quiz = getRandomQuiz();
-      const topTextBox = document.getElementById("top-text-box");
-      if (!quiz) {
-        topTextBox.textContent = "クイズデータがありません";
-        return;
-      }
-      topTextBox.textContent = quiz.question;
-      const quizImage = document.getElementById("quiz-image");
+  function showQuiz() {
+  const quiz = getRandomQuiz();
+  const topTextBox = document.getElementById("top-text-box");
+  const quizImage = document.getElementById("quiz-image");
+  const choiceArea = document.getElementById("choice-area");
+
+  if (!quiz) {
+    topTextBox.textContent = "クイズデータがありません";
+    return;
+  }
+
+  // 🔽 新しい問題を表示する前に、画像をリセット
+  quizImage.src = "";
+  quizImage.style.display = "none";
+
+  topTextBox.textContent = quiz.question;
+
+  // 🔽 新しい画像がある場合のみ表示する
+  if (quiz.imageUrl) {
+    setTimeout(() => {
       quizImage.src = quiz.imageUrl;
-      quizImage.style.display = quiz.imageUrl ? "block" : "none";
-      const choiceArea = document.getElementById("choice-area");
-      choiceArea.innerHTML = "";
-      quiz.choices.forEach((choice, index) => {
-        const btn = document.createElement("button");
-        btn.className = "choice-button";
-        btn.textContent = choice;
-        btn.onclick = () => {
-          disableChoiceButtons();
-          handleAnswer(index + 1, quiz);
-        };
-        choiceArea.appendChild(btn);
-      });
-    }
+      quizImage.style.display = "block";
+    }, 100); // 画像の切り替えを確実にするため少し遅延
+  }
+
+  // 選択肢をリセットして、新しい選択肢を表示
+  choiceArea.innerHTML = "";
+  quiz.choices.forEach((choice, index) => {
+    const btn = document.createElement("button");
+    btn.className = "choice-button";
+    btn.textContent = choice;
+    btn.onclick = () => {
+      disableChoiceButtons();
+      handleAnswer(index + 1, quiz);
+    };
+    choiceArea.appendChild(btn);
+  });
+}
     function disableChoiceButtons() {
       const buttons = document.querySelectorAll("#choice-area button");
       buttons.forEach(btn => {
