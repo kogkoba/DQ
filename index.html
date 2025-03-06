@@ -621,25 +621,82 @@
       choiceArea.appendChild(retryButton);
       choiceArea.appendChild(churchButton);
     }
+    
+    function startBattleInitForRetry() {
+  correctCount = 0;
+  missCount = 0;
+  battleStartHp = playerData.hp;
 
-    function retryBattle() {
-      const topTextBox = document.getElementById("top-text-box");
-      topTextBox.textContent = "再挑戦します！";
+  // 画像と選択肢をリセット
+  document.getElementById("quiz-image").style.display = "none";
+  document.getElementById("choice-area").innerHTML = "";
+  document.getElementById("zaorikuButton").style.display = "none";
 
-      // ★ 修正: バトル開始時の HP に戻す
-      playerData.hp = Math.min(battleStartHp, 50);
-      updatePlayerStatusUI();
-      savePlayerData();
+  // モンスターの表示
+  const currentMonsters = getRandomMonsters();
+  showMonsters(currentMonsters);
 
-      // BGM 再開
-      playQuizBgm();
+  const topTextBox = document.getElementById("top-text-box");
+  topTextBox.textContent = "mamがあらわれた！";
 
-      setTimeout(() => {
-        startBattleInit();
-        showQuiz();
-      }, 1000);
+  updateBattleHp();
+
+  // 演出用のテキスト表示
+  setTimeout(() => { topTextBox.textContent = ""; }, 2000);
+  setTimeout(() => { topTextBox.textContent = "mamの復習攻撃！"; }, 3000);
+  // 5秒後に問題文のみを表示
+  setTimeout(() => {
+    const quiz = getRandomQuiz();
+    if (!quiz) {
+      console.warn("クイズがありません");
+      endBattle();
+      return;
     }
+    // 問題文のみを表示
+    topTextBox.textContent = quiz.question;
+    // 1秒後に画像と選択肢を表示
+    setTimeout(() => {
+      const quizImg = document.getElementById("quiz-image");
+      if (quiz.imageUrl) {
+        quizImg.src = quiz.imageUrl;
+        quizImg.style.display = "block";
+      } else {
+        quizImg.style.display = "none";
+      }
+      const choiceArea = document.getElementById("choice-area");
+      choiceArea.innerHTML = "";
+      quiz.choices.forEach((choiceText, index) => {
+        const btn = document.createElement("button");
+        btn.className = "choice-button";
+        btn.textContent = choiceText;
+        btn.onclick = () => answerQuiz(index + 1, quiz);
+        choiceArea.appendChild(btn);
+      });
+      // クイズエリア（全体）を表示
+      document.getElementById("quiz-area").style.display = "flex";
+    }, 1000);
+  }, 5000);
+}
 
+
+function retryBattle() {
+  const topTextBox = document.getElementById("top-text-box");
+  topTextBox.textContent = "再挑戦します！";
+
+  // バトル開始時のHPに戻す
+  playerData.hp = Math.min(battleStartHp, 50);
+  updatePlayerStatusUI();
+  savePlayerData();
+
+  // クイズエリア（画像・選択肢）を非表示にする
+  document.getElementById("quiz-area").style.display = "none";
+  document.getElementById("quiz-image").style.display = "none";
+
+  // 少し待ってから再挑戦用の戦闘初期化を呼び出す
+  setTimeout(() => {
+    startBattleInitForRetry();
+  }, 1000);
+}
     function restartFromChurch() {
       const topTextBox = document.getElementById("top-text-box");
       topTextBox.textContent = "教会で復活… お金が半分になりました！";
