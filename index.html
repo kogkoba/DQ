@@ -381,7 +381,8 @@
     const MAX_MISS = 4;
     let lastEncounterSteps = 0;
     let encounterThreshold = 5;
-    
+    // 🔹 追加: バトル開始時のHPを保存する変数
+　　　let battleStartHp = 100;
     // --- BGM関連 ---
     let isBgmPlaying = false;
     let isBattleBgmPlaying = false;
@@ -800,6 +801,20 @@ function restartFromChurch() {
         startBattleInit();
       }, 800);
     }
+    function startBattleInit() {
+  correctCount = 0;
+  missCount = 0;
+
+  // 🔹 クイズ開始時のHPを記録
+  battleStartHp = playerData.hp;
+
+  document.getElementById("quiz-image").style.display = "none";
+  document.getElementById("choice-area").innerHTML = "";
+  document.getElementById("zaorikuButton").style.display = "none";
+  initHearts();
+}
+    
+    
     function startBattleInit() {
       correctCount = 0;
       missCount = 0;
