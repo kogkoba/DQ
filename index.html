@@ -841,6 +841,9 @@ function handleAnswer(selected, quiz) {
     
     // ⭐ 修正: 不正解時にHPを減らす (-10)
     changeHp(-10);
+
+    // 🔽 間違えた問題をスプレッドシートに記録する
+    recordMistake(playerData.name, quiz.questionId);
   }
 
   setTimeout(() => {
@@ -863,6 +866,7 @@ function handleAnswer(selected, quiz) {
     }
   }, 3000);
 }
+
     function onZaoriku() {
       document.getElementById("zaorikuButton").style.display = "none";
       const dqAudio = document.getElementById("dqDownAudio");
