@@ -909,6 +909,33 @@ function restartFromChurch() {
     topTextBox.textContent = "クイズデータがありません";
     return;
   }
+    // 🔽 新しい問題を表示する前に、画像をリセット
+  quizImage.src = "";
+  quizImage.style.display = "none";
+
+  topTextBox.textContent = quiz.question;
+
+  // 🔽 新しい画像がある場合のみ表示する
+  if (quiz.imageUrl) {
+    setTimeout(() => {
+      quizImage.src = quiz.imageUrl;
+      quizImage.style.display = "block";
+    }, 100);
+  }
+
+  // 選択肢をリセットして、新しい選択肢を表示
+  choiceArea.innerHTML = "";
+  quiz.choices.forEach((choice, index) => {
+    const btn = document.createElement("button");
+    btn.className = "choice-button";
+    btn.textContent = choice;
+    btn.onclick = () => {
+      disableChoiceButtons();
+      handleAnswer(index + 1, quiz);
+    };
+    choiceArea.appendChild(btn);
+  });
+}
 
   // 🔽 新しい問題を表示する前に、画像をリセット
   quizImage.src = "";
