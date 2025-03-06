@@ -327,9 +327,15 @@
     <source src="./DQ down long.mp3" type="audio/mpeg">
   </audio>
 
-  <!-- Google API -->
-  <script async defer src="https://apis.google.com/js/api.js" onload="gapiLoaded()" onerror="console.error('❌ Google APIの読み込みに失敗しました');"></script>
-
+  <script async defer src="https://apis.google.com/js/api.js"></script>
+<script>
+  function gapiLoaded() {
+    console.log("✅ gapiLoaded");
+    gapi.load("client", initClient);
+  }
+  window.onload = gapiLoaded;  // スクリプト読み込み完了後に `gapiLoaded` を実行
+</script>
+ 
   <!-- メインスクリプト -->
   <script>
     // --- gapi読み込み後に呼ばれる ---
