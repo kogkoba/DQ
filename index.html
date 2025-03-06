@@ -382,7 +382,8 @@
     let lastEncounterSteps = 0;
     let encounterThreshold = 5;
     // 🔹 追加: バトル開始時のHPを保存する変数
-　　　let battleStartHp = 100;
+    let battleStartHp = 100;
+
     // --- BGM関連 ---
     let isBgmPlaying = false;
     let isBattleBgmPlaying = false;
@@ -853,7 +854,7 @@ function restartFromChurch() {
         battleScreen.classList.remove("shake");
       }, 500);
     }
-    function shakeAndRemoveMonster() {
+3W/.,    function shakeAndRemoveMonster() {
       const container = document.getElementById("enemy-container");
       if (container.children.length > 0) {
         const firstMonster = container.children[0];
