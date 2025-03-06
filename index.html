@@ -961,17 +961,17 @@ function updateBattleHp() {
     }
 
 
-  const topTextBox = document.getElementById("top-text-box");
+  const topTextBox = document.getElementById("top-text-box");{
   disableChoiceButtons();
 
-  if (selected === quiz.correct) {
+  if (selected === quiz.correct) 
     correctCount++;
     topTextBox.textContent = "✅ 正解！ " + (quiz.explanation || "");
     shakeAndRemoveMonster();
     addExp(20);
     playerData.g += 5;
     savePlayerData();
-  else {
+  else 
     missCount++;
     topTextBox.textContent = "❌ 不正解！ " + (quiz.explanation || "");
     shakeGameScreen();
