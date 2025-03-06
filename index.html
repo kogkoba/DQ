@@ -530,10 +530,6 @@ function showGameOverOptions() {
   const choiceArea = document.getElementById("choice-area");
   choiceArea.innerHTML = ""; // 既存のボタンを消去
 
-  const retryButton = document.createElement("button");
-  retryButton.textContent = "再挑戦する";
-  retryButton.className = "choice-button";
-  retryButton.onclick = retryBattle; // 再挑戦関数を実行
 
   const churchButton = document.createElement("button");
   churchButton.textContent = "教会から再開";
@@ -606,11 +602,10 @@ function changeHp(amount) {
   updatePlayerStatusUI(); // HPの表示を更新
   savePlayerData(); // スプレッドシートに保存
 
-  // 🔽 HPが0になったらゲームオーバー選択肢を表示して処理を終了
-  if (playerData.hp === 0) {
-    showGameOverOptions();
-    return; // ここで処理を終了
-  }
+// 🔽 HPが0になったらゲームオーバー選択肢を表示して処理を終了
+if (playerData.hp === 0) {
+  showGameOverOptions();
+  return; // ここで処理を終了
 }
 
     // --- ログイン後の開始処理 ---
