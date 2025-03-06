@@ -292,10 +292,10 @@
 <div id="battle-screen">
   <div id="top-text-box">mamがあらわれた！</div>
 
-<!-- 🔽 これを追加（戦闘画面のHP表示用） -->
 <div id="battle-hp-container">
-  HP: <span id="hp">50</span>
+  HP: <span id="battle-hp">50</span>
 </div>
+
 
   <div id="enemy-container"></div>
   <img id="quiz-image" src="">
@@ -605,20 +605,19 @@ function retryBattle() {
   const topTextBox = document.getElementById("top-text-box");
   topTextBox.textContent = "再挑戦します！";
 
-  // HPをバトル開始時のHPに戻す
-  playerData.hp = Math.min(battleStartHp, 50);
+  // 🔹 HPはそのまま（修正済み）
   updatePlayerStatusUI();
   savePlayerData();
 
-  //クイズBGM再開
+  // 🔹 クイズBGM を再開
   playQuizBgm();
 
-  // クイズを再スタート
   setTimeout(() => {
     startBattleInit();
     showQuiz();
   }, 1000);
 }
+
 
 
   // クイズ画面のHPを更新
@@ -891,7 +890,8 @@ function restartFromChurch() {
   document.getElementById("quiz-image").style.display = "none";
   document.getElementById("choice-area").innerHTML = "";
   document.getElementById("zaorikuButton").style.display = "none";
-
+  
+  updateBattleHp();
 }
 function updateBattleHp() {
   document.getElementById("hp").textContent = playerData.hp;
@@ -910,7 +910,9 @@ function updateBattleHp() {
 function decreaseHp() {
   changeHp(-10);
   updateBattleHp();
+  updatePlayerStatusUI();  // 🔹 追加！
 }
+
     function shakeGameScreen() {
       const battleScreen = document.getElementById("battle-screen");
       battleScreen.classList.add("shake");
