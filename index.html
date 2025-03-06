@@ -513,11 +513,18 @@
       console.log("⏹ クイズBGM停止");
     }
 
-    // --- プレイヤーデータ関連 ---
-    function updatePlayerStatusUI() {
-      document.getElementById("level").textContent = playerData.level;
-      document.getElementById("hp").textContent = playerData.hp;
-    }
+function updatePlayerStatusUI() {
+  // フィールド画面のHPを更新
+  document.getElementById("level").textContent = playerData.level;
+  document.getElementById("hp").textContent = playerData.hp;
+
+  // クイズ画面のHPを更新
+  const quizHpElement = document.getElementById("quiz-hp");
+  if (quizHpElement) {
+    quizHpElement.textContent = playerData.hp;
+  }
+}
+
 function savePlayerData() {
   const params = new URLSearchParams();
   params.append("name", playerData.name);
