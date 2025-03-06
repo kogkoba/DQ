@@ -607,6 +607,7 @@ if (playerData.hp === 0) {
   showGameOverOptions();
   return; // ここで処理を終了
 }
+}
 
     // --- ログイン後の開始処理 ---
     document.addEventListener("DOMContentLoaded", () => {
@@ -737,6 +738,45 @@ if (playerData.hp === 0) {
   churchButton.className = "choice-button";
   churchButton.onclick = () => restartFromChurch();
   choiceArea.appendChild(churchButton);
+}
+
+// --- ここから再挑戦・教会復帰の関数を追加 ---
+// 「再挑戦する」関数
+function retryBattle() {
+  const topTextBox = document.getElementById("top-text-box");
+  topTextBox.textContent = "再挑戦します！";
+
+  // HPを全回復
+  playerData.hp = 100;
+  updatePlayerStatusUI();
+  savePlayerData();
+
+  // バトル画面をリセットしてクイズを再開
+  startBattleInit();
+}
+
+// 「教会からスタート」関数
+function restartFromChurch() {
+  const topTextBox = document.getElementById("top-text-box");
+  topTextBox.textContent = "教会で復活… お金が半分になりました！";
+
+  // BGMや効果音の停止
+  stopQuizBgm();
+  stopBattleBgm();
+
+  // 所持金を半分に（最低1G残す）
+  playerData.g = Math.max(1, Math.floor(playerData.g / 2));
+
+  // HP全回復
+  playerData.hp = 100;
+  updatePlayerStatusUI();
+  savePlayerData();
+
+  // フィールド画面に戻る
+  document.getElementById("battle-screen").style.display = "none";
+  document.getElementById("gameArea").style.display = "block";
+  inBattle = false;
+  playFieldBgm();
 }
 
     // --- 戦闘関連 ---
