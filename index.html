@@ -971,10 +971,11 @@ function updateBattleHp() {
     addExp(20);
     playerData.g += 5;
     savePlayerData();
-  } else {
+  else {
     missCount++;
     topTextBox.textContent = "❌ 不正解！ " + (quiz.explanation || "");
     shakeGameScreen();
+    }
 
     // 🎯 HPを減らす
     decreaseHp();
