@@ -534,6 +534,11 @@
       // ★ 修正: フィールド画面の HP 表示は "field-hp" へ
       document.getElementById("field-hp").textContent = playerData.hp;
       document.getElementById("level").textContent = playerData.level;
+      // ★ 追加: 所持金 (G) を表示
+  const fieldGElement = document.getElementById("field-g");
+  if (fieldGElement) {
+    fieldGElement.textContent = playerData.g;
+  }
     }
     
 
