@@ -708,6 +708,8 @@ function retryBattle() {
   setTimeout(() => {
     startBattleInitForRetry();
   }, 500);
+  }, 800);  // ← ここでしっかり閉じる
+  }
 
     function restartFromChurch() {
       const topTextBox = document.getElementById("top-text-box");
