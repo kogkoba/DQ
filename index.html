@@ -2,27 +2,29 @@
 <html lang="ja">
 <head>
   <meta charset="UTF-8" />
-  <title>Tile Map Example</title>
+  <title>ドラクエ風タイルマップ＋プレイヤー</title>
   <style>
     body {
       background: #eee;
       margin: 20px;
+      font-family: Arial, sans-serif;
     }
     #gameCanvas {
-      background: #000; /* デフォルト背景（マップ外）が黒 */
-      image-rendering: pixelated; /* ドット絵がぼやけないようにするための設定 */
+      background: #000; /* マップ外の背景 */
+      image-rendering: pixelated;
+      border: 2px solid #333;
     }
     pre {
-      display: none; /* マップデータを隠す */
+      display: none; /* マップデータは非表示 */
     }
   </style>
 </head>
 <body>
 
-<h1>タイルマップ表示テスト</h1>
+<h1>タイルマップ＋プレイヤー表示テスト</h1>
 <canvas id="gameCanvas" width="256" height="256"></canvas>
 
-<!-- マップデータをHTML内に埋め込む場合の例。見せたくないなら display:none などで隠す -->
+<!-- マップデータ（16x16のマップ例） -->
 <pre id="mapData">
 MAP_VER_1_0_2;
 CANVASWIDTH:256;
@@ -305,117 +307,149 @@ END;
 </pre>
 
 <script>
-/* -------------------------------------
- *  タイルID と 画像ファイル名 の対応
- * ------------------------------------- */
-const tileSize = 16;  // 1タイルのサイズ(px)
-// 例: tileDict のサンプル
-const tileDict = {
-  "121": "121ipponnnoki.png",
-  "101": "101grass.png",
-  "122": "122nihonnnoki.png",
-  "112": "112soil.png",
-  "109": "109gake.png",
-  "103": "103hanabatake.png",
-  "164": "164horaana.png",
-  "133": "133kirikabu.png"
-};
+  /* ---------------------------
+   * タイルID と 画像ファイル名 の対応
+   * --------------------------- */
+  const tileSize = 16;  // 各タイルは16×16ピクセル
+  const tileDict = {
+    "121": "121ipponnoki.png",
+    "101": "101grass.png",
+    "122": "122nihonnoki.png",
+    "112": "112soil.png",
+    "109": "109gake.png",
+    "103": "103hanabatake.png",
+    "164": "164horaana.png",
+    "133": "133kirikabu.png"
+  };
 
-/* -------------------------------------
- *  マップデータを読み込み、パースする
- * ------------------------------------- */
-function parseMapData(rawText) {
-  // レイヤーごとに 16x16 の配列を作り、格納していく
-  // layers[レイヤー番号] = [[タイルID, ...], [...], ...] の形式を想定
-  const layers = {};
-  let currentLayer = 0;
-
-  // 行単位で分割
-  const lines = rawText.split(/\r?\n/);
-  for (let line of lines) {
-    line = line.trim();
-    // レイヤー切り替え検出
-    if (line.startsWith("LAYER:")) {
-      currentLayer = parseInt(line.replace("LAYER:", ""), 10);
-      layers[currentLayer] = createEmptyMapArray(16, 16); // 16x16の空配列
-    }
-    // マップデータ検出 (例: 0,0:121;)
-    else if (/^\d+,\d+:/.test(line)) {
-      // 例: "0,0:121;" → row=0, col=0, tileId=121
-      const [pos, tilePart] = line.split(":");
-      const [c, r] = pos.split(",").map(Number);
-      // "121;" から ";" を除去して数値化
-      const tileId = parseInt(tilePart.replace(";", ""), 10);
-
-      // layers[currentLayer][row][col] = tileId
-      if (!isNaN(tileId)) {
-        layers[currentLayer][r][c] = tileId;
+  /* ---------------------------
+   * マップデータのパース
+   * --------------------------- */
+  function parseMapData(rawText) {
+    const layers = {};
+    let currentLayer = 0;
+    const lines = rawText.split(/\r?\n/);
+    for (let line of lines) {
+      line = line.trim();
+      if (line.startsWith("LAYER:")) {
+        currentLayer = parseInt(line.replace("LAYER:", ""), 10);
+        layers[currentLayer] = createEmptyMapArray(16, 16); // 16x16の空配列
+      } else if (/^\d+,\d+:/.test(line)) {
+        const [pos, tilePart] = line.split(":");
+        const [c, r] = pos.split(",").map(Number);
+        const tileId = parseInt(tilePart.replace(";", ""), 10);
+        if (!isNaN(tileId)) {
+          layers[currentLayer][r][c] = tileId;
+        }
       }
     }
+    return layers;
   }
-  return layers;
-}
 
-// 指定サイズの2次元配列を作るユーティリティ
-function createEmptyMapArray(rows, cols) {
-  const arr = [];
-  for (let r = 0; r < rows; r++) {
-    arr[r] = [];
-    for (let c = 0; c < cols; c++) {
-      arr[r][c] = 0; // 0 = タイルなし
+  function createEmptyMapArray(rows, cols) {
+    const arr = [];
+    for (let r = 0; r < rows; r++) {
+      arr[r] = [];
+      for (let c = 0; c < cols; c++) {
+        arr[r][c] = 0;
+      }
     }
+    return arr;
   }
-  return arr;
-}
 
-/* -------------------------------------
- *  Canvasにタイルを描画する
- * ------------------------------------- */
-function drawMap(layers, context) {
-  // レイヤーの小さい番号から順に描画する
-  const layerKeys = Object.keys(layers).map(Number).sort((a,b)=>a-b);
-  for (let layer of layerKeys) {
-    const mapData = layers[layer];
-    for (let row = 0; row < mapData.length; row++) {
-      for (let col = 0; col < mapData[row].length; col++) {
-        const tileId = mapData[row][col];
-        if (tileId !== 0) {
-          const imgFile = tileDict[tileId];
-          if (imgFile) {
-            // 画像を読み込んで描画（毎回ロードすると非効率なので、実際はキャッシュ推奨）
-            const img = new Image();
-            img.src = imgFile;
-            // onload イベントで描画しないと、読み込む前に描画されない
-            img.onload = () => {
-              context.drawImage(img, col * tileSize, row * tileSize, tileSize, tileSize);
-            };
-          } else {
-            // tileDictに登録されていないIDの場合の処理（エラー表示など）
-            // console.log("未登録のタイルID:", tileId);
+  /* ---------------------------
+   * タイルマップ描画
+   * --------------------------- */
+  function drawMap(layers, context) {
+    // レイヤー番号が小さい順に描画
+    const layerKeys = Object.keys(layers).map(Number).sort((a, b) => a - b);
+    for (let layer of layerKeys) {
+      const mapData = layers[layer];
+      for (let row = 0; row < mapData.length; row++) {
+        for (let col = 0; col < mapData[row].length; col++) {
+          const tileId = mapData[row][col];
+          if (tileId !== 0) {
+            const imgFile = tileDict[tileId];
+            if (imgFile) {
+              // ※ ここは毎回新たに画像オブジェクトを作成していますが、実際はキャッシュ等で改善可能
+              const img = new Image();
+              img.src = imgFile;
+              img.onload = () => {
+                context.drawImage(img, col * tileSize, row * tileSize, tileSize, tileSize);
+              };
+            }
           }
         }
       }
     }
   }
-}
 
-/* -------------------------------------
- *  メイン処理
- * ------------------------------------- */
-window.onload = function() {
-  // Canvasとコンテキスト取得
-  const canvas = document.getElementById("gameCanvas");
-  const ctx = canvas.getContext("2d");
+  /* ---------------------------
+   * プレイヤー描画
+   * --------------------------- */
+  const playerImg = new Image();
+  playerImg.src = "https://lh3.googleusercontent.com/d/1peHOi70oOmL8c9v3OQydE5N-9R0PB6vh";
+  const player = { col: 1, row: 1 };  // 初期位置
 
-  // <pre>タグに埋め込んだマップデータを取得
-  const rawMapText = document.getElementById("mapData").textContent;
+  function drawPlayer() {
+    // プレイヤー画像を16×16ピクセルで描画
+    playerImg.onload = () => {
+      ctx.drawImage(playerImg, player.col * tileSize, player.row * tileSize, tileSize, tileSize);
+    };
+    // 既に読み込み済みの場合はそのまま描画
+    if (playerImg.complete) {
+      ctx.drawImage(playerImg, player.col * tileSize, player.row * tileSize, tileSize, tileSize);
+    }
+  }
 
-  // パースしてレイヤーデータ取得
-  const layers = parseMapData(rawMapText);
+  /* ---------------------------
+   * 全体再描画（マップ＋プレイヤー）
+   * --------------------------- */
+  function render(layers) {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    drawMap(layers, ctx);
+    drawPlayer();
+  }
 
-  // マップを描画
-  drawMap(layers, ctx);
-};
+  /* ---------------------------
+   * キー操作によるプレイヤー移動
+   * --------------------------- */
+  window.addEventListener("keydown", function(e) {
+    let newCol = player.col;
+    let newRow = player.row;
+    if (e.key === "ArrowUp") {
+      newRow--;
+    } else if (e.key === "ArrowDown") {
+      newRow++;
+    } else if (e.key === "ArrowLeft") {
+      newCol--;
+    } else if (e.key === "ArrowRight") {
+      newCol++;
+    }
+    // 境界チェック（マップは16x16）
+    if (newCol >= 0 && newCol < 16 && newRow >= 0 && newRow < 16) {
+      // 非歩行エリア判定（例として、タイルID "112" を歩けないエリアとする場合）
+      // if (globalLayer[newRow][newCol] === 112) return;
+      player.col = newCol;
+      player.row = newRow;
+      render(globalLayers);
+    }
+  });
+
+  /* ---------------------------
+   * メイン処理
+   * --------------------------- */
+  let globalLayers;
+  let globalLayer; // レイヤー1のマップデータ
+  window.onload = function() {
+    const canvas = document.getElementById("gameCanvas");
+    const ctx = canvas.getContext("2d");
+    const rawMapText = document.getElementById("mapData").textContent;
+    const layers = parseMapData(rawMapText);
+    globalLayers = layers;
+    globalLayer = layers[1];
+    render(layers);
+  };
 </script>
 
 </body>
