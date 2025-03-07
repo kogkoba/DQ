@@ -140,8 +140,8 @@
     }
     #quiz-image {
       display: none;
-      width: 150px;
-      height: 150px;
+      width: 300px;
+      height: 300px;
       margin: 5px auto;
     }
     /* 戦闘画面のHP表示用 */
@@ -242,6 +242,26 @@
       .dpad-button { width: 40px; height: 40px; }
       .heart { font-size: 20px; }
     }
+      /* ▼ 追加: PC向けに画面幅768px以上の場合 */
+  @media (min-width: 768px) {
+    #battle-screen {
+      font-size: 20px;
+    }
+    #top-text-box {
+      font-size: 18px;
+    }
+    .choice-button {
+      width: 200px;
+      font-size: 18px;
+    }
+    .monster {
+      width: 80px;
+      height: 80px;
+    }
+    #hp-container {
+      font-size: 22px;
+    }
+  }
   </style>
 </head>
 <body>
@@ -294,12 +314,16 @@
     <div id="battle-screen">
       <div id="top-text-box">mamがあらわれた！</div>
 
+
+       <div id="enemy-container"></div>
+      <img id="quiz-image" src="">
+
+      
       <div id="hp-container">
         HP: <span id="battle-hp">50</span>
       </div>
 
-      <div id="enemy-container"></div>
-      <img id="quiz-image" src="">
+
 
       <!-- 問題と選択肢エリア -->
       <div id="quiz-area">
