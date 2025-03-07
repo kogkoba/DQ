@@ -486,6 +486,24 @@
       const overlay = document.getElementById("loadingOverlay");
       if (overlay) overlay.style.display = "none";
     }
+    
+    // ======================= ゲームのエリア=======================
+
+// 村のエリアの範囲（仮: 中央の 200×200 の範囲）
+const villageArea = {
+  xMin: 150, xMax: 350,
+  yMin: 150, yMax: 350
+};
+
+// プレイヤーが村のエリアにいるか判定
+function isPlayerInVillage() {
+  return (
+    player.x >= villageArea.xMin &&
+    player.x <= villageArea.xMax &&
+    player.y >= villageArea.yMin &&
+    player.y <= villageArea.yMax
+  );
+}
 
     // ======================= 5) BGM 関連 =======================
     function updateBgmButton() {
@@ -611,6 +629,24 @@
         console.error("⛔ ネットワークエラー:", error);
       });
     }
+    
+     // ======================= 村判定　=======================
+    // 村のエリアの範囲（仮: 中央の 200×200 の範囲）
+const villageArea = {
+  xMin: 150, xMax: 350,
+  yMin: 150, yMax: 350
+};
+
+// プレイヤーが村のエリアにいるか判定
+function isPlayerInVillage() {
+  return (
+    player.x >= villageArea.xMin &&
+    player.x <= villageArea.xMax &&
+    player.y >= villageArea.yMin &&
+    player.y <= villageArea.yMax
+  );
+}
+
 
     // HPの増減
     function changeHp(amount) {
