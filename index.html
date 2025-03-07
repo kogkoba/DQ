@@ -343,7 +343,7 @@ function parseMapData(rawText) {
     else if (/^\d+,\d+:/.test(line)) {
       // 例: "0,0:121;" → row=0, col=0, tileId=121
       const [pos, tilePart] = line.split(":");
-      const [r, c] = pos.split(",").map(Number);
+      const [c, r] = pos.split(",").map(Number);
       // "121;" から ";" を除去して数値化
       const tileId = parseInt(tilePart.replace(";", ""), 10);
 
