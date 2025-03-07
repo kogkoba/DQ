@@ -20,42 +20,52 @@
 <body>
 
   <h1>ドラクエ風タイルマップ</h1>
-<canvas id="gameCanvas" width="512" height="512"></canvas>
+  <canvas id="gameCanvas" width="512" height="512"></canvas>
 
   <script>
     // === タイルマップ設定 ===
-const canvas = document.getElementById("gameCanvas");
-const ctx = canvas.getContext("2d");
+    const canvas = document.getElementById("gameCanvas");
+    const ctx = canvas.getContext("2d");
 
-const tileSize = 16; // タイルのサイズ（ドット）
-const tileset = new Image();
-tileset.src = "https://raw.githubusercontent.com/kogkoba/DQ/main/encountermap.png"; // GitHubのURLに変更
+    const tileSize = 32; // **タイルサイズを確認して適切な値に修正！**
+    const tileset = new Image();
+    tileset.src = "https://raw.githubusercontent.com/kogkoba/DQ/main/encountermap.png"; // GitHubのURL
 
-// タイルマッピング（仮の座標設定、適宜調整）
-const tileMapping = {
-    101: { x: 0, y: 0 },  // 草原
-    111: { x: 16, y: 0 }, // 道
-    121: { x: 32, y: 0 }, // 森
-    122: { x: 48, y: 0 }, // 水
-    130: { x: 64, y: 0 }, // 建物
-};
+    // **タイルマッピングの座標を適切に修正**
+    const tileMapping = {
+        101: { x: 0, y: 0 },    // 草原
+        111: { x: 32, y: 0 },   // 道
+        121: { x: 64, y: 0 },   // 森
+        122: { x: 96, y: 0 },   // 水
+        130: { x: 128, y: 0 },  // 建物
+    };
 
-tileset.onload = function () {
-    drawMap();
-};
+    // **mapData を仮で定義**
+    const mapData = [
+      [101, 101, 101, 111, 111, 101, 101, 101, 101, 101],
+      [101, 121, 121, 111, 111, 121, 121, 101, 101, 101],
+      [101, 121, 122, 122, 122, 121, 121, 101, 101, 101],
+      [111, 121, 122, 130, 122, 121, 111, 111, 101, 101],
+      [111, 121, 122, 122, 122, 121, 111, 101, 101, 101],
+      [101, 121, 121, 111, 111, 121, 121, 101, 101, 101],
+      [101, 101, 101, 111, 111, 101, 101, 101, 101, 101]
+    ];
 
-function drawMap() {
-    for (let y = 0; y < mapData.length; y++) {
-        for (let x = 0; x < mapData[y].length; x++) {
-            let tileID = mapData[y][x];
-            let tilePos = tileMapping[tileID] || tileMapping[101]; // デフォルトは草原
+    tileset.onload = function () {
+        drawMap();
+    };
 
-            ctx.drawImage(tileset, tilePos.x, tilePos.y, tileSize, tileSize, 
-                          x * tileSize, y * tileSize, tileSize, tileSize);
+    function drawMap() {
+        for (let y = 0; y < mapData.length; y++) {
+            for (let x = 0; x < mapData[y].length; x++) {
+                let tileID = mapData[y][x];
+                let tilePos = tileMapping[tileID] || tileMapping[101]; // デフォルトは草原
+
+                ctx.drawImage(tileset, tilePos.x, tilePos.y, tileSize, tileSize, 
+                              x * tileSize, y * tileSize, tileSize, tileSize);
+            }
         }
     }
-}
-
   </script>
 
 </body>
