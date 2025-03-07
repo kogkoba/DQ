@@ -489,11 +489,6 @@
     
     // ======================= ゲームのエリア=======================
 
-// 村のエリアの範囲（X: 200～400, Y: 200～400 の範囲）
-const villageArea = {
-  xMin: 200, xMax: 400,
-  yMin: 200, yMax: 400
-};
 
 // プレイヤーが村のエリアにいるか判定
 function isPlayerInVillage() {
@@ -663,8 +658,14 @@ function isPlayerInVillage() {
       // HP0 ならゲームオーバー選択肢
       if (playerData.hp === 0) {
         showGameOverOptions();
-      }
-    }
+        function checkVillageEntry() {
+  document.getElementById("top-text-box").textContent = "🏡 村に戻ってきた！";
+
+  // 1.5秒後に村のメニューを表示
+  setTimeout(() => {
+    showVillageMenu();
+  }, 1500);
+}
 
     // ======================= 7) ゲームオーバー・再挑戦 =======================
     function showGameOverOptions() {
@@ -835,79 +836,75 @@ function retryBattle() {
         "translate(-50%, -50%) " + (facingRight ? "scaleX(1)" : "scaleX(-1)");
     }
 
-    function movePlayer(dx, dy) {
-      if (inBattle) return;
+   function movePlayer(dx, dy) {
+  if (inBattle) return;
 
-      if (dx < 0) facingRight = false;
-      else if (dx > 0) facingRight = true;
+  if (dx < 0) facingRight = false;
+  else if (dx > 0) facingRight = true;
 
-      // 歩きアニメ
-      currentImageIndex = (currentImageIndex + 1) % playerImages.length;
-      document.getElementById("player").src = playerImages[currentImageIndex];
+  // 歩きアニメーション
+  currentImageIndex = (currentImageIndex + 1) % playerImages.length;
+  document.getElementById("player").src = playerImages[currentImageIndex];
 
-      // 位置更新
-      player.x += dx;
-      player.y += dy;
-      // 範囲制限
-      const playerElement = document.getElementById("player");
-      const pw = playerElement.offsetWidth;
-      const ph = playerElement.offsetHeight;
-      const maxX = window.innerWidth - pw;
-      const maxY = document.getElementById("gameArea").clientHeight - ph;
-      if (player.x < 0) player.x = 0;
-      if (player.y < 0) player.y = 0;
-      if (player.x > maxX) player.x = maxX;
-      if (player.y > maxY) player.y = maxY;
+  // 位置更新
+  player.x += dx;
+  player.y += dy;
 
-      updatePlayerPosition();
-      player.steps++;
+  // 画面外に出ないように制限
+  const maxX = window.innerWidth - 30;
+  const maxY = document.getElementById("gameArea").clientHeight - 30;
+  if (player.x < 0) player.x = 0;
+  if (player.y < 0) player.y = 0;
+  if (player.x > maxX) player.x = maxX;
+  if (player.y > maxY) player.y = maxY;
 
+  updatePlayerPosition();
+  player.steps++;
 
-  // **村の中ではエンカウントしない**
-  if (!isPlayerInVillage() && player.steps - lastEncounterSteps >= encounterThreshold) {
+  // ✅ 村に入ったら村のメニューを表示
+  if (isPlayerInVillage()) {
+    checkVillageEntry();
+    return;
+  }
+
+  // ✅ 村の外ではエンカウント発生
+  if (player.steps - lastEncounterSteps >= encounterThreshold) {
     startEncounter();
   }
 }
-function checkVillageEntry() {
-  if (isPlayerInVillage()) {
-    document.getElementById("top-text-box").textContent = "🏡 村に戻ってきた！";
 
-    // 3秒後に村のメニューを表示
-    setTimeout(() => {
-      showVillageMenu();
-    }, 2000);
-  }
-}
 
 function showVillageMenu() {
   document.getElementById("top-text-box").textContent = "🏡 村の施設を選んでください！";
-  
-  const choiceArea = document.getElementById("choice-area");
-  choiceArea.innerHTML = "";
 
-  // 回復
+  const choiceArea = document.getElementById("choice-area");
+  choiceArea.innerHTML = "";  // メニューをリセット
+
+  // ✅ 宿屋で回復
   const healButton = document.createElement("button");
   healButton.textContent = "💖 宿屋で回復（10G）";
   healButton.className = "choice-button";
   healButton.onclick = () => healPlayer();
 
-  // 買い物
+  // ✅ 武器屋
   const shopButton = document.createElement("button");
   shopButton.textContent = "🛒 武器屋へ行く";
   shopButton.className = "choice-button";
   shopButton.onclick = () => enterShop();
 
-  // セーブ
+  // ✅ セーブ
   const saveButton = document.createElement("button");
   saveButton.textContent = "💾 セーブする";
   saveButton.className = "choice-button";
   saveButton.onclick = () => savePlayerData();
 
+  // ボタンを追加
   choiceArea.appendChild(healButton);
   choiceArea.appendChild(shopButton);
   choiceArea.appendChild(saveButton);
 }
-    function healPlayer() {
+
+function healPlayer() {
   if (playerData.g >= 10) {
     playerData.g -= 10;
     playerData.hp = 50;
@@ -918,7 +915,8 @@ function showVillageMenu() {
     document.getElementById("top-text-box").textContent = "💰 お金が足りない！";
   }
 }
-    function enterShop() {
+
+ function enterShop() {
   document.getElementById("top-text-box").textContent = "🛒 武器屋へようこそ！";
 
   const choiceArea = document.getElementById("choice-area");
@@ -937,6 +935,18 @@ function showVillageMenu() {
   choiceArea.appendChild(swordButton);
   choiceArea.appendChild(potionButton);
 }
+
+function buyItem(item, price) {
+  if (playerData.g >= price) {
+    playerData.g -= price;
+    document.getElementById("top-text-box").textContent = `🎉 ${item} を手に入れた！`;
+    updatePlayerStatusUI();
+    savePlayerData();
+  } else {
+    document.getElementById("top-text-box").textContent = "💰 お金が足りない！";
+  }
+}
+
 
 function buyItem(item, price) {
   if (playerData.g >= price) {
