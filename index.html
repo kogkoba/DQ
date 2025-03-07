@@ -2,71 +2,77 @@
 <html lang="ja">
 <head>
   <meta charset="UTF-8">
-  <title>ドラクエ風タイルマップ</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Image Index</title>
   <style>
-    body {
-      text-align: center;
-      background-color: #222;
-      color: white;
-      font-family: Arial, sans-serif;
+    table {
+      border-collapse: collapse;
+      width: 50%;
+      margin: 20px 0;
     }
-    canvas {
-      border: 2px solid white;
-      background-color: black;
+    th, td {
+      border: 1px solid #ccc;
+      padding: 8px 12px;
+      text-align: left;
+    }
+    th {
+      background-color: #f7f7f7;
+    }
+    img {
+      max-width: 100px; /* 必要に応じて画像サイズを調整 */
+      height: auto;
     }
   </style>
 </head>
 <body>
 
-  <h1>ドラクエ風タイルマップ</h1>
-  <canvas id="gameCanvas" width="512" height="512"></canvas>
-
-  <script>
-    // === タイルマップ設定 ===
-    const canvas = document.getElementById("gameCanvas");
-    const ctx = canvas.getContext("2d");
-
-    const tileSize = 32; // **タイルサイズを確認して適切な値に修正！**
-    const tileset = new Image();
-    tileset.src = "https://raw.githubusercontent.com/kogkoba/DQ/main/encountermap.png"; // GitHubのURL
-
-    // **タイルマッピングの座標を適切に修正**
-    const tileMapping = {
-        101: { x: 0, y: 0 },    // 草原
-        111: { x: 32, y: 0 },   // 道
-        121: { x: 64, y: 0 },   // 森
-        122: { x: 96, y: 0 },   // 水
-        130: { x: 128, y: 0 },  // 建物
-    };
-
-    // **mapData を仮で定義**
-    const mapData = [
-      [101, 101, 101, 111, 111, 101, 101, 101, 101, 101],
-      [101, 121, 121, 111, 111, 121, 121, 101, 101, 101],
-      [101, 121, 122, 122, 122, 121, 121, 101, 101, 101],
-      [111, 121, 122, 130, 122, 121, 111, 111, 101, 101],
-      [111, 121, 122, 122, 122, 121, 111, 101, 101, 101],
-      [101, 121, 121, 111, 111, 121, 121, 101, 101, 101],
-      [101, 101, 101, 111, 111, 101, 101, 101, 101, 101]
-    ];
-
-    tileset.onload = function () {
-        drawMap();
-    };
-
-    function drawMap() {
-        for (let y = 0; y < mapData.length; y++) {
-            for (let x = 0; x < mapData[y].length; x++) {
-                let tileID = mapData[y][x];
-                let tilePos = tileMapping[tileID] || tileMapping[101]; // デフォルトは草原
-
-                ctx.drawImage(tileset, tilePos.x, tilePos.y, tileSize, tileSize, 
-                              x * tileSize, y * tileSize, tileSize, tileSize);
-            }
-        }
-    }
-  </script>
+  <h1>Image Index</h1>
+  <table>
+    <tr>
+      <th>ID</th>
+      <th>File Name</th>
+      <th>Preview</th>
+    </tr>
+    <tr>
+      <td>121</td>
+      <td>ipponnoki.png</td>
+      <td><img src="ipponnoki.png" alt="ipponnoki"></td>
+    </tr>
+    <tr>
+      <td>101</td>
+      <td>grass.png</td>
+      <td><img src="grass.png" alt="grass"></td>
+    </tr>
+    <tr>
+      <td>122</td>
+      <td>nihonnoki.png</td>
+      <td><img src="nihonnoki.png" alt="nihonnoki"></td>
+    </tr>
+    <tr>
+      <td>112</td>
+      <td>soil.png</td>
+      <td><img src="soil.png" alt="soil"></td>
+    </tr>
+    <tr>
+      <td>109</td>
+      <td>gake.png</td>
+      <td><img src="gake.png" alt="gake"></td>
+    </tr>
+    <tr>
+      <td>103</td>
+      <td>hanabatake.png</td>
+      <td><img src="hanabatake.png" alt="hanabatake"></td>
+    </tr>
+    <tr>
+      <td>164</td>
+      <td>horaana.png</td>
+      <td><img src="horaana.png" alt="horaana"></td>
+    </tr>
+    <tr>
+      <td>133</td>
+      <td>kirikabu.png</td>
+      <td><img src="kirikabu.png" alt="kirikabu"></td>
+    </tr>
+  </table>
 
 </body>
 </html>
