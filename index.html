@@ -489,10 +489,10 @@
     
     // ======================= ゲームのエリア=======================
 
-// 村のエリアの範囲（仮: 中央の 200×200 の範囲）
+// 村のエリアの範囲（X: 200～400, Y: 200～400 の範囲）
 const villageArea = {
-  xMin: 150, xMax: 350,
-  yMin: 150, yMax: 350
+  xMin: 200, xMax: 400,
+  yMin: 200, yMax: 400
 };
 
 // プレイヤーが村のエリアにいるか判定
@@ -504,6 +504,7 @@ function isPlayerInVillage() {
     player.y <= villageArea.yMax
   );
 }
+
 
     // ======================= 5) BGM 関連 =======================
     function updateBgmButton() {
@@ -861,10 +862,94 @@ function retryBattle() {
       updatePlayerPosition();
       player.steps++;
 
-      if (player.steps - lastEncounterSteps >= encounterThreshold) {
-        startEncounter();
-      }
-    }
+
+  // **村の中ではエンカウントしない**
+  if (!isPlayerInVillage() && player.steps - lastEncounterSteps >= encounterThreshold) {
+    startEncounter();
+  }
+}
+function checkVillageEntry() {
+  if (isPlayerInVillage()) {
+    document.getElementById("top-text-box").textContent = "🏡 村に戻ってきた！";
+
+    // 3秒後に村のメニューを表示
+    setTimeout(() => {
+      showVillageMenu();
+    }, 2000);
+  }
+}
+
+function showVillageMenu() {
+  document.getElementById("top-text-box").textContent = "🏡 村の施設を選んでください！";
+  
+  const choiceArea = document.getElementById("choice-area");
+  choiceArea.innerHTML = "";
+
+  // 回復
+  const healButton = document.createElement("button");
+  healButton.textContent = "💖 宿屋で回復（10G）";
+  healButton.className = "choice-button";
+  healButton.onclick = () => healPlayer();
+
+  // 買い物
+  const shopButton = document.createElement("button");
+  shopButton.textContent = "🛒 武器屋へ行く";
+  shopButton.className = "choice-button";
+  shopButton.onclick = () => enterShop();
+
+  // セーブ
+  const saveButton = document.createElement("button");
+  saveButton.textContent = "💾 セーブする";
+  saveButton.className = "choice-button";
+  saveButton.onclick = () => savePlayerData();
+
+  choiceArea.appendChild(healButton);
+  choiceArea.appendChild(shopButton);
+  choiceArea.appendChild(saveButton);
+}
+    function healPlayer() {
+  if (playerData.g >= 10) {
+    playerData.g -= 10;
+    playerData.hp = 50;
+    updatePlayerStatusUI();
+    savePlayerData();
+    document.getElementById("top-text-box").textContent = "💖 HPが全回復した！";
+  } else {
+    document.getElementById("top-text-box").textContent = "💰 お金が足りない！";
+  }
+}
+    function enterShop() {
+  document.getElementById("top-text-box").textContent = "🛒 武器屋へようこそ！";
+
+  const choiceArea = document.getElementById("choice-area");
+  choiceArea.innerHTML = "";
+
+  const swordButton = document.createElement("button");
+  swordButton.textContent = "⚔️ 剣を買う（50G）";
+  swordButton.className = "choice-button";
+  swordButton.onclick = () => buyItem("剣", 50);
+
+  const potionButton = document.createElement("button");
+  potionButton.textContent = "🧪 回復薬を買う（20G）";
+  potionButton.className = "choice-button";
+  potionButton.onclick = () => buyItem("回復薬", 20);
+
+  choiceArea.appendChild(swordButton);
+  choiceArea.appendChild(potionButton);
+}
+
+function buyItem(item, price) {
+  if (playerData.g >= price) {
+    playerData.g -= price;
+    document.getElementById("top-text-box").textContent = `🎉 ${item} を手に入れた！`;
+    updatePlayerStatusUI();
+    savePlayerData();
+  } else {
+    document.getElementById("top-text-box").textContent = "💰 お金が足りない！";
+  }
+}
+
+
 
     function getRandomEncounterThreshold() {
       // 5～15
