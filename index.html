@@ -692,10 +692,22 @@ function retryBattle() {
   document.getElementById("quiz-area").style.display = "none";
   document.getElementById("quiz-image").style.display = "none";
 
+  // ★ ここからエフェクト追加：フィールドからバトルへのトランジション効果
+  const overlay = document.getElementById("transition-overlay");
+  const circle = document.getElementById("transition-circle");
+  overlay.style.display = "block";
+  requestAnimationFrame(() => { circle.classList.add("active"); });
+
+  setTimeout(() => {
+    // エフェクト終了後、元の状態に戻す
+    overlay.style.display = "none";
+    circle.classList.remove("active");
+
+
   // 少し待ってから再挑戦用の戦闘初期化を呼び出す
   setTimeout(() => {
     startBattleInitForRetry();
-  }, 1000);
+  }, 500);
 }
     function restartFromChurch() {
       const topTextBox = document.getElementById("top-text-box");
