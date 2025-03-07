@@ -265,7 +265,11 @@
   <div id="gameContainer">
     <!-- ステータス表示 -->
     <div id="status">
-      プレイヤーのHP: <span id="field-hp">50</span> / レベル: <span id="level">1</span>
+      プレイヤーのHP:
+      <span id="field-hp">50</span>
+      / レベル: <span id="level">1</span> 
+      / G: <span id="field-g">0</span>
+      
       <div id="bgmToggleContainer">
         <button id="bgmToggleButton" onclick="toggleBgm()">🔇 BGM OFF</button>
       </div>
@@ -323,11 +327,11 @@
     <source src="./DQ down long.mp3" type="audio/mpeg">
   </audio>
 
-  <!-- ======================= スクリプト群 ======================= -->
+  <!-- ======================= スクリプト群 =======================
 
-  <!-- Google API 読み込み -->
+  <!-- Google API 読み込み 
   <script src="https://apis.google.com/js/api.js" onload="gapiLoaded()"></script>
-
+ -->
   <script>
     // ======================= 1) Google API 読み込み後の処理 =======================
     function gapiLoaded() {
@@ -530,6 +534,11 @@
       // ★ 修正: フィールド画面の HP 表示は "field-hp" へ
       document.getElementById("field-hp").textContent = playerData.hp;
       document.getElementById("level").textContent = playerData.level;
+      // ★ 追加: 所持金 (G) を表示
+  const fieldGElement = document.getElementById("field-g");
+  if (fieldGElement) {
+    fieldGElement.textContent = playerData.g;
+  }
     }
     
 
@@ -654,28 +663,27 @@
     }
     // 問題文のみを表示
     topTextBox.textContent = quiz.question;
-    // 1秒後に画像と選択肢を表示
-    setTimeout(() => {
-      const quizImg = document.getElementById("quiz-image");
-      if (quiz.imageUrl) {
-        quizImg.src = quiz.imageUrl;
-        quizImg.style.display = "block";
-      } else {
-        quizImg.style.display = "none";
-      }
-      const choiceArea = document.getElementById("choice-area");
-      choiceArea.innerHTML = "";
-      quiz.choices.forEach((choiceText, index) => {
-        const btn = document.createElement("button");
-        btn.className = "choice-button";
-        btn.textContent = choiceText;
-        btn.onclick = () => answerQuiz(index + 1, quiz);
-        choiceArea.appendChild(btn);
-      });
+     // 遅延なしで画像と選択肢を表示
+  const quizImg = document.getElementById("quiz-image");
+  if (quiz.imageUrl) {
+    quizImg.src = quiz.imageUrl;
+    quizImg.style.display = "block";
+  } else {
+    quizImg.style.display = "none";
+  }
+  const choiceArea = document.getElementById("choice-area");
+  choiceArea.innerHTML = "";
+  quiz.choices.forEach((choiceText, index) => {
+    const btn = document.createElement("button");
+    btn.className = "choice-button";
+    btn.textContent = choiceText;
+    btn.onclick = () => answerQuiz(index + 1, quiz);
+    choiceArea.appendChild(btn);
+  });
       // クイズエリア（全体）を表示
       document.getElementById("quiz-area").style.display = "flex";
     }, 1000);
-  }, 5000);
+
 }
 
 
@@ -692,11 +700,25 @@ function retryBattle() {
   document.getElementById("quiz-area").style.display = "none";
   document.getElementById("quiz-image").style.display = "none";
 
+  // ★ ここからエフェクト追加：フィールドからバトルへのトランジション効果
+  const overlay = document.getElementById("transition-overlay");
+  const circle = document.getElementById("transition-circle");
+  overlay.style.display = "block";
+  requestAnimationFrame(() => { circle.classList.add("active"); });
+
+  setTimeout(() => {
+    // エフェクト終了後、元の状態に戻す
+    overlay.style.display = "none";
+    circle.classList.remove("active");
+
+
   // 少し待ってから再挑戦用の戦闘初期化を呼び出す
   setTimeout(() => {
     startBattleInitForRetry();
-  }, 1000);
-}
+  }, 500);
+  }, 800);  // ← ここでしっかり閉じる
+  }
+
     function restartFromChurch() {
       const topTextBox = document.getElementById("top-text-box");
       topTextBox.textContent = "教会で復活… お金が半分になりました！";
