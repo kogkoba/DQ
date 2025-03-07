@@ -654,24 +654,23 @@
     }
     // 問題文のみを表示
     topTextBox.textContent = quiz.question;
-    // 1秒後に画像と選択肢を表示
-    setTimeout(() => {
-      const quizImg = document.getElementById("quiz-image");
-      if (quiz.imageUrl) {
-        quizImg.src = quiz.imageUrl;
-        quizImg.style.display = "block";
-      } else {
-        quizImg.style.display = "none";
-      }
-      const choiceArea = document.getElementById("choice-area");
-      choiceArea.innerHTML = "";
-      quiz.choices.forEach((choiceText, index) => {
-        const btn = document.createElement("button");
-        btn.className = "choice-button";
-        btn.textContent = choiceText;
-        btn.onclick = () => answerQuiz(index + 1, quiz);
-        choiceArea.appendChild(btn);
-      });
+     // 遅延なしで画像と選択肢を表示
+  const quizImg = document.getElementById("quiz-image");
+  if (quiz.imageUrl) {
+    quizImg.src = quiz.imageUrl;
+    quizImg.style.display = "block";
+  } else {
+    quizImg.style.display = "none";
+  }
+  const choiceArea = document.getElementById("choice-area");
+  choiceArea.innerHTML = "";
+  quiz.choices.forEach((choiceText, index) => {
+    const btn = document.createElement("button");
+    btn.className = "choice-button";
+    btn.textContent = choiceText;
+    btn.onclick = () => answerQuiz(index + 1, quiz);
+    choiceArea.appendChild(btn);
+  });
       // クイズエリア（全体）を表示
       document.getElementById("quiz-area").style.display = "flex";
     }, 1000);
