@@ -1603,13 +1603,6 @@ const tileDict = {
   "133": "kirikabu.png",
   "164": "horaana.png",
 
-  // 必要に応じて追加
-  "175": "???",  // 画像ファイル名を入れる
-  "177": "???",
-  "171": "???",
-  "172": "???",
-  "176": "???",
-  "178": "???"
 };
 
 /* -------------------------------------
@@ -1673,3 +1666,41 @@ function drawMap(layers, context) {
         if (tileId !== 0) {
           const imgFile = tileDict[tileId];
           if (imgFile) {
+            // 画像を読み込んで描画（毎回ロードすると非効率なので、実際はキャッシュ推奨）
+            const img = new Image();
+            img.src = imgFile;
+            // onload イベントで描画しないと、読み込む前に描画されない
+            img.onload = () => {
+              context.drawImage(img, col * tileSize, row * tileSize, tileSize, tileSize);
+            };
+          } else {
+            // tileDictに登録されていないIDの場合の処理（エラー表示など）
+            // console.log("未登録のタイルID:", tileId);
+          }
+        }
+      }
+    }
+  }
+}
+
+/* -------------------------------------
+ *  メイン処理
+ * ------------------------------------- */
+window.onload = function() {
+  // Canvasとコンテキスト取得
+  const canvas = document.getElementById("gameCanvas");
+  const ctx = canvas.getContext("2d");
+
+  // <pre>タグに埋め込んだマップデータを取得
+  const rawMapText = document.getElementById("mapData").textContent;
+
+  // パースしてレイヤーデータ取得
+  const layers = parseMapData(rawMapText);
+
+  // マップを描画
+  drawMap(layers, ctx);
+};
+</script>
+
+</body>
+</html>
