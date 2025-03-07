@@ -1,78 +1,138 @@
 <!DOCTYPE html>
 <html lang="ja">
 <head>
-  <meta charset="UTF-8">
-  <title>Image Index</title>
+  <meta charset="UTF-8" />
+  <title>Tile Map Example</title>
   <style>
-    table {
-      border-collapse: collapse;
-      width: 50%;
-      margin: 20px 0;
+    body {
+      background: #eee;
+      margin: 20px;
     }
-    th, td {
-      border: 1px solid #ccc;
-      padding: 8px 12px;
-      text-align: left;
+    #gameCanvas {
+      background: #000; /* デフォルト背景（マップ外）が黒 */
+      image-rendering: pixelated; /* ドット絵がぼやけないようにするための設定 */
     }
-    th {
-      background-color: #f7f7f7;
-    }
-    img {
-      max-width: 100px; /* 必要に応じて画像サイズを調整 */
-      height: auto;
+    pre {
+      display: none; /* マップデータを隠す */
     }
   </style>
 </head>
 <body>
 
-  <h1>Image Index</h1>
-  <table>
-    <tr>
-      <th>ID</th>
-      <th>File Name</th>
-      <th>Preview</th>
-    </tr>
-    <tr>
-      <td>121</td>
-      <td>ipponnoki.png</td>
-      <td><img src="ipponnoki.png" alt="ipponnoki"></td>
-    </tr>
-    <tr>
-      <td>101</td>
-      <td>grass.png</td>
-      <td><img src="grass.png" alt="grass"></td>
-    </tr>
-    <tr>
-      <td>122</td>
-      <td>nihonnoki.png</td>
-      <td><img src="nihonnoki.png" alt="nihonnoki"></td>
-    </tr>
-    <tr>
-      <td>112</td>
-      <td>soil.png</td>
-      <td><img src="soil.png" alt="soil"></td>
-    </tr>
-    <tr>
-      <td>109</td>
-      <td>gake.png</td>
-      <td><img src="gake.png" alt="gake"></td>
-    </tr>
-    <tr>
-      <td>103</td>
-      <td>hanabatake.png</td>
-      <td><img src="hanabatake.png" alt="hanabatake"></td>
-    </tr>
-    <tr>
-      <td>164</td>
-      <td>horaana.png</td>
-      <td><img src="horaana.png" alt="horaana"></td>
-    </tr>
-    <tr>
-      <td>133</td>
-      <td>kirikabu.png</td>
-      <td><img src="kirikabu.png" alt="kirikabu"></td>
-    </tr>
-  </table>
+<h1>タイルマップ表示テスト</h1>
+<canvas id="gameCanvas" width="256" height="256"></canvas>
 
-</body>
-</html>
+<!-- マップデータをHTML内に埋め込む場合の例。見せたくないなら display:none などで隠す -->
+<pre id="mapData">
+MAP_VER_1_0_2;
+CANVASWIDTH:256;
+CANVASHEIGHT:256;
+MAPX:16;
+MAPY:16;
+BGCOLOR:#000000;
+BGALPHA:0;
+L1PX:0;
+L1PY:0;
+L2PX:0;
+L2PY:0;
+L3PX:0;
+L3PY:0;
+L4PX:0;
+L4PY:0;
+L5PX:0;
+L5PY:0;
+L6PX:0;
+L6PY:0;
+LAYER:1;
+0,0:121;
+0,1:122;
+0,2:122;
+...  <!-- 省略：ここに質問文に載っているマップデータ全てを貼り付け -->
+END;
+</pre>
+
+<script>
+/* -------------------------------------
+ *  タイルID と 画像ファイル名 の対応
+ * ------------------------------------- */
+const tileSize = 16;  // 1タイルのサイズ(px)
+const tileDict = {
+  "101": "grass.png",
+  "103": "hanabatake.png",
+  "109": "gake.png",
+  "112": "soil.png",
+  "121": "ipponnoki.png",
+  "122": "nihonnoki.png",
+  "133": "kirikabu.png",
+  "164": "horaana.png",
+
+  // 必要に応じて追加
+  "175": "???",  // 画像ファイル名を入れる
+  "177": "???",
+  "171": "???",
+  "172": "???",
+  "176": "???",
+  "178": "???"
+};
+
+/* -------------------------------------
+ *  マップデータを読み込み、パースする
+ * ------------------------------------- */
+function parseMapData(rawText) {
+  // レイヤーごとに 16x16 の配列を作り、格納していく
+  // layers[レイヤー番号] = [[タイルID, ...], [...], ...] の形式を想定
+  const layers = {};
+  let currentLayer = 0;
+
+  // 行単位で分割
+  const lines = rawText.split(/\r?\n/);
+  for (let line of lines) {
+    line = line.trim();
+    // レイヤー切り替え検出
+    if (line.startsWith("LAYER:")) {
+      currentLayer = parseInt(line.replace("LAYER:", ""), 10);
+      layers[currentLayer] = createEmptyMapArray(16, 16); // 16x16の空配列
+    }
+    // マップデータ検出 (例: 0,0:121;)
+    else if (/^\d+,\d+:/.test(line)) {
+      // 例: "0,0:121;" → row=0, col=0, tileId=121
+      const [pos, tilePart] = line.split(":");
+      const [r, c] = pos.split(",").map(Number);
+      // "121;" から ";" を除去して数値化
+      const tileId = parseInt(tilePart.replace(";", ""), 10);
+
+      // layers[currentLayer][row][col] = tileId
+      if (!isNaN(tileId)) {
+        layers[currentLayer][r][c] = tileId;
+      }
+    }
+  }
+  return layers;
+}
+
+// 指定サイズの2次元配列を作るユーティリティ
+function createEmptyMapArray(rows, cols) {
+  const arr = [];
+  for (let r = 0; r < rows; r++) {
+    arr[r] = [];
+    for (let c = 0; c < cols; c++) {
+      arr[r][c] = 0; // 0 = タイルなし
+    }
+  }
+  return arr;
+}
+
+/* -------------------------------------
+ *  Canvasにタイルを描画する
+ * ------------------------------------- */
+function drawMap(layers, context) {
+  // レイヤーの小さい番号から順に描画する
+  const layerKeys = Object.keys(layers).map(Number).sort((a,b)=>a-b);
+  for (let layer of layerKeys) {
+    const mapData = layers[layer];
+    for (let row = 0; row < mapData.length; row++) {
+      for (let col = 0; col < mapData[row].length; col++) {
+        const tileId = mapData[row][col];
+        if (tileId !== 0) {
+          const imgFile = tileDict[tileId];
+          if (imgFile) {
