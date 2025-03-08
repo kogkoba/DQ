@@ -1,91 +1,465 @@
 <!DOCTYPE html>
 <html lang="ja">
 <head>
-  <meta charset="UTF-8">
-  <title>ドラクエ風クイズRPG</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <!-- CSS は外部ファイルに分割しておくと管理しやすい -->
-  <link rel="stylesheet" href="css/style.css">
+  <meta charset="UTF-8" />
+  <title>ドラクエ風タイルマップ＋プレイヤー</title>
+  <style>
+    body {
+      background: #eee;
+      margin: 20px;
+      font-family: Arial, sans-serif;
+    }
+    #gameCanvas {
+      background: #000; /* マップ外の背景 */
+      image-rendering: pixelated;
+      border: 2px solid #333;
+    }
+    /* マップデータは表示しない */
+    #mapData {
+      display: none;
+    }
+  </style>
 </head>
 <body>
-  <!-- ローディングオーバーレイ -->
-  <div id="loadingOverlay">Loading…</div>
 
-  <!-- ログイン画面 -->
-  <div id="loginScreen">
-    <h2>プレイヤー名を入力してください</h2>
-    <input type="text" id="playerNameInput" placeholder="名前を入力">
-    <button id="loginButton">ログイン</button>
-  </div>
+<h1>ドラクエ風タイルマップ＋プレイヤー</h1>
+<canvas id="gameCanvas" width="256" height="256"></canvas>
 
-  <!-- タイトル画面 -->
-  <div id="titleScreen">
-    <h1>ドラクエ風クイズRPG</h1>
-    <button id="startButton">▶ ゲームスタート</button>
-  </div>
+<!-- マップデータ（16×16マス、例） -->
+<pre id="mapData">
+MAP_VER_1_0_2;
+CANVASWIDTH:256;
+CANVASHEIGHT:256;
+MAPX:16;
+MAPY:16;
+BGCOLOR:#000000;
+BGALPHA:0;
+L1PX:0;
+L1PY:0;
+L2PX:0;
+L2PY:0;
+L3PX:0;
+L3PY:0;
+L4PX:0;
+L4PY:0;
+L5PX:0;
+L5PY:0;
+L6PX:0;
+L6PY:0;
+LAYER:1;
+0,0:121;
+0,1:122;
+0,2:122;
+0,3:122;
+0,4:133;
+0,5:133;
+0,6:122;
+0,7:122;
+0,8:122;
+0,9:122;
+0,10:122;
+0,11:122;
+0,12:122;
+0,13:122;
+0,14:122;
+0,15:122;
+1,0:121;
+1,1:101;
+1,2:122;
+1,3:122;
+1,4:112;
+1,5:112;
+1,6:101;
+1,7:101;
+1,8:101;
+1,9:122;
+1,10:112;
+1,11:109;
+1,12:122;
+1,13:122;
+1,14:112;
+1,15:122;
+2,0:121;
+2,1:101;
+2,2:101;
+2,3:122;
+2,4:112;
+2,5:112;
+2,6:101;
+2,7:101;
+2,8:101;
+2,9:122;
+2,10:112;
+2,11:103;
+2,12:109;
+2,13:122;
+2,14:112;
+2,15:122;
+3,0:121;
+3,1:101;
+3,2:101;
+3,3:101;
+3,4:112;
+3,5:112;
+3,6:101;
+3,7:101;
+3,8:101;
+3,9:101;
+3,10:112;
+3,11:103;
+3,12:164;
+3,13:133;
+3,14:112;
+3,15:122;
+4,0:121;
+4,1:101;
+4,2:101;
+4,3:101;
+4,4:112;
+4,5:112;
+4,6:101;
+4,7:101;
+4,8:101;
+4,9:101;
+4,10:112;
+4,11:103;
+4,12:109;
+4,13:122;
+4,14:112;
+4,15:122;
+5,0:121;
+5,1:101;
+5,2:101;
+5,3:101;
+5,4:112;
+5,5:112;
+5,6:101;
+5,7:101;
+5,8:101;
+5,9:101;
+5,10:112;
+5,11:103;
+5,12:109;
+5,13:122;
+5,14:112;
+5,15:122;
+6,0:121;
+6,1:101;
+6,2:101;
+6,3:101;
+6,4:112;
+6,5:112;
+6,6:101;
+6,7:101;
+6,8:101;
+6,9:101;
+6,10:112;
+6,11:109;
+6,12:122;
+6,13:122;
+6,14:112;
+6,15:122;
+7,0:112;
+7,1:112;
+7,2:112;
+7,3:112;
+7,4:112;
+7,5:112;
+7,6:101;
+7,7:101;
+7,8:101;
+7,9:101;
+7,10:112;
+7,11:112;
+7,12:112;
+7,13:112;
+7,14:112;
+7,15:122;
+8,0:112;
+8,1:112;
+8,2:112;
+8,3:112;
+8,4:112;
+8,5:112;
+8,6:112;
+8,7:112;
+8,8:112;
+8,9:112;
+8,10:112;
+8,11:112;
+8,12:112;
+8,13:112;
+8,14:112;
+8,15:122;
+9,0:121;
+9,1:101;
+9,2:112;
+9,3:101;
+9,4:101;
+9,5:101;
+9,6:101;
+9,7:101;
+9,8:101;
+9,9:112;
+9,10:101;
+9,11:101;
+9,12:101;
+9,13:101;
+9,14:101;
+9,15:122;
+10,0:121;
+10,1:101;
+10,2:112;
+10,3:101;
+10,4:101;
+10,5:101;
+10,6:101;
+10,7:101;
+10,8:101;
+10,9:112;
+10,10:103;
+10,11:103;
+10,12:101;
+10,13:101;
+10,14:101;
+10,15:122;
+11,0:121;
+11,1:101;
+11,2:101;
+11,3:122;
+11,4:122;
+11,5:101;
+11,6:101;
+11,7:101;
+11,8:101;
+11,9:112;
+11,10:112;
+11,11:103;
+11,12:101;
+11,13:101;
+11,14:101;
+11,15:122;
+12,0:121;
+12,1:101;
+12,2:101;
+12,3:122;
+12,4:122;
+12,5:122;
+12,6:101;
+12,7:112;
+12,8:101;
+12,9:101;
+12,10:103;
+12,11:103;
+12,12:101;
+12,13:101;
+12,14:101;
+12,15:122;
+13,0:121;
+13,1:101;
+13,2:101;
+13,3:122;
+13,4:122;
+13,5:122;
+13,6:101;
+13,7:112;
+13,8:101;
+13,9:101;
+13,10:101;
+13,11:101;
+13,12:101;
+13,13:101;
+13,14:101;
+13,15:122;
+14,0:121;
+14,1:101;
+14,2:101;
+14,3:122;
+14,4:122;
+14,5:122;
+14,6:122;
+14,7:112;
+14,8:101;
+14,9:101;
+14,10:101;
+14,11:101;
+14,12:101;
+14,13:101;
+14,14:101;
+14,15:122;
+15,0:121;
+15,1:122;
+15,2:122;
+15,3:122;
+15,4:122;
+15,5:122;
+15,6:122;
+15,7:122;
+15,8:122;
+15,9:122;
+15,10:122;
+15,11:122;
+15,12:122;
+15,13:122;
+15,14:122;
+15,15:122;
 
-  <!-- ゲーム画面 -->
-  <div id="gameContainer">
-    <!-- ステータス表示 -->
-    <div id="status">
-      プレイヤーのHP: <span id="hp">100</span> / レベル: <span id="level">1</span>
-      <div id="bgmToggleContainer">
-        <button id="bgmToggleButton">🔇 BGM OFF</button>
-      </div>
-    </div>
-    
-    <!-- フィールド画面 -->
-    <div id="gameArea">
-      <img id="player" src="https://lh3.googleusercontent.com/d/1peHOi70oOmL8c9v3OQydE5N-9R0PB6vh" alt="hero">
-      <div id="dpad">
-        <div class="dpad-button up"></div>
-        <div class="dpad-button left"></div>
-        <div class="dpad-button center"></div>
-        <div class="dpad-button right"></div>
-        <div class="dpad-button down"></div>
-      </div>
-      <div id="transition-overlay">
-        <div id="transition-circle"></div>
-      </div>
-    </div>
-    
-    <!-- 戦闘画面 -->
-    <div id="battle-screen">
-      <div id="top-text-box">mamがあらわれた！</div>
-      <div id="quiz-hp-container">
-        HP: <span id="quiz-hp">100</span>
-      </div>
-      <div id="enemy-container"></div>
-      <img id="quiz-image" src="">
-      <div id="quiz-area">
-        <div id="choice-area"></div>
-      </div>
-      <div id="hearts-container"></div>
-      <button id="zaorikuButton">ザオリク</button>
-    </div>
-    
-    <!-- HP回復ボタン -->
-    <button id="healButton">💖 回復する (+10 HP)</button>
-  </div>
+END;
+</pre>
 
-  <!-- オーディオやGoogle APIなどの外部リソース -->
-  <audio id="fieldBGM" loop preload="auto">
-    <source src="./kouyawoiku.mp3" type="audio/mpeg">
-  </audio>
-  <audio id="battleBGM" loop preload="auto">
-    <source src="./jypdance.mp3" type="audio/mpeg">
-  </audio>
-  <audio id="quizBGM" loop preload="auto">
-    <source src="./jypdance.mp3" type="audio/mpeg">
-  </audio>
-  <audio id="dqDownAudio" preload="auto">
-    <source src="./DQ down long.mp3" type="audio/mpeg">
-  </audio>
+<script>
+  // ---------------------------
+  // タイルID と画像ファイル名の対応
+  // ---------------------------
+  const tileSize = 16; // 各タイルは16×16ピクセル
+  const tileDict = {
+    "121": "121ipponnoki.png",
+    "101": "101grass.png",
+    "122": "122nihonnoki.png",
+    "112": "112soil.png",
+    "109": "109gake.png",
+    "103": "103hanabatake.png",
+    "164": "164horaana.png",
+    "133": "133kirikabu.png"
+  };
 
-  <!-- Google API -->
-  <script async defer src="https://apis.google.com/js/api.js" onload="gapiLoaded()" onerror="console.error('❌ Google APIの読み込みに失敗しました');"></script>
+  // ---------------------------
+  // マップデータのパース
+  // ---------------------------
+  function parseMapData(rawText) {
+    const layers = {};
+    let currentLayer = 0;
+    const lines = rawText.split(/\r?\n/);
+    for (let line of lines) {
+      line = line.trim();
+      if (line.startsWith("LAYER:")) {
+        currentLayer = parseInt(line.replace("LAYER:", ""), 10);
+        layers[currentLayer] = createEmptyMapArray(16, 16);
+      } else if (/^\d+,\d+:/.test(line)) {
+        const [pos, tilePart] = line.split(":");
+        const [col, row] = pos.split(",").map(Number);
+        const tileId = tilePart.replace(";", "");
+        if (!isNaN(tileId)) {
+          layers[currentLayer][row][col] = tileId;
+        }
+      }
+    }
+    return layers;
+  }
 
-  <!-- メインスクリプトの読み込み -->
-  <script src="js/main.js"></script>
+  function createEmptyMapArray(rows, cols) {
+    const arr = [];
+    for (let r = 0; r < rows; r++) {
+      arr[r] = [];
+      for (let c = 0; c < cols; c++) {
+        arr[r][c] = 0;
+      }
+    }
+    return arr;
+  }
+
+  // ---------------------------
+  // 画像のプリロード（タイル画像）
+  // ---------------------------
+  const tiles = {}; // tileDict の各キーに対するImageオブジェクト
+  function loadTileImages(callback) {
+    const ids = Object.keys(tileDict);
+    let loaded = 0;
+    ids.forEach(id => {
+      tiles[id] = new Image();
+      tiles[id].src = tileDict[id];
+      tiles[id].onload = () => {
+        loaded++;
+        if (loaded === ids.length) {
+          callback();
+        }
+      };
+      tiles[id].onerror = () => {
+        console.error("画像の読み込みエラー: " + tileDict[id]);
+        loaded++;
+        if (loaded === ids.length) {
+          callback();
+        }
+      };
+    });
+  }
+
+  // ---------------------------
+  // プレイヤー画像のロード
+  // ---------------------------
+  const playerImg = new Image();
+  playerImg.src = "https://lh3.googleusercontent.com/d/1peHOi70oOmL8c9v3OQydE5N-9R0PB6vh";
+  
+  // ---------------------------
+  // マップ描画とプレイヤー描画
+  // ---------------------------
+  let mapLayer; // パースしたレイヤー1のマップデータを格納
+  const canvas = document.getElementById("gameCanvas");
+  const ctx = canvas.getContext("2d");
+
+  // プレイヤーの位置（マス単位、初期位置: 1,1）
+  const player = {
+    col: 1,
+    row: 1
+  };
+
+  function draw() {
+    // Canvasをクリア
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    // マップの描画（レイヤー1のみ）
+    for (let row = 0; row < mapLayer.length; row++) {
+      for (let col = 0; col < mapLayer[row].length; col++) {
+        const tileId = mapLayer[row][col];
+        if (tileId !== 0) {
+          const img = tiles[tileId];
+          if (img) {
+            ctx.drawImage(img, col * tileSize, row * tileSize, tileSize, tileSize);
+          }
+        }
+      }
+    }
+    // プレイヤー描画（プレイヤー画像も16×16に描画）
+    ctx.drawImage(playerImg, player.col * tileSize, player.row * tileSize, tileSize, tileSize);
+  }
+
+  // ---------------------------
+  // キー操作によるプレイヤー移動
+  // ---------------------------
+  window.addEventListener("keydown", function(e) {
+    let newCol = player.col;
+    let newRow = player.row;
+    if (e.key === "ArrowUp") {
+      newRow--;
+    } else if (e.key === "ArrowDown") {
+      newRow++;
+    } else if (e.key === "ArrowLeft") {
+      newCol--;
+    } else if (e.key === "ArrowRight") {
+      newCol++;
+    }
+    // 境界チェック（マップサイズ: 16x16）
+    if (newCol >= 0 && newCol < 16 && newRow >= 0 && newRow < 16) {
+      // ※ 非歩行エリアの判定は、ここで mapLayer[newRow][newCol] のタイルIDで判定可能
+      // 例: もし "112"（土）を非歩行にしたいなら
+      // if(mapLayer[newRow][newCol] === "112") return;
+      player.col = newCol;
+      player.row = newRow;
+      draw();
+    }
+  });
+
+  // ---------------------------
+  // メイン処理
+  // ---------------------------
+  window.onload = function() {
+    const rawMapText = document.getElementById("mapData").textContent;
+    const layers = parseMapData(rawMapText);
+    // レイヤー1を使用
+    mapLayer = layers[1];
+    // タイル画像をロードしてから描画（プレイヤー画像は自動的に読み込みます）
+    loadTileImages(draw);
+  };
+</script>
+
 </body>
 </html>
